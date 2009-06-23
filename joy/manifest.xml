@@ -1,0 +1,9 @@
+<package>
+  <author>Morgan Quigley and Brian Gerkey</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <depend package="roscpp"/>
+  <export>
+    <cpp cflags="-I${prefix}/msg/cpp" />
+  </export>
+</package>

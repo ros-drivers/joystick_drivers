@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 2.4.6)
+include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+rospack(joy)
+genmsg()
+
+# Look for <linux/joystick.h>
+include(CheckIncludeFiles)
+check_include_files(linux/joystick.h HAVE_LINUX_JOYSTICK_H)
+if(HAVE_LINUX_JOYSTICK_H)
+  include_directories(msg/cpp)
+  rospack_add_executable(joy joy.cpp)
+  rospack_add_executable(txjoy txjoy.cpp)
+else(HAVE_LINUX_JOYSTICK_H)
+  message("Warning: no <linux/joystick.h>; won't build joy node")
+endif(HAVE_LINUX_JOYSTICK_H)
