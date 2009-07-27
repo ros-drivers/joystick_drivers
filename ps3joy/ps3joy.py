@@ -150,7 +150,11 @@ class connection_manager:
 
     def prepare_socket(self, port):
         sock = BluetoothSocket(L2CAP)
-        sock.bind(("", port))
+        try:
+            sock.bind(("", port))
+        except:
+            print "Error binding to bluetooth socket. Are you root?"
+            exit (-1)
         sock.listen(1)
         return sock
 
@@ -159,12 +163,18 @@ class connection_manager:
         ctrl_sock = self.prepare_socket(L2CAP_PSM_HIDP_CTRL)
 
         while True:
+            print "Waiting for connection"
             (intr, (idev, iport)) = intr_sock.accept();
+            (rd, wr, err) = select.select([ctrl_sock], [], [], 1)
+            if len(rd) == 0:
+                print "Got interrupt connection without control connection. Giving up on it."
+                intr.close()
+                continue
             (ctrl, (cdev, cport)) = ctrl_sock.accept();
             if idev == cdev:
                 try:
                     self.decoder.run(intr, ctrl)
-                except KeyboardInterupt:
+                except KeyboardInterrupt:
                     print "CTRL+C detected. Exiting."
                     exit(0)
                 except:
@@ -176,5 +186,9 @@ class connection_manager:
             intr.close()
 
 if __name__ == "__main__":
+    os.system("/etc/init.d/bluetooth stop")
+    os.system("hciconfig hci0 up")
+    os.system("hciconfig hci0 pscan")
+    os.system("modprobe uinput")
     cm = connection_manager(decoder())
     cm.listen()
