@@ -23,12 +23,10 @@ class uinputjoy:
         for name in ["/dev/input/uinput", "/dev/misc/uinput", "/dev/uinput"]:
             try:
                 self.file = os.open(name, os.O_WRONLY)
-                print self.file
                 break
             except:
-                print "err"
+                print "Error opening uinput. Are you root?"
                 raise
-                continue
         if self.file == None:
             raise IOError
         #id = uinput.input_id()
@@ -140,7 +138,7 @@ class decoder:
                     if lastvalidtime - curtime >= 5: # Disconnect if we don't hear a valid frame for 5 seconds
                         return
                 else: # Got a frame.
-                    print "Got a frame at ", curtime, 1 / (curtime - lastvalidtime)
+                    #print "Got a frame at ", curtime, 1 / (curtime - lastvalidtime)
                     if self.step(intr):
                         lastvalidtime = curtime
         finally:
@@ -166,6 +164,9 @@ class connection_manager:
             if idev == cdev:
                 try:
                     self.decoder.run(intr, ctrl)
+                except KeyboardInterupt:
+                    print "CTRL+C detected. Exiting."
+                    exit(0)
                 except:
                     print "Connection broken or error."
                     traceback.print_exc()
