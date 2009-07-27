@@ -1,0 +1,15 @@
+<package>
+  <description brief="Playstation 3 SixAxis or Dual Shock 3 joystick driver.">
+	Driver for the Sony Playstation 3 SixAxis or Dual Shock 3 joysticks. In
+	its current state, this driver is not compatible with the use of other
+	Bluetooth HID devices. It listens for a connection on the HID ports,
+	starts the joystick streaming data, and passes the data to the linux
+	uinput device so that it shows up as a normal joystick.
+	</description>
+  <author>Blaise Gassend</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://pr.willowgarage.com/wiki/ps3joy</url>
+</package>
+
+
