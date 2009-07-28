@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="joy" type="ps3_joy" name="ps3_joy" output="screen" >
+    <param name="dev" type="string" value="/dev/input/js1" />
+    <param name="deadzone" value="0.12" />
+  </node>
+</launch>
