@@ -103,8 +103,10 @@ public:
         case JS_EVENT_BUTTON:
           if(event.number >= joy_msg.get_buttons_size())
           {
-            joy_msg.set_buttons_size(event.number+1);
-            for(unsigned int i=0;i<joy_msg.get_buttons_size();i++)
+            int old_buttons_size = joy_msg.buttons.size();
+
+            joy_msg.buttons.resize(event.number + 1);
+            for(unsigned int i = old_buttons_size; i<joy_msg.buttons.size(); i++)
               joy_msg.buttons[i] = 0;
           }
           if(event.value)
@@ -116,8 +118,9 @@ public:
         case JS_EVENT_AXIS:
           if(event.number >= joy_msg.get_axes_size())
           {
+            int old_axis_size = joy_msg.axes.size();
             joy_msg.set_axes_size(event.number+1);
-            for(unsigned int i=0;i<joy_msg.get_axes_size();i++)
+            for(unsigned int i=old_axis_size; i<joy_msg.get_axes_size(); i++)
               joy_msg.axes[i] = 0.0;
           }
 
