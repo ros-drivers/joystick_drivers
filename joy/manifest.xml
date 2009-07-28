@@ -4,6 +4,8 @@
   This package contains two nodes. The oldest is "joy", maintained only for
   backwards compatibility. New code and launch files should use "txjoy", which
   follows the current (0.6) ROS API.
+
+  The ps3_joy node uses the PS3 SIXAXIS joystick. This node is very similar to the txjoy node, but the PS3 joystick uses a different default range for its axes. All PS3 joysticks must use this node.
   </description>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>

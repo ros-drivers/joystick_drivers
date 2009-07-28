@@ -35,42 +35,6 @@
 // Author: Kevin Watts
 // Modified from joy.cpp by Jeremy Leibs
 
-/**
-
-@mainpage
-
-@b ps3_joy Driver for PS3 SIXAXIS joystick. Maps axis to [-1, +1], buttons are 0 or 1 (depressed).
-Inertial sensors not currently supported in this node, although they are published as extra axes. 
-Axes 0-3, which are controlled by the two analog joysticks, are supported.
-
-<hr>
-
-@section usage Usage
-@verbatim
-$ ps3_joy [standard ROS args]
-@endverbatim
-
-Check wiki page for axis/button mappings
-
-<hr>
-
-@section topic ROS topics
-
-Subscribes to (name / type):
-- None
-
-Publishes to (name / type):
-- @b "joy/Joy" : output of joystick, sent on every joystick event
-
-<hr>
-
-@section parameters ROS parameters
-
-- @b "~dev" : Input device for joystick, default /dev/input/js0
-- @b "~deadzone" : Axis deadzone for joystick, given in units of joystick output. Default 0.10
-
-**/ 
-
 #include <unistd.h>
 #include <math.h>
 #include <linux/joystick.h>
@@ -101,7 +65,7 @@ public:
   {
     n_.param("~dev", joy_dev, std::string("/dev/input/js0"));
     // Deadzone is given in units of output range from [-1, 1]
-    n_.param("~deadzone", deadzone, 0.10); 
+    n_.param("~deadzone", deadzone, 0.12); 
     ROS_INFO("PS3 device: %s\n", joy_dev.c_str());
     std::stringstream ss;
     ss << "PS3 deadzone: " <<  deadzone; 

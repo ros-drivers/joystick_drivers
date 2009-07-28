@@ -30,37 +30,6 @@
 
 // Author: Jeremy Leibs
 
-/**
-
-@mainpage
-
-@b joy ROS joystick driver for Logitech Wireless rumblepad joystick. 
-
-<hr>
-
-@section usage Usage
-@verbatim
-$ joy [standard ROS args]
-@endverbatim
-
-<hr>
-
-@section topic ROS topics
-
-Subscribes to (name / type):
-- None
-
-Publishes to (name / type):
-- @b "joy/Joy" : Joystick output. Axes are [-1, 1], buttons are 0 or 1 (depressed).
-
-<hr>
-
-@section parameters ROS parameters
-- "~dev" : Input device for joystick, default /dev/input/js0
-= "~deadzone" : Output is zero for axis in deadzone, devault 2000
-
-**/
-
 #include <unistd.h>
 #include <math.h>
 #include <linux/joystick.h>

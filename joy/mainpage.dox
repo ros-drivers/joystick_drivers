@@ -1,0 +1,100 @@
+\mainpage
+\htmlinclude manifest.html
+
+\b joy ROS joystick drivers for Logitech joysticks and PS3 SIXAXIS/DUALSHOCK devices. Works with Linux, depends in linux/joystick.h.
+
+\section rosapi ROS API
+
+Each node is a joystick driver. All publish joy/Joy messages on topic "joy".
+
+\b joy 
+\b txjoy Should be used in all new applications
+\b ps3_joy Used for PS3 joysticks 
+
+<hr>
+
+\subsection joy joy
+
+\b joy ROS joystick driver for Logitech Wireless rumblepad joystick. 
+
+\subsubsection usage Usage
+\verbatim
+$ joy [standard ROS args]
+\endverbatim
+
+<hr>
+
+\subsubsection topic ROS topics
+
+Subscribes to (name / type):
+- None
+
+Publishes to (name / type):
+- \b "joy/Joy" : Joystick output. Axes are [-1, 1], buttons are 0 or 1 (depressed).
+
+<hr>
+
+\subsubsection parameters ROS parameters
+- \b "~dev" : Input device for joystick, default /dev/input/js0
+- \b "~deadzone" : Output is zero for axis in deadzone, devault 2000
+
+<hr>
+
+\subsection txjoy txjoy
+
+\b txjoy ROS joystick driver for Logitech Wireless rumblepad joystick. Uses ROS 0.6 API, should be used in all new applications.
+
+\subsubsection usage Usage
+\verbatim
+$ txjoy [standard ROS args]
+\endverbatim
+
+<hr>
+
+\subsubsection topic ROS topics
+
+Subscribes to (name / type):
+- None
+
+Publishes to (name / type):
+- \b "joy/Joy" : Joystick output. Axes are [-1, 1], buttons are 0 or 1 (depressed).
+
+<hr>
+
+\subsubsection parameters ROS parameters
+- \b "~dev" : Input device for joystick, default /dev/input/js0
+- \b "~deadzone" : Output is zero for axis in deadzone, devault 2000
+
+<hr>
+
+\subsection ps3_joy ps3_joy
+
+\b ps3_joy Driver for PS3 SIXAXIS joystick. Maps axis to [-1, +1], buttons are 0 or 1 (depressed).
+Inertial sensors not currently supported in this node, although they are published as extra axes. 
+Axes 0-3, which are controlled by the two analog joysticks, are supported.
+
+\subsubsection usage Usage
+\verbatim
+$ ps3_joy [standard ROS args]
+\endverbatim
+
+Check wiki page for axis/button mappings
+
+<hr>
+
+\subsubsection topic ROS topics
+
+Subscribes to (name / type):
+- None
+
+Publishes to (name / type):
+- \b "joy/Joy" : output of joystick, sent on every joystick event
+
+<hr>
+
+\subusbsection parameters ROS parameters
+
+- \b "~dev" : Input device for joystick, default /dev/input/js0
+- \b "~deadzone" : Axis deadzone for joystick, given in units of joystick output. Default 0.12
+
+
