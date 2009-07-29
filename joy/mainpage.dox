@@ -1,3 +1,5 @@
+/**
+
 \mainpage
 \htmlinclude manifest.html
 
@@ -7,22 +9,21 @@
 
 Each node is a joystick driver. All publish joy/Joy messages on topic "joy".
 
-\b joy 
-\b txjoy Should be used in all new applications
-\b ps3_joy Used for PS3 joysticks 
+List of nodes:
+- \b joy Used with PR2
+- \b txjoy Should be used in all new applications
+- \b ps3_joy Used for PS3 joysticks 
 
 <hr>
 
 \subsection joy joy
 
-\b joy ROS joystick driver for Logitech Wireless rumblepad joystick. 
+\b joy ROS joystick driver for Logitech Wireless rumblepad joystick. Buttons are labeled on the joystick.
 
 \subsubsection usage Usage
 \verbatim
 $ joy [standard ROS args]
 \endverbatim
-
-<hr>
 
 \subsubsection topic ROS topics
 
@@ -31,8 +32,6 @@ Subscribes to (name / type):
 
 Publishes to (name / type):
 - \b "joy/Joy" : Joystick output. Axes are [-1, 1], buttons are 0 or 1 (depressed).
-
-<hr>
 
 \subsubsection parameters ROS parameters
 - \b "~dev" : Input device for joystick, default /dev/input/js0
@@ -49,7 +48,6 @@ Publishes to (name / type):
 $ txjoy [standard ROS args]
 \endverbatim
 
-<hr>
 
 \subsubsection topic ROS topics
 
@@ -58,8 +56,6 @@ Subscribes to (name / type):
 
 Publishes to (name / type):
 - \b "joy/Joy" : Joystick output. Axes are [-1, 1], buttons are 0 or 1 (depressed).
-
-<hr>
 
 \subsubsection parameters ROS parameters
 - \b "~dev" : Input device for joystick, default /dev/input/js0
@@ -78,9 +74,18 @@ Axes 0-3, which are controlled by the two analog joysticks, are supported.
 $ ps3_joy [standard ROS args]
 \endverbatim
 
-Check wiki page for axis/button mappings
+\subsubsection buttons Axes/Button Mappings
 
-<hr>
+\image html ps3_buttons.jpg
+Left and right index finger buttons:
+- \b L1 : 6
+- \b R1 : 7
+- \b L2 : 4
+- \b R2 : 5
+
+
+\image html ps3_axes.jpg
+The numbers for joystick axes are in the positive direction (ex: the left stick is positive on axis 0 when moved left)
 
 \subsubsection topic ROS topics
 
@@ -90,11 +95,9 @@ Subscribes to (name / type):
 Publishes to (name / type):
 - \b "joy/Joy" : output of joystick, sent on every joystick event
 
-<hr>
-
-\subusbsection parameters ROS parameters
+\subsubsection parameters ROS parameters
 
 - \b "~dev" : Input device for joystick, default /dev/input/js0
 - \b "~deadzone" : Axis deadzone for joystick, given in units of joystick output. Default 0.12
 
-
+*/

@@ -1,5 +1,5 @@
 <package>
-  <author>Morgan Quigley and Brian Gerkey</author>
+  <author>Morgan Quigley, Brian Gerkey and Kevin Watts</author>
   <description brief="Monitors a joystick and sends its state">
   This package contains two nodes. The oldest is "joy", maintained only for
   backwards compatibility. New code and launch files should use "txjoy", which
