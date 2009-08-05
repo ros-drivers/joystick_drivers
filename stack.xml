@@ -1,0 +1,13 @@
+<stack name="joystick_drivers" version="0.1.0">
+  <description brief="joystick_drivers">
+
+     joystick_drivers
+
+  </description>
+  <author>Blaise Gassend</author>
+  <license>BSD</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://pr.willowgarage.com/wiki/joystick_drivers</url>
+  <depend stack="ros"/> <!-- roscpp --> 
+
+</stack>
