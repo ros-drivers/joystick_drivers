@@ -1,0 +1,46 @@
+Packages that need to be installed
+----------------------------------
+joystick
+libusb-dev
+
+Pairing instructions
+--------------------
+
+1) If you can connect the joystick and the bluetooth dongle into the same
+computer.
+
+Connect the joystick to the computer using a USB cable.
+
+Load the bluetooth dongle's MAC address into the ps3 joystick using:
+
+sudo bash
+rosrun ps3joy sixpair
+
+2) If you cannot connect the joystick to the same computer as the dongle.
+
+Find out the bluetooth dongle's MAC address by running (on the computer
+that has the bluetooth dongle):
+
+hciconfig
+
+If this does not work, you may need to do
+sudo hciconfig hci0 up
+and retry
+hciconfig
+
+Plug the PS3 joystick into some other computer using a USB cable.
+
+Replace the joystick's mac address in the following command: 
+sudo rosrun ps3joy sixpair 01:23:45:67:89:ab
+
+Starting the PS3 joystick
+-------------------------
+
+rosrun ps3joy ps3joy.py
+
+This should make a joystick appear at /dev/input/js?
+
+You can check that it is working with
+jstest /dev/input/js?
+(replace ? with the name of your joystick)
+
