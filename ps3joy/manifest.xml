@@ -10,7 +10,7 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://pr.willowgarage.com/wiki/ps3joy</url>
-  <rosdep name="libusb-dev">
+  <rosdep name="libusb-dev"/>
 </package>
 
 
