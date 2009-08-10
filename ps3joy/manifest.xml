@@ -8,7 +8,10 @@
 	</description>
   <author>Blaise Gassend</author>
   <license>BSD</license>
+
   <review status="unreviewed" notes=""/>
+  <depend package="roscpp"/>
+  <depend package="joy"/>
   <url>http://pr.willowgarage.com/wiki/ps3joy</url>
   <rosdep name="libusb"/>
 </package>

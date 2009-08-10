@@ -33,7 +33,7 @@
  *********************************************************************/
 
 // Author: Kevin Watts
-// Modified from joy.cpp by Jeremy Leibs
+// Modified from joy/joy.cpp by Jeremy Leibs
 
 #include <unistd.h>
 #include <math.h>
@@ -127,7 +127,7 @@ public:
 	  // Normalize to +/-1 for PS3 axes 0-3
 	  // PS3 axes 0-3 have range 0-256
 	  // Axes >3 are inertial sensors, not currently supported in this node
-	  double val = (128.0 - event.value) / 128.0;
+	  double val = (- event.value) / 128.0;
           joy_msg.axes[event.number] = (fabs(val) < deadzone) ? 0.0 : val;
           joy_pub_.publish(joy_msg);
           break;

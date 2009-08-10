@@ -36,56 +36,52 @@ parameter used in your code. There is a template below that you can
 use to document each node separately.
 
 List of nodes:
-- \b node_name1
+- \b ps3_joy_node
 - \b node_name2
 -->
 
-<!-- START: copy from here to 'END' for each node 
-
 <hr>
 
-\subsection node_name node_name
+\subsection ps3_joy_node ps3_joy_node
 
-node_name does (provide a basic description of your node)
+\b ps3_joy_node Driver for PS3 SIXAXIS joystick. Maps axis to [-1, +1], buttons are 0 or 1 (depressed).
+Inertial sensors not currently supported in this node, although they are published as extra axes. 
+Axes 0-3, which are controlled by the two analog joysticks, are supported.
 
-\subsubsection Usage
+\subsubsection usage Usage
 \verbatim
-$ node_type1 [standard ROS args]
+$ ps3_joy [standard ROS args]
 \endverbatim
 
-\par Example
+\subsubsection buttons Axes/Button Mappings
 
-\verbatim
-$ node_type1
-\endverbatim
+\image html ps3_buttons.jpg
+Left and right index finger buttons (not in picture):
+- \b L1 : 10
+- \b R1 : 11
+- \b L2 : 8
+- \b R2 : 9
 
+\image html ps3_axes.jpg
+The numbers for joystick axes are in the positive direction (ex: the left stick is positive on axis 0 when moved left)
 
-\subsubsection topics ROS topics
+Accelerometer axes (Axis Number : Positive direction)
+- \b 16 : Controller right 
+- \b 17 : Controller front
+- \b 18 : Controller bottom
 
-Subscribes to:
-- \b "in": [std_msgs/FooType] description of in
+\subsubsection topic ROS topics
 
-Publishes to:
-- \b "out": [std_msgs/FooType] description of out
+Subscribes to (name / type):
+- None
 
+Publishes to (name / type):
+- \b "joy/Joy" : output of joystick, sent on every joystick event
 
 \subsubsection parameters ROS parameters
 
-Reads the following parameters from the parameter server
-
-- \b "~param_name" : \b [type] description of param_name
-- \b "~my_param" : \b [string] description of my_param
-
-Sets the following parameters on the parameter server
-
-- \b "~param_name" : \b [type] description of param_name
-
-
-\subsubsection services ROS services
-- \b "foo_service": [std_srvs/FooType] description of foo_service
-
-
-END: copy for each node -->
+- \b "~dev" : Input device for joystick, default /dev/input/js0
+- \b "~deadzone" : Axis deadzone for joystick, given in units of joystick output. Default 0.12
 
 
 <!-- START: Uncomment if you have any command-line tools
