@@ -143,6 +143,10 @@ class decoder:
         finally:
             self.fullstop()
 
+def quit(i):
+    os.system("/etc/init.d/bluetooth start > /dev/null 2>&1")
+    exit(i)
+
 class connection_manager:
     def __init__(self, decoder):
         self.decoder = decoder
@@ -153,7 +157,7 @@ class connection_manager:
             sock.bind(("", port))
         except:
             print >> sys.stderr, "Error binding to bluetooth socket."
-            exit (-1)
+            quit(-1)
         sock.listen(1)
         return sock
 
@@ -187,7 +191,7 @@ class connection_manager:
                     intr.close()
             except KeyboardInterrupt:
                 print "CTRL+C detected. Exiting."
-                exit(0)
+                quit(0)
             except Exception, e:
                 print >> sys.stderr, "Caught exception: %s"%str(e)
 
@@ -195,7 +199,7 @@ if __name__ == "__main__":
     try:
         if os.getuid() != 0:
             print >> sys.stderr, "ps3joy.py must be run as root."
-            exit(1)
+            quit(1)
         os.system("/etc/init.d/bluetooth stop > /dev/null 2>&1")
         while os.system("hciconfig hci0 > /dev/null 2>&1") != 0:
             print >> sys.stderr,  "No bluetooth device found. Will retry in 5 seconds."
@@ -208,3 +212,5 @@ if __name__ == "__main__":
         cm.listen()
     except KeyboardInterrupt:
         print "CTRL+C detected. Exiting."
+    quit(0)
+        
