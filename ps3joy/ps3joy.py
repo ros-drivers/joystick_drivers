@@ -164,31 +164,45 @@ class connection_manager:
 
         while True:
             print "Waiting for connection"
-            (intr, (idev, iport)) = intr_sock.accept();
-            (rd, wr, err) = select.select([ctrl_sock], [], [], 1)
-            if len(rd) == 0:
-                print "Got interrupt connection without control connection. Giving up on it."
-                intr.close()
-                continue
-            (ctrl, (cdev, cport)) = ctrl_sock.accept();
-            if idev == cdev:
+            try:
+                (intr, (idev, iport)) = intr_sock.accept();
                 try:
-                    self.decoder.run(intr, ctrl)
-                except KeyboardInterrupt:
-                    print "CTRL+C detected. Exiting."
-                    exit(0)
-                except:
-                    print "Connection broken or error."
-                    traceback.print_exc()
-            else:
-                print "Simultaneous connection from two different devices. Ignoring both."
-            ctrl.close()
-            intr.close()
+                    (rd, wr, err) = select.select([ctrl_sock], [], [], 1)
+                    if len(rd) == 0:
+                        print "Got interrupt connection without control connection. Giving up on it."
+                        intr.close()
+                        continue
+                    (ctrl, (cdev, cport)) = ctrl_sock.accept();
+                    try:
+                        if idev == cdev:
+                            try:
+                                self.decoder.run(intr, ctrl)
+                            except:
+                                print "Connection broken or error."
+                                traceback.print_exc()
+                        else:
+                            print "Simultaneous connection from two different devices. Ignoring both."
+                    finally:
+                        ctrl.close()
+                finally:
+                    intr.close()
+            except KeyboardInterrupt:
+                print "CTRL+C detected. Exiting."
+                exit(0)
+            except Exception, e:
+                print "Caught exception: %s"%str(e)
 
 if __name__ == "__main__":
-    os.system("/etc/init.d/bluetooth stop")
-    os.system("hciconfig hci0 up")
-    os.system("hciconfig hci0 pscan")
-    os.system("modprobe uinput")
-    cm = connection_manager(decoder())
-    cm.listen()
+    try:
+        os.system("/etc/init.d/bluetooth stop > /dev/null 2>&1")
+        while os.system("hciconfig hci0 > /dev/null 2>&1") != 0:
+            print "No bluetooth device found. Will retry in 5 seconds."
+            time.sleep(5)
+        os.system("hciconfig hci0 up > /dev/null 2>&1")
+        os.system("hciconfig hci0 pscan > /dev/null 2>&1")
+        os.system("modprobe uinput > /dev/null 2>&1")
+        time.sleep(1) # uinput isn't ready to go right away.
+        cm = connection_manager(decoder())
+        cm.listen()
+    except KeyboardInterrupt:
+        pass
