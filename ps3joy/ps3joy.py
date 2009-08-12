@@ -194,7 +194,8 @@ class connection_manager:
 if __name__ == "__main__":
     try:
         if os.getuid() != 0:
-            print >> sys.stderr, "ps3joy.py must be run as root." 
+            print >> sys.stderr, "ps3joy.py must be run as root."
+            exit(1)
         os.system("/etc/init.d/bluetooth stop > /dev/null 2>&1")
         while os.system("hciconfig hci0 > /dev/null 2>&1") != 0:
             print >> sys.stderr,  "No bluetooth device found. Will retry in 5 seconds."
