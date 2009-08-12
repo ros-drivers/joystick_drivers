@@ -24,8 +24,8 @@ class uinputjoy:
             try:
                 self.file = os.open(name, os.O_WRONLY)
                 break
-            except:
-                print "Error opening uinput. Are you root?"
+            except Exception, e:
+                print >> sys.stderr, "Error opening uinput: %s"%str(e)
                 raise
         if self.file == None:
             raise IOError
@@ -70,7 +70,7 @@ class uinputjoy:
         th = int(t)
         tl = int((t - th) * 1000000)
         if len(value) != len(self.value):
-            print "Unexpected length for value in update"
+            print >> sys.stderr, "Unexpected length for value in update. This is a bug."
         for i in range(0, len(value)):
             if value[i] != self.value[i]:
                 os.write(self.file, struct.pack(input_event, th, tl, self.type[i], self.code[i], value[i]))
@@ -98,12 +98,12 @@ class decoder:
         joy_coding = "!1B2x3B1x4B4x12B15x4H"
         rawdata = sock.recv(128)
         if len(rawdata) != 50:
-            print "Unexpected packet length:", len(data)
+            print >> sys.stderr, "Unexpected packet length (%i). Is this a PS3 Dual Axis or Six Axis?"%len(data)
             return False
         data = list(struct.unpack(joy_coding, rawdata))
         prefix = data.pop(0)
         if prefix != 161:
-            print "Unexpected prefix:", prefix
+            print >> sys.stderr, "Unexpected prefix (%i). Is this a PS3 Dual Axis or Six Axis?"%prefix
             return False
         out = []
         for j in range(0,2):
@@ -117,7 +117,6 @@ class decoder:
             out.append(data.pop(0))
         for j in range(19,23):
             out.append(data.pop(0) - 0x200)
-        #print out
         self.joy.update(out)
         return True
 
@@ -153,7 +152,7 @@ class connection_manager:
         try:
             sock.bind(("", port))
         except:
-            print "Error binding to bluetooth socket. Are you root?"
+            print >> sys.stderr, "Error binding to bluetooth socket."
             exit (-1)
         sock.listen(1)
         return sock
@@ -163,13 +162,13 @@ class connection_manager:
         ctrl_sock = self.prepare_socket(L2CAP_PSM_HIDP_CTRL)
 
         while True:
-            print "Waiting for connection"
+            print "Waiting for connection. Disconnect your PS3 joystick from USB and press the pairing button."
             try:
                 (intr, (idev, iport)) = intr_sock.accept();
                 try:
                     (rd, wr, err) = select.select([ctrl_sock], [], [], 1)
                     if len(rd) == 0:
-                        print "Got interrupt connection without control connection. Giving up on it."
+                        print >> sys.stderr, "Got interrupt connection without control connection. Giving up on it."
                         intr.close()
                         continue
                     (ctrl, (cdev, cport)) = ctrl_sock.accept();
@@ -178,10 +177,10 @@ class connection_manager:
                             try:
                                 self.decoder.run(intr, ctrl)
                             except:
-                                print "Connection broken or error."
+                                print >> sys.stderr, "Connection broken or error."
                                 traceback.print_exc()
                         else:
-                            print "Simultaneous connection from two different devices. Ignoring both."
+                            print >> sys.stderr, "Simultaneous connection from two different devices. Ignoring both."
                     finally:
                         ctrl.close()
                 finally:
@@ -190,13 +189,15 @@ class connection_manager:
                 print "CTRL+C detected. Exiting."
                 exit(0)
             except Exception, e:
-                print "Caught exception: %s"%str(e)
+                print >> sys.stderr, "Caught exception: %s"%str(e)
 
 if __name__ == "__main__":
     try:
+        if os.getuid() != 0:
+            print >> sys.stderr, "ps3joy.py must be run as root." 
         os.system("/etc/init.d/bluetooth stop > /dev/null 2>&1")
         while os.system("hciconfig hci0 > /dev/null 2>&1") != 0:
-            print "No bluetooth device found. Will retry in 5 seconds."
+            print >> sys.stderr,  "No bluetooth device found. Will retry in 5 seconds."
             time.sleep(5)
         os.system("hciconfig hci0 up > /dev/null 2>&1")
         os.system("hciconfig hci0 pscan > /dev/null 2>&1")
@@ -205,4 +206,4 @@ if __name__ == "__main__":
         cm = connection_manager(decoder())
         cm.listen()
     except KeyboardInterrupt:
-        pass
+        print "CTRL+C detected. Exiting."
