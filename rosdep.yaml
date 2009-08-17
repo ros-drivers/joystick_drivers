@@ -1,0 +1,4 @@
+joystick:
+  ubuntu: joystick
+  debian: joystick
+  arch: kernel-headers
