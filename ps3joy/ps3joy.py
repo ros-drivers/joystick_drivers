@@ -130,7 +130,7 @@ class decoder:
                 (rd, wr, err) = select.select([intr], [], [], 0.1)
                 curtime = time.time()
                 if len(rd) + len(wr) + len(err) == 0: # Timeout
-                    print "Activating connection."
+                    print "Connection is Activated."
                     ctrl.send("\x53\xf4\x42\x03\x00\x00") # Try activating the stream.
                     if lastvalidtime - curtime >= 0.1: # Zero all outputs if we don't hear a valid frame for 0.1 to 0.2 seconds
                         self.fullstop()
