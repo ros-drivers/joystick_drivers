@@ -1,0 +1,15 @@
+<package>
+  <description brief="Spacenav Node">
+    A node for publishing the state of the Space Navigator 6DOF joystick
+  </description>
+  <author>Stuart Glaser sglaser@willowgarage.com</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <depend package="roscpp" />
+  <depend package="spacenav" />
+  <depend package="joy" />
+  <depend package="geometry_msgs" />
+  <url>http://ros.org/wiki/spacenav_node</url>
+  <export>
+  </export>
+</package>
