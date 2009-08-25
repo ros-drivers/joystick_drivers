@@ -8,6 +8,7 @@
   The ps3_joy node uses the PS3 SIXAXIS joystick. This node is very similar to the txjoy node, but the PS3 joystick uses a different default range for its axes. All PS3 joysticks must use this node.
   </description>
   <license>BSD</license>
+  <url>http://www.ros.org/wiki/joy</url>
   <review status="unreviewed" notes=""/>
   <depend package="roscpp"/>
   <export>

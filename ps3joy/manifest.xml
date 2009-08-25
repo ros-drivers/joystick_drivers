@@ -12,7 +12,7 @@
   <review status="unreviewed" notes=""/>
   <depend package="roscpp"/>
   <depend package="joy"/>
-  <url>http://pr.willowgarage.com/wiki/ps3joy</url>
+  <url>http://www.ros.org/wiki/ps3joy</url>
   <rosdep name="libusb"/>
   <rosdep name="joystick"/>
 </package>
