@@ -178,11 +178,7 @@ class connection_manager:
                     (ctrl, (cdev, cport)) = ctrl_sock.accept();
                     try:
                         if idev == cdev:
-                            try:
-                                self.decoder.run(intr, ctrl)
-                            except:
-                                print >> sys.stderr, "Connection broken or error."
-                                traceback.print_exc()
+                            self.decoder.run(intr, ctrl)
                         else:
                             print >> sys.stderr, "Simultaneous connection from two different devices. Ignoring both."
                     finally:
@@ -193,6 +189,7 @@ class connection_manager:
                 print "CTRL+C detected. Exiting."
                 quit(0)
             except Exception, e:
+                traceback.print_exc()
                 print >> sys.stderr, "Caught exception: %s"%str(e)
 
 if __name__ == "__main__":
