@@ -6,7 +6,7 @@ for joysticks that are not well supported by a common linux distribution.
   <author>Blaise Gassend</author>
   <license>BSD</license>  
   <review status="unreviewed" notes=""/>
-  <url>http://pr.willowgarage.com/wiki/joystick_drivers</url>
+  <url>http://ros.org/wiki/joystick_drivers</url>
   <depend stack="ros"/> <!-- roscpp --> 
   <depend stack="common_msgs"/>
 </stack>
