@@ -1,0 +1,15 @@
+<package>
+  <description brief="wiimote">
+
+     wiimote
+
+  </description>
+  <author>Blaise Gassend</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://pr.willowgarage.com/wiki/wiimote</url>
+  <depend package="rospy"/>
+
+</package>
+
+
