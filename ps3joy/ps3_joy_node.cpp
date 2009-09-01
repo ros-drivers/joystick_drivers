@@ -47,7 +47,7 @@ using namespace std;
 
 void *s_joy_func(void *);
 
-class Joy 
+class PS3Joy 
 {
 public:
   joy::Joy joy_msg;
@@ -148,7 +148,7 @@ public:
 
 void *s_joy_func(void *parent)
 {
-  ((Joy *)parent)->joy_func();
+  ((PS3Joy *)parent)->joy_func();
   return NULL;
 }
 
@@ -156,12 +156,12 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "ps3_joy");
 
-  Joy joy;
-  joy.init();
+  PS3Joy ps3joy;
+  ps3joy.init();
 
-  joy.start();
+  ps3joy.start();
   ros::spin();
-  joy.stop();
+  ps3joy.stop();
 
   return 0;
 }
