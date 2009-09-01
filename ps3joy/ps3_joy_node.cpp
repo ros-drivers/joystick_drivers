@@ -39,7 +39,6 @@
 #include <math.h>
 #include <linux/joystick.h>
 #include <fcntl.h>
-#include <sstream>
 #include "ros/ros.h"
 #include "joy/Joy.h"
 
@@ -53,6 +52,7 @@ class Joy
 public:
   joy::Joy joy_msg;
   int joy_fd;
+  int retry_count;
   string joy_dev;
   double deadzone;
   pthread_t joy_thread;
@@ -65,22 +65,32 @@ public:
   {
     n_.param("~dev", joy_dev, std::string("/dev/input/js0"));
     // Deadzone is given in units of output range from [-1, 1]
-    n_.param("~deadzone", deadzone, 0.12); 
-    ROS_INFO("PS3 device: %s\n", joy_dev.c_str());
-    std::stringstream ss;
-    ss << "PS3 deadzone: " <<  deadzone; 
-    ROS_INFO(ss.str().c_str());
+    n_.param("~deadzone", deadzone, 0.12);
+    n_.param("~retry_count", retry_count, 100); // Retries this many times
+    ROS_INFO("PS3 joystick device: %s.", joy_dev.c_str());
+    ROS_INFO("PS3 joystick deadzone: %f.", deadzone);
     joy_pub_ = n_.advertise<joy::Joy>("joy",10);
   }
 
   void start()
   {
+    int count = 0;
     joy_fd = open(joy_dev.c_str(), O_RDONLY);
-    if (joy_fd <= 0)
+
+    while (joy_fd <= 0 and n_.ok())
     {
-      ROS_FATAL("couldn't open joystick %s.", joy_dev.c_str());
-      ROS_BREAK();
+      ROS_INFO("Attempting to open PS3 joystick: %s, attempt: %d", joy_dev.c_str(), ++count);
+      if (count > retry_count)
+      {
+        ROS_FATAL("Couldn't open joystick %s after %d retries. Aborting.", 
+                  joy_dev.c_str(), retry_count);
+        ROS_BREAK();
+      }
+      sleep(1);
+
+      joy_fd = open(joy_dev.c_str(), O_RDONLY);
     }
+
     pthread_create(&joy_thread, NULL, s_joy_func, this);
   }
   void stop()
