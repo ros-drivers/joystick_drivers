@@ -2,3 +2,11 @@ joystick:
   ubuntu: joystick
   debian: joystick
   arch: kernel-headers
+libusb:
+  ubuntu: libusb-dev
+  debian: libusb-dev
+  arch: libusb
+python-bluez:
+  ubuntu: python-bluez
+  debian: python-bluez
+  arch: python-pybluez
