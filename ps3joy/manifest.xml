@@ -15,6 +15,7 @@
   <url>http://www.ros.org/wiki/ps3joy</url>
   <rosdep name="libusb"/>
   <rosdep name="joystick"/>
+  <rosdep name="bluez"/>
   <rosdep name="python-bluez"/>
 </package>
 

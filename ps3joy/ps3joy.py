@@ -199,7 +199,7 @@ if __name__ == "__main__":
             quit(1)
         os.system("/etc/init.d/bluetooth stop > /dev/null 2>&1")
         while os.system("hciconfig hci0 > /dev/null 2>&1") != 0:
-            print >> sys.stderr,  "No bluetooth device found. Will retry in 5 seconds."
+            print >> sys.stderr,  "No bluetooth dongle found. Will retry in 5 seconds."
             time.sleep(5)
         os.system("hciconfig hci0 up > /dev/null 2>&1")
         os.system("hciconfig hci0 pscan > /dev/null 2>&1")
