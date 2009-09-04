@@ -20,6 +20,8 @@
   <review status="unreviewed" notes=""/>
   <url>http://pr.willowgarage.com/wiki/wiimote</url>
   <depend package="rospy"/>
+  <depend package="std_msgs"/>
+  <depend package="numpy"/>
 
 </package>
 
