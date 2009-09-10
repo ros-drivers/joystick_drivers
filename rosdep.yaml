@@ -10,3 +10,7 @@ python-bluez:
   ubuntu: python-bluez
   debian: python-bluez
   arch: python-pybluez
+bluez:
+  ubuntu: bluez
+  debian: bluez
+  arch: bluez
