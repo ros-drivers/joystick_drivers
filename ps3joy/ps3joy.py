@@ -126,7 +126,7 @@ class decoder:
         joy_coding = "!1B2x3B1x4B4x12B15x4H"
         rawdata = sock.recv(128)
         if len(rawdata) != 50:
-            print >> sys.stderr, "Unexpected packet length (%i). Is this a PS3 Dual Axis or Six Axis?"%len(data)
+            print >> sys.stderr, "Unexpected packet length (%i). Is this a PS3 Dual Axis or Six Axis?"%len(rawdata)
             return False
         data = list(struct.unpack(joy_coding, rawdata))
         prefix = data.pop(0)
