@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/env python
 ################################################################################
 #
 # File:         WIIMote.py
@@ -13,6 +13,16 @@
 #
 # 
 ################################################################################
+#
+# Revisions:
+#
+# Thu Sep 10 10:27:38 2009 (Andreas Paepcke) paepcke@anw.willowgarage.com
+#  Added option to lock access to wiiMoteState instance variable.
+################################################################################
+
+# ROS-Related Imports
+
+# Python-Internal Imports
 
 import operator
 import time
@@ -116,14 +126,22 @@ class WIIMote(object):
   # __init__
   #------------------
 
-  def __init__(self, theSampleRate=0):
-    """Optional sample rate: how often wiiMoteState snapshot is refreshed.
+  def __init__(self, theSampleRate=0, wiiStateLock=None):
+    """Instantiate a Wiimote driver instance, which controls one physical Wiimote device.
     
-    Rate= -1: never
-    Rate=  0: as often as possible
-    Rate=  x: every x seconds
+    Parameters:
+        theSampleRate: How often to update the instance's wiiMoteState variable:
+            theSampleRate= -1: never
+            theSampleRate=  0: as often as possible
+            theSampleRate=  x: every x seconds
+        
+        wiiStateLock: If other than None, this parameter is a threading.Lock instance.
+                      If provided, wiiMoteState is only updated after acquiring that
+                      lock. We wait for that lock here. So other threads should only 
+                      acquire the lock for short periods of time.
     """
 
+    self.wiiStateLock = wiiStateLock
     promptUsr("Press both buttons to pair (within 6 seconds).")
 
     try:
@@ -172,7 +190,15 @@ class WIIMote(object):
     #print state
     now = getTimeStamp()
     if now - self._startTime >= self.sampleRate:
+        # If this Wiimote driver is to synchronize write
+        # access to the wii state variable (which is read from
+        # outside), then acquire the lock that was provided
+        # by the instantiator of this instance:
+        if self.wiiStateLock is not None:
+            self.wiiStateLock.acquire()
         self.wiiMoteState = wiistate.WIIState(state, theTime, self.getRumble(), self._wm.state['buttons']);
+        if self.wiiStateLock is not None:
+            self.wiiStateLock.release()
         self._startTime = now
 
   #----------------------------------------

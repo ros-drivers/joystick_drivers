@@ -1,5 +1,6 @@
 <package>
   <description brief="wiimote">
+
      Python encapsulation of Wiimote+ functions.
      Publishes:
        - Accelerator reading (~100hz)
@@ -14,14 +15,13 @@
        - set_LED3(0/1)
        - set_LED4(0/1)
        - set_Rumble(0/1)
+
   </description>
   <author>Andreas Paepcke</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://pr.willowgarage.com/wiki/wiimote</url>
+  <rosdep name="python-numpy" />
   <depend package="rospy"/>
-  <depend package="std_msgs"/>
 
 </package>
-
-
