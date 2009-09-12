@@ -148,6 +148,7 @@ class decoder:
         self.joy.update([0] * 17 + self.axmid)
 
     def run(self, intr, ctrl):
+        activated = false
         try:
             self.fullstop()
             lastvalidtime = time.time()
@@ -155,7 +156,7 @@ class decoder:
                 (rd, wr, err) = select.select([intr], [], [], 0.1)
                 curtime = time.time()
                 if len(rd) + len(wr) + len(err) == 0: # Timeout
-                    print "Activating connection."
+                    #print "Activating connection."
                     ctrl.send("\x53\xf4\x42\x03\x00\x00") # Try activating the stream.
                     if curtime - lastvalidtime >= 0.1: # Zero all outputs if we don't hear a valid frame for 0.1 to 0.2 seconds
                         self.fullstop()
@@ -163,6 +164,9 @@ class decoder:
                         return
                 else: # Got a frame.
                     #print "Got a frame at ", curtime, 1 / (curtime - lastvalidtime)
+                    if not activated:
+                        print "Connection activated"
+                        activated = true
                     if self.step(intr):
                         lastvalidtime = curtime
         finally:
@@ -220,6 +224,7 @@ class connection_manager:
                     try:
                         if idev == cdev:
                             self.decoder.run(intr, ctrl)
+                            print "Connection lost."
                         else:
                             print >> sys.stderr, "Simultaneous connection from two different devices. Ignoring both."
                     finally:
