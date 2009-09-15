@@ -29,31 +29,42 @@ import numpy as np
 #---------------
 
 class WIIState(object):
+    
   """Holds the state of a WIIRemote-plus.
 
-  The state is passed in and is as communicated
-  by one message from the WII+ device. We unpack 
-  the information and place it into individual 
-  dictionaries for callers to grab.
-
+      The state is passed in and is as communicated
+      by one message from the WII+ device. We unpack 
+      the information and place it into individual 
+      dictionaries for callers to grab.
+      
+      Public instance variables:
+        o time             Time in fractional seconds since beginning of Epoch of when 
+                             state was measured (Float).
+        o ascTime          Time when state was measured (Human-readable)
+        o rumble           True/False if wiimote vibration is on/off
+        o angleRate        A GyroReading instance containing gyro (a.k.a. angular rate) measurement
+        o acc              A WIIReading instance containing accelerometer measurement corrected by
+                             the calibration information that is stored in the Wiimote
+        o accRaw           A WIIReading instance containing accelerometer measurement uncorrected
+        o buttons          A dictionary for which buttons are being held down. That could be
+                             multiple buttons. Keys are:
+                                   BTN_1, BTN_2, BTN_PLUS, BTN_MINUS, BTN_A, BTN_B,
+                                   BTN_UP, BTN_DOWN, BTN_LEFT, BTN_RIGHT, BTN_HOME
+                             Values are 1/0
+        o IRSources        Dictionary with on/off values for which IR lights are
+                           being sensed. Keys are:
+                                   IR1, IR2, IR3, IR4
+                           Values are 1/0
+  
+      Public methods:
+        o setAccelerometerCalibration   Bias setting for accelerometer. This triplet is used to
+                                          turn raw accelerometer values into calibrated values.
+        o setGyroCalibration            Bias setting for gyro. This triplet is used to
+                                          turn raw gyro values into calibrated values.
   """
-
-  _accCalibrationZero = None   # Will be a WIIReading
-  _accCalibrationOne  = None   # Will be a WIIReading
-  _gyroZeroReading    = None   # Will be the gyro's zero-movement reading 
-#  time      = 0
-#  ascTime   = ""
-#  angleRate = GyroReading()
-#  acc       = WIIReading()
-#  
-#  buttons   = {BTN_1: False, BTN_2: False, BTN_PLUS: False,
-#               BTN_MINUS: False, BTN_A: False, BTN_B: False,
-#               BTN_UP: False, BTN_DOWN: False, BTN_LEFT: False,
-#               BTN_RIGHT: False, BTN_HOME: False}
-#  IRSources = {IR1:None, IR2:None, IR3:None, IR4:None}
-#  battery   = None
-#  rumble    = False
-#
+  
+  _accCalibrationZero = None
+  _gyroZeroReading = None
 
   #----------------------------------------
   # __init__
@@ -63,7 +74,6 @@ class WIIState(object):
     """Unpack the given state, normalizing if normalizers are passed in."""
 
     self.time = theTime
-    ## self.ascTime = time.asctime(time.gmtime(theTime))
     self.ascTime = `theTime`
     self.rumble = theRumble
     self.IRSources = {IR1:None, IR2:None, IR3:None, IR4:None}
@@ -168,7 +178,7 @@ class WIIState(object):
   def setGyroCalibration(cls, zeroReading):
       cls._gyroZeroReading = zeroReading
 
-#----------------------------------------
+  #----------------------------------------
   # __str___
   #----------
 
@@ -259,6 +269,13 @@ class WIIState(object):
 
     return res
 
+  #----------------------------------------
+  # __repr___
+  #----------
+
+  def __repr__(self):
+      return self.__str__()
+
 
 #----------------------------------------
 # Class WIIReading
@@ -289,13 +306,22 @@ class WIIReading(object):
     
     """ 
     self.time = theTime
-    self._measurement = np.array([xyz[X], xyz[Y], xyz[Z]])
+    self._measurement = np.array([xyz[X], xyz[Y], xyz[Z]],dtype=np.float32)
 
   def __getitem__(self, key):
     if key not in (X,Y,Z):
         raise AttributeError("Attempt to index into a 3-D measurement array with index " + `key` + ".")
     return self._measurement[key]
 
+    def __str__(self):
+      return '[x=' + repr(self._measurement[X]) + \
+             ', y=' + repr(self._measurement[Y]) + \
+             ' z=' + repr(self._measurement[Z]) + \
+             ']'
+
+  def __repr__(self):
+      return '[' + str(self._measurement[X]) + ', ' + str(self._measurement[Y]) + ', ' + str(self._measurement[Z]) + ']'
+  
   def tuple(self):
     return self._measurement
 
@@ -318,7 +344,6 @@ class WIIReading(object):
 # Class GyroReading
 #------------------
 
-# TODO: modify GyroReading to be in terms of angular units.
 class GyroReading():
   """Instances hold one gyroscope reading.
 
@@ -344,7 +369,7 @@ class GyroReading():
 
     """
     
-    self._measurement = np.array([phiThetaPsi[PHI], phiThetaPsi[THETA], phiThetaPsi[PSI]])
+    self._measurement = np.array([phiThetaPsi[PHI], phiThetaPsi[THETA], phiThetaPsi[PSI]],dtype=np.float32)
     
 
   def __getitem__(self, key):
@@ -352,6 +377,15 @@ class GyroReading():
         raise AttributeError("Attempt to index into a 3-D measurement array with index " + `key` + ".")
     return self._measurement[key]
 
+  def __str__(self):
+    return '[PHI (roll)=' + repr(self._measurement[PHI]) + \
+           ', THETA (pitch)=' + repr(self._measurement[THETA]) + \
+           ', PSI (yaw)=' + repr(self._measurement[PSI]) + \
+           ']'
+
+  def __repr__(self):
+      '[' + str(self._measurement[PHI]) + ', ' + str(self._measurement[THETA]) + ', ' + str(self._measurement[PSI]) + ']'
+      
   def tuple(self):
     return self._measurement
 

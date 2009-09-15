@@ -202,8 +202,8 @@ class WIIMote(object):
         self._startTime = now
 
   #----------------------------------------
-  # zeroingCallback
-  #------------------
+  # _calibrationCallback
+  #---------------------
 
   def _calibrationCallback(self, state, theTime):
     """Wii's callback destination while zeroing the device."""
@@ -215,8 +215,14 @@ class WIIMote(object):
 
     # Pull out the accelerometer x,y,z, and build an WIIReading from them:
     self._accList.append(wiistate.WIIReading(thisState.accRaw))
-    # Pull out the gyro x,y,z, and build a GyroReading from them:
-    self._gyroList.append(wiistate.GyroReading(thisState.angleRate))
+    # Pull out the gyro x,y,z, and build a GyroReading from them.
+    # For a few cycles, the Wiimote does not deliver gyro info.
+    # When it doesn't, we get a 'None' is unsubscriptable. Ignore 
+    # those initial instabilities:
+    try:
+        self._gyroList.append(wiistate.GyroReading(thisState.angleRate))
+    except TypeError:
+        pass
     self._readingsCnt += 1
     return
 
