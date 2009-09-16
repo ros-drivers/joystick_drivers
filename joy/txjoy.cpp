@@ -4,39 +4,61 @@
 #include <fcntl.h>
 #include "ros/ros.h"
 #include "joy/Joy.h"
+#include <sstream>
+
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "txjoy");
   ros::NodeHandle n;
+
+  // Big while loop opens, publishes
   ros::Publisher pub = n.advertise<joy::Joy>("joy", 1);
-  std::string joy_dev;
-  int deadzone = 0;
-  n.param<std::string>("~dev", joy_dev, "/dev/input/js0");
-  n.param<int>("~deadzone", deadzone, 2000);
-  int joy_fd = open(joy_dev.c_str(), O_RDONLY);
-  if (joy_fd <= 0)
-  {
-    ROS_FATAL("couldn't open joystick %s.", joy_dev.c_str());
-    ROS_BREAK();
-  }
+
   joy::Joy joy_msg;
   js_event event;
   struct timeval tv;
   fd_set set;
+  int joy_fd;
+
   while (n.ok())
   {
-    tv.tv_sec = 0;
-    tv.tv_usec = 100000; // wait 100ms for something to happen
-    FD_ZERO(&set);
-    FD_SET(joy_fd, &set);
-    if (select(joy_fd+1, &set, NULL, NULL, &tv) == 1 && FD_ISSET(joy_fd, &set))
+    std::string joy_dev;
+    int deadzone = 0;
+    n.param<std::string>("~dev", joy_dev, "/dev/input/js0");
+    n.param<int>("~deadzone", deadzone, 2000);
+    joy_fd = open(joy_dev.c_str(), O_RDONLY);
+    
+    while (joy_fd <= 0)
     {
-      read(joy_fd, &event, sizeof(js_event));
-      if (event.type & JS_EVENT_INIT)
-        continue;
-      switch(event.type)
+      ROS_ERROR("Couldn't open joystick %s. Retrying.", joy_dev.c_str());
+      sleep(1.0);
+    }
+    
+    std::stringstream ss;
+    ss << "Joystick deadzone: " <<  deadzone;
+    ROS_INFO(ss.str().c_str());
+    ROS_INFO("Opened joystick: %s. Deadzone: %s.", joy_dev.c_str(), ss.str().c_str());
+
+
+    while (n.ok()) 
+    {
+      tv.tv_sec = 0;
+      tv.tv_usec = 50000; // wait 50ms for something to happen
+      FD_ZERO(&set);
+      FD_SET(joy_fd, &set);
+
+      int select_val = select(joy_fd+1, &set, NULL, NULL, &tv);
+      if (select_val < 0)
+        break; // Joystick is probably closed
+
+      if (select_val == 1 && FD_ISSET(joy_fd, &set))
       {
+        read(joy_fd, &event, sizeof(js_event));
+        if (event.type & JS_EVENT_INIT)
+          continue;
+        switch(event.type)
+        {
         case JS_EVENT_BUTTON:
           if(event.number >= joy_msg.get_buttons_size())
           {
@@ -58,10 +80,15 @@ int main(int argc, char **argv)
             (-event.value / 32767.0);
           pub.publish(joy_msg);
           break;
+        }
       }
     }
-  }
+
   close(joy_fd);
+  
+  // End while loop
+  }
+
   return 0;
 }
 
