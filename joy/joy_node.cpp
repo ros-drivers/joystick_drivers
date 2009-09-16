@@ -97,7 +97,6 @@ public:
 		double autorepeat_interval = 1 / autorepeat_rate_;
 		double scale = -1. / (1. - deadzone_) / 32767.;
 
-		joy::Joy joy_msg;
 		js_event event;
 		struct timeval tv;
 		fd_set set;
@@ -149,6 +148,7 @@ public:
 			bool publication_pending = false;
 			tv.tv_sec = 1;
 			tv.tv_usec = 0;
+			joy::Joy joy_msg; // Here because we want to reset it on device close.
 			while (nh_.ok()) 
 			{
 				ros::spinOnce();
