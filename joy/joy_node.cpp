@@ -11,6 +11,7 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "txjoy");
   ros::NodeHandle n;
+	ros::NodeHandle nh_param("~");
 
   // Big while loop opens, publishes
   ros::Publisher pub = n.advertise<joy::Joy>("joy", 1);
@@ -24,22 +25,27 @@ int main(int argc, char **argv)
   while (n.ok())
   {
     std::string joy_dev;
-    int deadzone = 0;
-    n.param<std::string>("~dev", joy_dev, "/dev/input/js0");
-    n.param<int>("~deadzone", deadzone, 2000);
-    joy_fd = open(joy_dev.c_str(), O_RDONLY);
-    
-    while (joy_fd <= 0)
-    {
-      ROS_ERROR("Couldn't open joystick %s. Retrying.", joy_dev.c_str());
+    int deadzone;
+    nh_param.param<std::string>("dev", joy_dev, "/dev/input/js0");
+    nh_param.param<int>("deadzone", deadzone, 2000);
+                                                                   
+    bool first_fault = true;
+		while (true)
+		{
+			if (!n.ok())
+				goto cleanup;
+		  joy_fd = open(joy_dev.c_str(), O_RDONLY);
+      if (joy_fd != -1)
+				break;
+			if (first_fault)
+			{
+				ROS_ERROR("Couldn't open joystick %s. Will retry every second.", joy_dev.c_str());
+				first_fault = false;
+			}
       sleep(1.0);
-    }
-    
-    std::stringstream ss;
-    ss << "Joystick deadzone: " <<  deadzone;
-    ROS_INFO(ss.str().c_str());
-    ROS_INFO("Opened joystick: %s. Deadzone: %s.", joy_dev.c_str(), ss.str().c_str());
+		}
 
+    ROS_INFO("Opened joystick: %s. Deadzone: %i.", joy_dev.c_str(), deadzone);
 
     while (n.ok()) 
     {
@@ -50,11 +56,13 @@ int main(int argc, char **argv)
 
       int select_val = select(joy_fd+1, &set, NULL, NULL, &tv);
       if (select_val < 0)
-        break; // Joystick is probably closed
+        break; // Joystick is probably closed. Not sure if this case is useful.
 
       if (select_val == 1 && FD_ISSET(joy_fd, &set))
       {
-        read(joy_fd, &event, sizeof(js_event));
+        if (read(joy_fd, &event, sizeof(js_event)) == -1 && errno != EAGAIN)
+					break; // Joystick is probably closed. Definitely occurs.
+
         if (event.type & JS_EVENT_INIT)
           continue;
         switch(event.type)
@@ -83,11 +91,12 @@ int main(int argc, char **argv)
         }
       }
     }
-
-  close(joy_fd);
-  
-  // End while loop
+		close(joy_fd);
+		if (n.ok())
+			ROS_ERROR("Connection to joystick device lost unexpectedly. Will reopen.");
   }
+cleanup:
+	ROS_INFO("Joystick shutting down.");
 
   return 0;
 }
