@@ -14,6 +14,7 @@
   <url>http://www.ros.org/wiki/joy</url>
   <review status="unreviewed" notes=""/>
   <depend package="roscpp"/>
+  <depend package="diagnostic_updater"/>
   <export>
     <cpp cflags="-I${prefix}/msg/cpp" />
   </export>

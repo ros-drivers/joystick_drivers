@@ -9,4 +9,5 @@ for joysticks that are not well supported by a common linux distribution.
   <url>http://ros.org/wiki/joystick_drivers</url>
   <depend stack="ros"/> <!-- roscpp --> 
   <depend stack="common_msgs"/> <!-- geometry_msgs --> 
+  <depend stack="driver_common"/> <!-- geometry_msgs --> 
 </stack>
