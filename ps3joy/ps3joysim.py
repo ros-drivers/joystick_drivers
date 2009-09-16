@@ -36,8 +36,13 @@ class driversim(threading.Thread):
 class joysim(threading.Thread):
     def __init__(self, intr, ctrl):
         threading.Thread.__init__(self)
-        self.ctrl = socket.create_connection(("127.0.0.1", ctrl))
+        print "Starting joystick simulator on ports", intr, "and", ctrl
         self.intr = socket.create_connection(("127.0.0.1", intr))
+        if self.intr == -1:
+            raise "Error creating interrput socket."
+        self.ctrl = socket.create_connection(("127.0.0.1", ctrl))
+        if self.ctrl == -1:
+            raise "Error creating control socket."
         self.active = False
         self.shutdown = False
         self.start()
@@ -51,7 +56,11 @@ class joysim(threading.Thread):
                     self.active = True
                     print "Got activate command"
                 else:
-                    print "Got unknown command"
+                    print "Got unknown command (len=%i)"%len(cmd),
+                    time.sleep(1);
+                    for c in cmd:
+                        print "%x"%ord(c),
+                    print
         print "joyactivate exiting"
 
     def publishstate(self, ax, butt):
@@ -67,7 +76,7 @@ class joysim(threading.Thread):
                         newval = newval + 1
                 buttout.append(newval)
             joy_coding = "!1B2x3B1x4B4x12B15x4H"
-            print buttout, axval
+            #print buttout, axval
             self.intr.send(struct.pack(joy_coding, 161, *(buttout + [0] + axval)))
         else:
             print "Tried to publish while inactive"
@@ -88,7 +97,7 @@ if __name__ == "__main__":
     ds = driversim(intr_in, ctrl_in)
    
     # Give the simulator a chance to get going
-    time.sleep(1)
+    time.sleep(2)
     
     # Call up the simulator telling it which ports to connect to.
     js = joysim(intr_port, ctrl_port)

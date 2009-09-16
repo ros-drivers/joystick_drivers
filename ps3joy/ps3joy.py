@@ -148,7 +148,7 @@ class decoder:
         self.joy.update([0] * 17 + self.axmid)
 
     def run(self, intr, ctrl):
-        activated = false
+        activated = False
         try:
             self.fullstop()
             lastvalidtime = time.time()
@@ -166,7 +166,7 @@ class decoder:
                     #print "Got a frame at ", curtime, 1 / (curtime - lastvalidtime)
                     if not activated:
                         print "Connection activated"
-                        activated = true
+                        activated = True
                     if self.step(intr):
                         lastvalidtime = curtime
         finally:
