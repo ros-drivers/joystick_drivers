@@ -1,21 +1,7 @@
 <package>
   <description brief="wiimote">
-
-     Python encapsulation of Wiimote+ functions.
-     Publishes:
-       - Accelerator reading (~100hz)
-       - Gyro reading (~100hz)
-     Listens to status requests:
-       - LED1_Status ... LED4_Status
-       - Rumble_Status
-       - Battery_Status
-     Commands:
-       - set_LED1(0/1)
-       - set_LED2(0/1)
-       - set_LED3(0/1)
-       - set_LED4(0/1)
-       - set_Rumble(0/1)
-
+    The wiimote package is a python encapsulation of Wiimote+ functions. This allows you to access the accelerometer and gyro data over ROS. As well a providing functions for monitoring the battery, changing the LED status light, and enabling the rumble. 
+    
   </description>
   <author>Andreas Paepcke</author>
   <license>BSD</license>
