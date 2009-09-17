@@ -37,10 +37,12 @@ class joysim(threading.Thread):
     def __init__(self, intr, ctrl):
         threading.Thread.__init__(self)
         print "Starting joystick simulator on ports", intr, "and", ctrl
-        self.intr = socket.create_connection(("127.0.0.1", intr))
+        self.intr = socket.socket()
+        self.intr.connect(("127.0.0.1", intr))
         if self.intr == -1:
             raise "Error creating interrput socket."
-        self.ctrl = socket.create_connection(("127.0.0.1", ctrl))
+        self.ctrl = socket.socket()
+        self.ctrl.connect(("127.0.0.1", ctrl))
         if self.ctrl == -1:
             raise "Error creating control socket."
         self.active = False
