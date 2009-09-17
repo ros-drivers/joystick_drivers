@@ -8,6 +8,8 @@
   <review status="unreviewed" notes=""/>
   <url>http://pr.willowgarage.com/wiki/wiimote</url>
   <rosdep name="python-numpy" />
+  <depend package="geometry_msgs" />
+  <depend package="sensor_msgs" />
   <depend package="rospy"/>
 
 </package>

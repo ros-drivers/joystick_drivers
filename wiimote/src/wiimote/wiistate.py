@@ -29,7 +29,6 @@ import numpy as np
 #---------------
 
 class WIIState(object):
-    
   """Holds the state of a WIIRemote-plus.
 
       The state is passed in and is as communicated
@@ -421,4 +420,3 @@ class GyroReading():
 #    Utility Functions
 #
 #;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
