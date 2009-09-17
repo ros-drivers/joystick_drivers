@@ -112,12 +112,12 @@ if __name__ == "__main__":
     shutdown = False
     while not js.active and not shutdown:
         time.sleep(0.2)
-    js.publishstate(axes2, buttons2)
+    #js.publishstate(axes2, buttons2)
     time.sleep(0.01)
-    js.publishstate(axes3, buttons3)
+    #js.publishstate(axes3, buttons3)
     time.sleep(0.01)
     while not shutdown:
-        js.publishstate(axes1, buttons1)
+        js.publishstate(axes1, buttons2)
         time.sleep(0.01)
         axes1[0] = -axes1[0]
         js.publishstate(axes2, buttons2)
