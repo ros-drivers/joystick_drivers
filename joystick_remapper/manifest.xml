@@ -1,0 +1,13 @@
+<package>
+  <description brief="Remaps joystick buttons and axes.">
+  </description>
+  <author>Blaise Gassend</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/joystick_remapper</url>
+  <depend package="joy"/>
+  <depend package="rospy"/>
+
+</package>
+
+
