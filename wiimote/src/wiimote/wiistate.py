@@ -291,8 +291,9 @@ class WIIReading(object):
         as one vector operation (pairwise for each dimension).
   """
 
-  #_measurement = np.array([0,0,0])
-  #time = None
+  # Private instance vars:
+  #     o _measurement = np.array(3, dtype=numpy.float64)
+  #     o time
 
 
   def __init__(self, xyz, theTime=None):
@@ -306,7 +307,7 @@ class WIIReading(object):
     
     """ 
     self.time = theTime
-    self._measurement = np.array([xyz[X], xyz[Y], xyz[Z]],dtype=np.float32)
+    self._measurement = np.array([xyz[X], xyz[Y], xyz[Z]],dtype=np.float64)
 
   def __getitem__(self, key):
     if key not in (X,Y,Z):
@@ -340,6 +341,11 @@ class WIIReading(object):
 
     return self._measurement / other._measurement
 
+  def scale(self, scaleFactor):
+    """Return a numpy tuple that with X, Y, Z scaled by the given factor."""
+    
+    return self._measurement * scaleFactor
+
 #----------------------------------------
 # Class GyroReading
 #------------------
@@ -353,8 +359,9 @@ class GyroReading():
         +,-,/ to add or subtract readings from each other
         as one vector operation (pairwise for each dimension).
   """
-  # _measurement = np.array([0,0,0])
-  #time = None
+  # Local instance vars:
+  #   o _measurement = np.array(3, dtype=numpy.float64)
+  #   o time 
 
 
   def __init__(self, phiThetaPsi, theTime=None):
@@ -365,11 +372,10 @@ class GyroReading():
     divided into each other. The operations are pairwise over
     phi, theta, and psi. A numpy array of phi,theta,psi is available by
     calling tuple(). The time stamp is available via time().
-    self.time = theTime
-
     """
-    
-    self._measurement = np.array([phiThetaPsi[PHI], phiThetaPsi[THETA], phiThetaPsi[PSI]],dtype=np.float32)
+
+    self.time = theTime
+    self._measurement = np.array([phiThetaPsi[PHI], phiThetaPsi[THETA], phiThetaPsi[PSI]],dtype=np.float64)
     
 
   def __getitem__(self, key):
@@ -404,6 +410,11 @@ class GyroReading():
     """Dividing two readings returns a numpy tuple with components divided pairwise."""
 
     return self._measurement / other._measurement
+
+  def scale(self, scaleFactor):
+    """Return a numpy tuple that with X, Y, Z scaled by the given factor."""
+    
+    return self._measurement * scaleFactor
 
 #;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 #

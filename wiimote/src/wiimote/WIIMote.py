@@ -85,15 +85,18 @@ class WIIMote(object):
                              #  else: (Possibly fractional) seconds between updates
 
    
-  meanAcc = [None, None, None] # Mean x/y/z of most recent accelerometer zeroing
+  meanAcc = [None, None, None]  # Mean x/y/z of most recent accelerometer zeroing
                                 # Elements of the list are AccReading instances
   stdevAcc = [None, None, None] # Stdev x/y/z of most recent accelerometer zeroing
                                 # Elements of the list are AccReading instances
+  varAcc = [None, None, None]   # Variance x/y/z of most recent accelerometer zeroing                    
 
-  meanGyro = [None, None, None] # Mean x/y/z of most recent accelerometer zeroing
+  meanGyro = [None, None, None]  # Mean x/y/z of most recent accelerometer zeroing
                                  # Elements of the list are GyroReading instances
   stdevGyro = [None, None, None] # Stdev x/y/z of most recent accelerometer zeroing
                                  # Elements of the list are GyroReading instances
+  varGyro = [None, None, None]   # Variance x/y/z of most recent accelerometer zeroing                                 
+                                 
 
   # Private constants:
 
@@ -268,6 +271,7 @@ class WIIMote(object):
     
     self.meanAcc = np.vstack(accArrays).mean(axis=0)
     self.stdevAcc = np.vstack(accArrays).std(axis=0)
+    self.varAcc = np.sqrt(self.stdevAcc)
     
     # Same for Gyro readings, but we need to throw out the 
     # first sample, which seems off every time:
@@ -275,6 +279,7 @@ class WIIMote(object):
     gyroArrays = map(lambda wiiReading: wiiReading.tuple(), self._gyroList[1:])
     self.meanGyro = np.vstack(gyroArrays).mean(axis=0)
     self.stdevGyro = np.vstack(gyroArrays).std(axis=0)
+    self.varGyro = np.sqrt(self.stdevGyro)
     
     # Initialize WIIState's gyro zero reading, so that future
     # readings can be corrected when a WIIState is created:

@@ -73,6 +73,27 @@ LED4_ON = 0x08
 
 BATTERY_MAX = 0xD0                  # cwiid.CWIID_BATTERY_MAX
 
+# Turning wiimote accelerator readings from g's to m/sec^2:
+EARTH_GRAVITY = 9.80665             # m/sec^2
+
+# Turning wiimote gyro readings to radians/sec.
+# This scale factor is highly approximate. Procedure:
+#    - Tape Wiimote to center of an office chair seat
+#    - Rotate the chair at approximately constant speed
+#      for 10 seconds. This resulted in 6 chair revolutions
+#    - On average, the Wiimote gyro read 3570 during this
+#      experiment. 
+#    - Speed of chair revolving: 
+#         * One full circle is: 2#pi radians
+#         * Six revolutions = 12pi radians. ==> 12pi rad in 10 sec ==> 1.2pi rad/sec
+#         * => 3570 == 1.2pi
+#         * => x*3570 = 1.2pi
+#         * => x = 1.2pi/3570 (1.2pi = 3.769908)
+#         * => scale factor = 0.001055997
+# So multiplying the gyro readings by this factor
+# calibrates the readings to show angular velocity
+# in radians/sec.
+GYRO_SCALE_FACTOR = 0.001055997
 
 # Status type of message from Wii to us:
 WII_MSG_TYPE_STATUS      = 0
