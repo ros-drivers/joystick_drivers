@@ -43,7 +43,7 @@ import WIIMote
 def runWiimoteNode():
     """Initialize the wiimote_node, establishing its name for communication with the Master"""
 
-    rospy.init_node('wiimote', anonymous=True)
+    rospy.init_node('wiimote_node')
     commonLock = threading.Lock()
     try:
         wiimote = WIIMote.WIIMote()
@@ -51,7 +51,7 @@ def runWiimoteNode():
         IMUSender(commonLock, wiimote, freq=1).start()
         JoySender(commonLock, wiimote, freq=1).start()
     except WiimoteError, e:
-        rospy.loginfo(str(e))
+        rospy.logdebug(str(e))
         exit()
 
 class WiimoteDataSender(threading.Thread):
@@ -166,7 +166,7 @@ class IMUSender(WiimoteDataSender):
             
             self.pub.publish(msg)
             
-            rospy.loginfo("IMU accel: " + str(canonicalAccel) + "; IMU angular rate: " + str(canonicalAngleRate))
+            rospy.logdebug("IMU accel: " + str(canonicalAccel) + "; IMU angular rate: " + str(canonicalAngleRate))
             rospy.sleep(self.sleepDuration)
             
 class JoySender(WiimoteDataSender):
@@ -227,7 +227,7 @@ class JoySender(WiimoteDataSender):
             
             self.pub.publish(msg)
             
-            rospy.loginfo("Joy buttons: " + str(theButtons) + "; Joy accel: " + str(canonicalAccel) + "; Joy angular rate: " + str(canonicalAngleRate))
+            rospy.logdebug("Joy buttons: " + str(theButtons) + "; Joy accel: " + str(canonicalAccel) + "; Joy angular rate: " + str(canonicalAngleRate))
             rospy.sleep(self.sleepDuration)            
             
         
