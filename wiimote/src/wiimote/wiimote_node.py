@@ -33,7 +33,7 @@ import rospy
 import geometry_msgs.msg
 from sensor_msgs.msg import Imu
 #***???from joy.msg import Joy
-from msg import Joy
+from joy.msg import Joy
 
 # -------- WIIMote Modules:
 from wiimoteExceptions import *
