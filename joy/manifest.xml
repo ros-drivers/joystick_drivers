@@ -1,7 +1,6 @@
 <package>
   <author>Morgan Quigley, Brian Gerkey, Kevin Watts and Blaise Gassend</author>
   <description brief="ROS driver for a generic Linux joystick.">
-		<p>
 			This package contains joy_node, to interface a generic Linux joystick to ROS.
   </description>
   <license>BSD</license>
