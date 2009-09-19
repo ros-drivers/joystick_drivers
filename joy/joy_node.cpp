@@ -38,6 +38,7 @@ private:
     stat.add("coalesce interval (s)", coalesce_interval_);
     stat.add("recent joystick event rate (Hz)", event_count_ / interval);
     stat.add("recent publication rate (Hz)", pub_count_ / interval);
+    stat.add("subscribers", pub_.getNumSubscribers());
 		event_count_ = 0;
 		pub_count_ = 0;
 		lastDiagTime_ = now;
