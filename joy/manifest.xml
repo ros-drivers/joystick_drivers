@@ -1,14 +1,8 @@
 <package>
-  <author>Morgan Quigley, Brian Gerkey and Kevin Watts</author>
-  <description brief="Monitors a joystick and sends its state">
+  <author>Morgan Quigley, Brian Gerkey, Kevin Watts and Blaise Gassend</author>
+  <description brief="ROS driver for a generic Linux joystick.">
 		<p>
-		This package contains two nodes. The oldest is "joy", maintained only for
-  backwards compatibility. New code and launch files should use "txjoy", which
-	follows the current (0.6) ROS API.
-</p>
-<p>
-	The ps3_joy node uses the PS3 SIXAXIS joystick. This node is very similar to the txjoy node, but the PS3 joystick uses a different default range for its axes. All PS3 joysticks must use this node.
-</p>
+			This package contains joy_node, to interface a generic Linux joystick to ROS.
   </description>
   <license>BSD</license>
   <url>http://www.ros.org/wiki/joy</url>
