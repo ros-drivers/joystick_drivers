@@ -86,7 +86,10 @@ class Remapper:
 
 def get_param_list(name):
     try:
-        return map(int, rospy.get_param(name).split())
+        s = str(rospy.get_param(name));
+        if s == "=":
+            return None # Identity
+        return map(int, s.split())
     except KeyError:
         print "ping"
         rospy.logerr("No %s parameter found. Using identity mapping."%name)
