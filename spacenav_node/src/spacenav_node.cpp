@@ -46,10 +46,10 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "spacenav");
 
   ros::NodeHandle node_handle;
-  ros::Publisher offset_pub = node_handle.advertise<geometry_msgs::Vector3>("/spacenav/offset", 2);
-  ros::Publisher rot_offset_pub = node_handle.advertise<geometry_msgs::Vector3>("/spacenav/rot_offset", 2);
-  ros::Publisher twist_pub = node_handle.advertise<geometry_msgs::Twist>("/spacenav/twist", 2);
-  ros::Publisher joy_pub = node_handle.advertise<joy::Joy>("/spacenav/joy", 2);
+  ros::Publisher offset_pub = node_handle.advertise<geometry_msgs::Vector3>("spacenav/offset", 2);
+  ros::Publisher rot_offset_pub = node_handle.advertise<geometry_msgs::Vector3>("spacenav/rot_offset", 2);
+  ros::Publisher twist_pub = node_handle.advertise<geometry_msgs::Twist>("spacenav/twist", 2);
+  ros::Publisher joy_pub = node_handle.advertise<joy::Joy>("spacenav/joy", 2);
 
   if (spnav_open() == -1)
   {
