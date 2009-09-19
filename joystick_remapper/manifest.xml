@@ -1,5 +1,8 @@
 <package>
-  <description brief="Remaps joystick buttons and axes.">
+	<description brief="Remaps joystick buttons and axes.">
+		This node can be used to remap the buttons and axes of a joystick to
+		get them into a standard form that other nodes can then use
+		independently of which joystick is actually being used.
   </description>
   <author>Blaise Gassend</author>
   <license>BSD</license>
