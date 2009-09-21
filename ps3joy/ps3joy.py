@@ -156,9 +156,8 @@ class decoder:
         self.joy = uinputjoy(buttons, axes, axmin, axmax)
         self.outlen = len(buttons) + len(axes)
 
-    def step(self, sock): # Returns true if the packet was legal
+    def step(self, rawdata): # Returns true if the packet was legal
         joy_coding = "!1B2x3B1x4B4x12B15x4H"
-        rawdata = sock.recv(128)
         if len(rawdata) != 50:
             print >> sys.stderr, "Unexpected packet length (%i). Is this a PS3 Dual Shock or Six Axis?"%len(rawdata)
             return False
@@ -192,17 +191,27 @@ class decoder:
                 if len(rd) + len(wr) + len(err) == 0: # Timeout
                     #print "Activating connection."
                     ctrl.send("\x53\xf4\x42\x03\x00\x00") # Try activating the stream.
-                    if curtime - lastvalidtime >= 0.1: # Zero all outputs if we don't hear a valid frame for 0.1 to 0.2 seconds
-                        self.fullstop()
-                    if curtime - lastvalidtime >= 5: # Disconnect if we don't hear a valid frame for 5 seconds
-                        return
                 else: # Got a frame.
                     #print "Got a frame at ", curtime, 1 / (curtime - lastvalidtime)
                     if not activated:
                         print "Connection activated"
                         activated = True
-                    if self.step(intr):
+                    try:
+                        rawdata = intr.recv(128)
+                    except BluetoothError, s:
+                        print "Got Bluetooth error %s. Disconnecting."%s
+                        return
+                    if len(rawdata) == 0: # Orderly shutdown of socket
+                        print "Joystick shut down the connection, battery may be discharged."
+                        return
+                    if self.step(rawdata):
                         lastvalidtime = curtime
+                if curtime - lastvalidtime >= 0.1: # Zero all outputs if we don't hear a valid frame for 0.1 to 0.2 seconds
+                    self.fullstop()
+                if curtime - lastvalidtime >= 5: # Disconnect if we don't hear a valid frame for 5 seconds
+                    print "No valid data for 5 seconds. Disconnecting. This should not happen, please report it."
+                    return
+                time.sleep(0.005) # No need to blaze through the loop when there is an error
         finally:
             self.fullstop()
 
@@ -258,7 +267,7 @@ class connection_manager:
                     try:
                         if idev == cdev:
                             self.decoder.run(intr, ctrl)
-                            print "Connection lost."
+                            print "Connection terminated."
                         else:
                             print >> sys.stderr, "Simultaneous connection from two different devices. Ignoring both."
                     finally:
