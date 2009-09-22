@@ -131,6 +131,10 @@ class uinputjoy:
                 os.write(self.file, struct.pack(input_event, th, tl, self.type[i], self.code[i], value[i]))
         self.value = list(value)
 
+class BadJoystickException(Exception):
+    def __init__(self):
+        Exception.__init__(self, "Unsupported joystick.")
+
 class decoder:
     def __init__(self):
         #buttons=[uinput.BTN_SELECT, uinput.BTN_THUMBL, uinput.BTN_THUMBR, uinput.BTN_START, 
@@ -175,7 +179,7 @@ class decoder:
         elif len(rawdata) == 13:
             #print list(rawdata)
             print >> sys.stderr, "Your bluetooth adapter is not supported. Does it support Bluetooth 2.0? Please report its model to blaise@willowgarage.com"
-            raise Exception("Unsupported device.")
+            raise BadJoystickException()
         else:
             print >> sys.stderr, "Unexpected packet length (%i). Is this a PS3 Dual Shock or Six Axis?"%len(rawdata)
             return False
@@ -276,7 +280,9 @@ class connection_manager:
                     finally:
                         ctrl.close()
                 finally:
-                    intr.close()
+                    intr.close()        
+            except BadJoystickException:
+                pass
             except KeyboardInterrupt:
                 print "CTRL+C detected. Exiting."
                 quit(0)
@@ -284,6 +290,7 @@ class connection_manager:
                 traceback.print_exc()
                 print >> sys.stderr, "Caught exception: %s"%str(e)
                 time.sleep(1)
+            print
 
 if __name__ == "__main__":
     try:
