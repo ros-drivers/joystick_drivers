@@ -34,6 +34,9 @@
 #*  POSSIBILITY OF SUCH DAMAGE.
 #***********************************************************
 
+##\author Blaise Gassend
+##\brief Remaps joystick buttons to allow different joystick to command a single node
+
 import roslib
 roslib.load_manifest('joystick_remapper')
 import rospy
@@ -61,6 +64,7 @@ def str_mapping(mapping):
     else:
         return "".join("%i->%i "%(mapping[i], i) for i in range(0, len(mapping)))
 
+##\brief Subscribes to input, maps and publishes to output topic
 class Remapper:
     def __init__(self, button_mapping, axis_mapping):
         rospy.Subscriber("joy_source", Joy, self.callback)
@@ -84,6 +88,7 @@ class Remapper:
             self.warned = True
             rospy.logwarn("Out of range remapping. Setting to zero. Joystick has %i buttons and %i axes.")%(len(inmsg.buttons), len(inmsg.axes))
 
+##\brief Gives parameters as a list. Ex. input: "0 2 8"
 def get_param_list(name):
     try:
         s = str(rospy.get_param(name));
@@ -91,7 +96,6 @@ def get_param_list(name):
             return None # Identity
         return map(int, s.split())
     except KeyError:
-        print "ping"
         rospy.logerr("No %s parameter found. Using identity mapping."%name)
         return None
     except ValueError:
