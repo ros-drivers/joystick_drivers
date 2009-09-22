@@ -157,25 +157,27 @@ class decoder:
         self.outlen = len(buttons) + len(axes)
 
     def step(self, rawdata): # Returns true if the packet was legal
-        joy_coding = "!1B2x3B1x4B4x12B15x4H"
-        if len(rawdata) != 50:
+        if len(rawdata) == 50:
+            joy_coding = "!1B2x3B1x4B4x12B15x4H"
+            data = list(struct.unpack(joy_coding, rawdata))
+            prefix = data.pop(0)
+            if prefix != 161:
+                print >> sys.stderr, "Unexpected prefix (%i). Is this a PS3 Dual Shock or Six Axis?"%prefix
+                return False
+            out = []
+            for j in range(0,2):
+                curbyte = data.pop(0)
+                for k in range(0,8):
+                    out.append(int((curbyte & (1 << k)) != 0))
+            out = out + data
+            self.joy.update(out)
+            return True
+        elif len(rawdata) == 13:
+            print >> sys.stderr, "Your bluetooth adapter is not supported. Please report its model to blaise@willowgarage.com"
+            return False
+        else:
             print >> sys.stderr, "Unexpected packet length (%i). Is this a PS3 Dual Shock or Six Axis?"%len(rawdata)
             return False
-        data = list(struct.unpack(joy_coding, rawdata))
-        prefix = data.pop(0)
-        if prefix != 161:
-            print >> sys.stderr, "Unexpected prefix (%i). Is this a PS3 Dual Shock or Six Axis?"%prefix
-            return False
-        out = []
-        for j in range(0,2):
-            curbyte = data.pop(0)
-            for k in range(0,8):
-                out.append(int((curbyte & (1 << k)) != 0))
-#        for j in range(2,23):
-#            out.append(data.pop(0))
-        out = out + data
-        self.joy.update(out)
-        return True
 
     def fullstop(self):
         self.joy.update([0] * 17 + self.axmid)
