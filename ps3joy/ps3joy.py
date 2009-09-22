@@ -173,8 +173,9 @@ class decoder:
             self.joy.update(out)
             return True
         elif len(rawdata) == 13:
-            print >> sys.stderr, "Your bluetooth adapter is not supported. Please report its model to blaise@willowgarage.com"
-            return False
+            #print list(rawdata)
+            print >> sys.stderr, "Your bluetooth adapter is not supported. Does it support Bluetooth 2.0? Please report its model to blaise@willowgarage.com"
+            raise Exception("Unsupported device.")
         else:
             print >> sys.stderr, "Unexpected packet length (%i). Is this a PS3 Dual Shock or Six Axis?"%len(rawdata)
             return False
