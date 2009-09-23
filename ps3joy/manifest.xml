@@ -6,7 +6,7 @@
 	starts the joystick streaming data, and passes the data to the linux
 	uinput device so that it shows up as a normal joystick.
 	</description>
-  <author>Blaise Gassend</author>
+  <author>Blaise Gassend and pascal@pabr.org</author>
   <license>BSD</license>
 
   <review status="unreviewed" notes=""/>
