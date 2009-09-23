@@ -46,6 +46,9 @@ extract_warn = False
 
 def extract(list, index):
     global extarct_warn
+    if index == -1:
+        return 0
+
     try:
         return list[index]
     except:
