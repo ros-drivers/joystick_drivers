@@ -54,6 +54,7 @@ class WIIState(object):
                            being sensed. Keys are:
                                    IR1, IR2, IR3, IR4
                            Values are 1/0
+        o motionPlusPresent True if a gyro Motion+ is plugged into the Wiimote. Else False
   
       Public methods:
         o setAccelerometerCalibration   Bias setting for accelerometer. This triplet is used to
@@ -78,6 +79,7 @@ class WIIState(object):
     self.IRSources = {IR1:None, IR2:None, IR3:None, IR4:None}
     self.battery = None
     self.angleRate = None
+    self.motionPlusPresent = False
     self.buttons   = {BTN_1: False, BTN_2: False, BTN_PLUS: False,
                       BTN_MINUS: False, BTN_A: False, BTN_B: False,
                       BTN_UP: False, BTN_DOWN: False, BTN_LEFT: False,
@@ -156,6 +158,8 @@ class WIIState(object):
                 self.angleRate = GyroReading(self.rawAngleRate - self._gyroZeroReading, self.time)
             else:
                 self.angleRate = GyroReading(self.rawAngleRate, self.time)
+                
+            self.motionPlusPresent = True
 
         continue
        

@@ -34,6 +34,10 @@ from math import *
 import cwiid
 import numpy as np
 
+# ROS modules:
+
+import rospy
+
 # Wiimote modules:
 
 from wiiutils import *
@@ -145,15 +149,16 @@ class WIIMote(object):
     """
 
     self.wiiStateLock = wiiStateLock
-    promptUsr("Press both buttons to pair (within 6 seconds).")
+    
+    promptUsr("Press buttons 1 and 2 together to pair (within 6 seconds).")
 
     try:
       self._wm = cwiid.Wiimote()
     except RuntimeError:
       raise WiimoteNotFoundError("No Wiimote found to pair with.")
-      exit
+      exit()
 
-    report("Pairing successful.")
+    rospy.loginfo("Pairing successful.")
 
     try:
       self._wm.enable(cwiid.FLAG_MOTIONPLUS)
@@ -182,7 +187,7 @@ class WIIMote(object):
     time.sleep(0.2)
     self._wiiCallbackStack.push(self._steadyStateCallback)
 
-    report("Wimotion activated.")
+    rospy.loginfo("Wimotion activated.")
 
 
   #----------------------------------------
@@ -274,16 +279,24 @@ class WIIMote(object):
     self.varAcc = np.sqrt(self.stdevAcc)
     
     # Same for Gyro readings, but we need to throw out the 
-    # first sample, which seems off every time:
+    # first sample, which seems off every time. If there are
+    # fewer than 2 readings, we conclude that there is a 
+    # problem with the motion+
     
-    gyroArrays = map(lambda wiiReading: wiiReading.tuple(), self._gyroList[1:])
-    self.meanGyro = np.vstack(gyroArrays).mean(axis=0)
-    self.stdevGyro = np.vstack(gyroArrays).std(axis=0)
-    self.varGyro = np.sqrt(self.stdevGyro)
     
-    # Initialize WIIState's gyro zero reading, so that future
-    # readings can be corrected when a WIIState is created:
-    wiistate.WIIState.setGyroCalibration(self.meanGyro)
+    if len(self._gyroList) > 2:
+        gyroArrays = map(lambda wiiReading: wiiReading.tuple(), self._gyroList[1:])
+        self.meanGyro = np.vstack(gyroArrays).mean(axis=0)
+        self.stdevGyro = np.vstack(gyroArrays).std(axis=0)
+        self.varGyro = np.sqrt(self.stdevGyro)
+
+        # Initialize WIIState's gyro zero reading, so that future
+        # readings can be corrected when a WIIState is created:
+        wiistate.WIIState.setGyroCalibration(self.meanGyro)
+    else:
+        # Maybe a warning here? An error?
+        pass
+    
 
     # Restore the callback that was in force before zeroing:
     self._wiiCallbackStack.pop()
