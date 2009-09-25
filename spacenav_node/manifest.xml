@@ -2,7 +2,7 @@
   <description brief="Spacenav Node">
     A node for publishing the state of the Space Navigator 6DOF joystick
   </description>
-  <author>Stuart Glaser sglaser@willowgarage.com</author>
+  <author>Stuart Glaser sglaser@willowgarage.com, Blaise Gassend</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <depend package="roscpp" />
