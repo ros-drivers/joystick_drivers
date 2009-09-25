@@ -22,8 +22,6 @@ import numpy as np
 #import matplotlib as mpl
 #import matplotlib.pyplot as ppl
 
-
-
 #----------------------------------------
 # Class WIIState
 #---------------
@@ -78,15 +76,17 @@ class WIIState(object):
     self.rumble = theRumble
     self.IRSources = {IR1:None, IR2:None, IR3:None, IR4:None}
     self.battery = None
+    self.acc = None
+    self.accRaw = None
     self.angleRate = None
+    self.angleRate = None
+    self.angleRageRaw = None
     self.motionPlusPresent = False
     self.buttons   = {BTN_1: False, BTN_2: False, BTN_PLUS: False,
                       BTN_MINUS: False, BTN_A: False, BTN_B: False,
                       BTN_UP: False, BTN_DOWN: False, BTN_LEFT: False,
                       BTN_RIGHT: False, BTN_HOME: False}
-    self.accRaw = None
-    self.angleRate = None
-    
+        
     # Handle buttons on the WII
     # A zero means no button is down.
 
@@ -124,7 +124,7 @@ class WIIState(object):
         if self._accCalibrationZero is not None and self._accCalibrationOne is not None:
             self.acc = WIIReading((self.accRaw - self._accCalibrationZero) / (self._accCalibrationOne - self._accCalibrationZero), self.time)
         else:
-            self.acc = self.accRaw
+            self.acc = WIIReading(self.accRaw, self.time)
 
         continue
 
@@ -153,11 +153,11 @@ class WIIState(object):
             # If this class knows about a zero-movement reading for the
             # gyro, subtract that reading from the raw measurement:
             
-            self.rawAngleRate = gyroDict['angle_rate']
+            self.angleRateRaw = gyroDict['angle_rate']
             if self._gyroZeroReading is not None:
-                self.angleRate = GyroReading(self.rawAngleRate - self._gyroZeroReading, self.time)
+                self.angleRate = GyroReading(self.angleRateRaw - self._gyroZeroReading, self.time)
             else:
-                self.angleRate = GyroReading(self.rawAngleRate, self.time)
+                self.angleRate = GyroReading(self.angleRateRaw, self.time)
                 
             self.motionPlusPresent = True
 

@@ -27,6 +27,7 @@
 import operator
 import time
 import sys
+import threading
 from math import *
 
 # Third party modules:
@@ -62,7 +63,7 @@ import wiistate
 
 
 class WIIMote(object):
-  """Main class for Wiimote.
+  """Main class for Wiimote device interaction.
   
   This class should be a singleton, or it should have
   only class members/methods.
@@ -105,6 +106,8 @@ class WIIMote(object):
   # Private constants:
 
   _NUM_ZEROING_READINGS = 10 # Number of readings to take for zeroing acc and gyro
+  _NUM_WARMUP_READINGS =  10 # Number of readings to throw away initially so that
+                             # the gyro starts providing data.
 
   # Private vars:
 
@@ -140,17 +143,21 @@ class WIIMote(object):
         theSampleRate: How often to update the instance's wiiMoteState variable:
             theSampleRate= -1: never
             theSampleRate=  0: as often as possible
-            theSampleRate=  x: every x seconds
-        
-        wiiStateLock: If other than None, this parameter is a threading.Lock instance.
-                      If provided, wiiMoteState is only updated after acquiring that
-                      lock. We wait for that lock here. So other threads should only 
-                      acquire the lock for short periods of time.
+            theSampleRate=  x: every x seconds   
     """
 
-    self.wiiStateLock = wiiStateLock
+    # Create a threading.Lock instance.
+    # The instance variable wiiMoteState is only updated after acquiring that
+    # lock. This is true for both reading and writing. The same is
+    # true for accesses to: meanAcc, stdevAcc, varAcc, stdevGyro, and varGyro
+    # All such accesses happen w/in this class, b/c we have accessors for
+    # these variables. The lock is used also in method zeroDevice() as 
+    # well, to prevent other threads from retrieving bad values between
+    # the time zeroDevice() begins and ends:
     
-    promptUsr("Press buttons 1 and 2 together to pair (within 6 seconds).")
+    self.wiiStateLock = threading.Lock()
+    
+    promptUsr("Press buttons 1 and 2 together to pair (within 6 seconds).\n    (If no blinking lights, press power button for ~3 seconds.)")
 
     try:
       self._wm = cwiid.Wiimote()
@@ -174,11 +181,12 @@ class WIIMote(object):
     # Enable reports from the WII:
     self._wm.rpt_mode = cwiid.RPT_ACC | cwiid.RPT_MOTIONPLUS | cwiid.RPT_BTN | cwiid.RPT_IR
     
-    # Initialize accelerometer calibration: get the calibration information
+    # Initialize accelerometer zeroing: get the calibration information
     # from the Wiimote. The result consists of a list of lists. The
     # first element is x/y/z of zero, the second element is x/y/z of
     # the reading at one: 
     accCalibration = self.getAccCal()
+    
     # Tell the WIIState factory that all WIIMote state instance creations
     # should correct accelerometer readings automatically: 
     wiistate.WIIState.setAccelerometerCalibration(wiistate.WIIReading(accCalibration[0]), 
@@ -216,19 +224,24 @@ class WIIMote(object):
   def _calibrationCallback(self, state, theTime):
     """Wii's callback destination while zeroing the device."""
 
+    self._warmupCnt += 1
+    if self._warmupCnt < self._NUM_WARMUP_READINGS:
+        return
+
     if self._readingsCnt >= self._NUM_ZEROING_READINGS:
-      return
+        return
 
     thisState = wiistate.WIIState(state, theTime, self.getRumble(), self._wm.state['buttons'])
-
-    # Pull out the accelerometer x,y,z, and build an WIIReading from them:
-    self._accList.append(wiistate.WIIReading(thisState.accRaw))
+    
+    # Pull out the accelerometer x,y,z, accumulate in a list:
+    self._accList.append(thisState.accRaw)
+    
     # Pull out the gyro x,y,z, and build a GyroReading from them.
     # For a few cycles, the Wiimote does not deliver gyro info.
     # When it doesn't, we get a 'None' is unsubscriptable. Ignore 
     # those initial instabilities:
     try:
-        self._gyroList.append(wiistate.GyroReading(thisState.angleRate))
+        self._gyroList.append(thisState.angleRate)
     except TypeError:
         pass
     self._readingsCnt += 1
@@ -238,7 +251,7 @@ class WIIMote(object):
   # zero
   #------------------
 
-  def calibrate(self):
+  def zeroDevice(self):
     """Find the at-rest values of the accelerometer and the gyro.
 
     Collect _NUM_ZEROING_READINGS readings of acc and gyro. Average them.
@@ -246,66 +259,172 @@ class WIIMote(object):
     we conclude that user was moving the device and
     complain. Else the at-rest X,Y,Z are saved in _normalAcc and
     _normalGyro.
-
+    
+    We sleep while the samples are taken. In order to prevent other
+    threads from reading bad values for mean/stdev, and variance, 
+    we lock access to those vars.
     """
 
     self._accList = []
     self._gyroList = []
     self._readingsCnt = 0
-    self._wiiCallbackStack.push(self._calibrationCallback)
+    self._warmupCnt = 0
     
-    while self._readingsCnt < self._NUM_ZEROING_READINGS:
-      time.sleep(.2)
-     
-    self._wiiCallbackStack.pause()
+    try:
+        self.wiiStateLock.acquire()
 
-    # Collected self._NUM_ZEROING_READINGS WIIReading instances for 
-    # accelerometer & gyro.. Average them by building a list of 
-    # all x-coords, one for all y-coords, and one for all z-coords:
+        self._wiiCallbackStack.push(self._calibrationCallback)
+        
+        while (self._readingsCnt < self._NUM_ZEROING_READINGS) or (self._warmupCnt < self._NUM_WARMUP_READINGS):
+          time.sleep(.1)
+         
+        self._wiiCallbackStack.pause()
+    
+        # Collected self._NUM_ZEROING_READINGS WIIReading instances for 
+        # accelerometer & gyro.. Average them by building a list of 
+        # all x-coords, one for all y-coords, and one for all z-coords:
+    
+    
+        # Turn list of acc WIIState objects into list of numpy triplets:
+        #accArrays = map(lambda wiiReading: wiiReading.tuple(), self._accList)
+        accArrays = []
+        for accWiiReading in self._accList:
+            if accWiiReading is not None:
+                accArrays.append(accWiiReading.tuple())
+        
+        # Turn list of numpy triplets into three columns containing
+        # all x, all y, and all z values, respectively:
+        #  [array(10,20,30), array(100,200,300)] ==> [[10   20  30],
+        #                                             [100 200 300]]
+        # and take the means of each column. We will end up
+        # with: [55.0 110.0 165.0]
+        
+        self.meanAcc = np.vstack(accArrays).mean(axis=0)
+        self.stdevAcc = np.vstack(accArrays).std(axis=0)
+        self.varAcc = np.sqrt(self.stdevAcc)
+        
+        # Same for Gyro readings:
+        
+        gyroArrays = []
+        for gyroReading in self._gyroList:
+            if (gyroReading is not None):
+                gyroArrays.append(gyroReading.tuple())
+        
+        if len(gyroArrays) != 0:
+            self.meanGyro = np.vstack(gyroArrays).mean(axis=0)
+            self.stdevGyro = np.vstack(gyroArrays).std(axis=0)
+            self.varGyro = np.sqrt(self.stdevGyro)
 
+            # Initialize WIIState's gyro zero reading, so that future
+            # readings can be corrected when a WIIState is created:
+            wiistate.WIIState.setGyroCalibration(self.meanGyro)
+    
+        # Restore the callback that was in force before zeroing:
+        self._wiiCallbackStack.pop()
 
-    # Turn list of acc WIIState objects into list of numpy triplets:
-    accArrays = map(lambda wiiReading: wiiReading.tuple(), self._accList)
     
-    # Turn list of numpy triplets into three columns containing
-    # all x, all y, and all z values, respectively:
-    #  [array(10,20,30), array(100,200,300)] ==> [[10   20  30],
-    #                                             [100 200 300]]
-    # and take the means of each column. We will end up
-    # with: [55.0 110.0 165.0]
-    
-    self.meanAcc = np.vstack(accArrays).mean(axis=0)
-    self.stdevAcc = np.vstack(accArrays).std(axis=0)
-    self.varAcc = np.sqrt(self.stdevAcc)
-    
-    # Same for Gyro readings, but we need to throw out the 
-    # first sample, which seems off every time. If there are
-    # fewer than 2 readings, we conclude that there is a 
-    # problem with the motion+
-    
-    
-    if len(self._gyroList) > 2:
-        gyroArrays = map(lambda wiiReading: wiiReading.tuple(), self._gyroList[1:])
-        self.meanGyro = np.vstack(gyroArrays).mean(axis=0)
-        self.stdevGyro = np.vstack(gyroArrays).std(axis=0)
-        self.varGyro = np.sqrt(self.stdevGyro)
-
-        # Initialize WIIState's gyro zero reading, so that future
-        # readings can be corrected when a WIIState is created:
-        wiistate.WIIState.setGyroCalibration(self.meanGyro)
-    else:
-        # Maybe a warning here? An error?
-        pass
-    
-
-    # Restore the callback that was in force before zeroing:
-    self._wiiCallbackStack.pop()
+    finally:
+        self.wiiStateLock.release()
 
     # TODO: If stdev too large, throw error
-    
 
     return
 
+ 
+  #----------------------------------------
+  # getWiimoteState
+  #------------------
+
+  def getWiimoteState(self):
+      """Returns the most recent Wiistate instance. Provides proper locking."""
+      
+      return self._getInstanceVarCriticalSection("wiimoteState")
+  
+  #----------------------------------------
+  # getMeanAccelerator
+  #------------------
+
+  def getMeanAccelerator(self):
+      """Accessor that provides locking."""
+      
+      return self._getInstanceVarCriticalSection("meanAcc")
+  
+  #----------------------------------------
+  # getStdevAccelerator
+  #------------------
+
+  def getStdevAccelerator(self):
+      """Accessor that provides locking."""
+      
+      return self._getInstanceVarCriticalSection("stdevAcc")
+ 
+  #----------------------------------------
+  # getVarianceAccelerator
+  #------------------
+
+  def getVarianceAccelerator(self):
+      """Accessor that provides locking."""
+      
+      return self._getInstanceVarCriticalSection("varAcc")
+
+  #----------------------------------------
+  # getMeanGyro
+  #------------------
+
+  def getMeanGyro(self):
+      """Accessor that provides locking."""
+      
+      return self._getInstanceVarCriticalSection("meanGyro")
+  
+  #----------------------------------------
+  # getStdevGyro
+  #------------------
+
+  def getStdevGyro(self):
+      """Accessor that provides locking."""
+      
+      return self._getInstanceVarCriticalSection("stdevGyro")
+ 
+  #----------------------------------------
+  # getVarianceGyro
+  #------------------
+
+  def getVarianceGyro(self):
+      """Accessor that provides locking."""
+      
+      return self._getInstanceVarCriticalSection("varGyro")
+
+ 
+  #----------------------------------------
+  # _getInstanceVarCriticalSection
+  #------------------
+
+  def _getInstanceVarCriticalSection(self, varName):
+      """Return the value of the given instance variable, providing locking service."""
+      
+      try: 
+          self.wiiStateLock.acquire()
+          
+          if varName == "wiimoteState":
+              res = self.wiiMoteState
+          elif varName == "meanAcc":
+              res = self.meanAcc
+          elif varName == "stdevAcc":
+              res = self.stdevAcc
+          elif varName == "varAcc":
+              res = self.varAcc
+          elif varName == "meanGyro":
+              res = self.meanGyro
+          elif varName == "stdevGyro":
+              res = self.stdevGyro
+          elif varName == "varGyro":
+              res = self.varGyro
+          else:
+              raise ValueError("Instance variable name " + str(varName) + "is not under lock control." )
+          
+      finally:
+          self.wiiStateLock.release()
+          return res
  
   #----------------------------------------
   # setRumble
@@ -429,9 +548,6 @@ class WIIMote(object):
 
   def printState(self):
       log(self.wiiMoteState)
-      #**********
-      #report ("Gyro raw: " + `self.wiiMoteState.rawAngleRate` + " Gyro zero: " + `self.wiiMoteState._gyroZeroReading` + " Gyro stdev: " + `self.stdevGyro`)
-      #**********
     
   #----------------------------------------
   # shutdown

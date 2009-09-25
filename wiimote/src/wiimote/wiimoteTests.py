@@ -20,7 +20,7 @@ import numpy as np
 mySampleRate = 1
 try:
   ac = WIIMote.WIIMote(theSampleRate = mySampleRate)
-  ac.calibrate()
+  ac.zeroDevice()
 
   #********************
 #  numSamples = 50

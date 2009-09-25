@@ -23,10 +23,11 @@
 # TODO: Command line option: --no-zeroing
 # TODO: Raw values by default; Add Joy axes for zeroed.
 # TODO: Full Wiimote msg type
+# TODO: When someone starts to listen to imu_data, Wiimote dies with 'required argument is not a float'. See Dev/notes.txt
 
 # -------- Python Standard Modules:
-import threading
 import sys
+import threading
 import traceback
 
 # -------- ROS-Related Modules:
@@ -48,45 +49,44 @@ def runWiimoteNode():
     # and are handled there:
     
     rospy.init_node('wiimote', anonymous=True, log_level=rospy.ERROR) # log_level=rospy.DEBUG
-    commonLock = threading.Lock()
     wiimoteDevice = wiimote.WIIMote.WIIMote()
-    wiimoteDevice.calibrate()
-    IMUSender(commonLock, wiimoteDevice, freq=100).start()
-    JoySender(commonLock, wiimoteDevice, freq=100).start()
+    wiimoteDevice.zeroDevice()
+    IMUSender(wiimoteDevice, freq=100).start()
+    JoySender(wiimoteDevice, freq=100).start()
     
     while not rospy.is_shutdown():
         rospy.spin()
 
 class WiimoteDataSender(threading.Thread):
     
-    def __init__(self, wiiLock, wiiMote, freq=100):
+    def __init__(self, wiiMote, freq=100):
         
         threading.Thread.__init__(self)
-        self.wiiLock = wiiLock
         self.wiiMote = wiiMote
         self.freq = freq
         self.sleepDuration = 1.0 / freq
         
-        self.linear_acceleration_covariance = [self.wiiMote.varAcc[X], 0., 0.,
-                                               0., self.wiiMote.varAcc[Y], 0.,
-                                               0., 0.,  self.wiiMote.varAcc[Z]]
-        
-        self.angular_velocity_covariance = [self.wiiMote.varGyro[X], 0., 0.,
-                                            0., self.wiiMote.varGyro[Y], 0.,
-                                            0., 0.,  self.wiiMote.varGyro[Z]]
+        varianceAccelerator = self.wiiMote.getVarianceAccelerator();
+        self.linear_acceleration_covariance = [varianceAccelerator[X], 0., 0.,
+                                               0., varianceAccelerator[Y], 0.,
+                                               0., 0., varianceAccelerator[Z]]
+
+        varianceGyro = self.wiiMote.getVarianceGyro();
+        self.angular_velocity_covariance = [varianceGyro[X], 0., 0.,
+                                            0., varianceGyro[Y], 0.,
+                                            0., 0., varianceGyro[Z]]
         
         # If no gyro is attached to the Wiimote then we signal
         # the invalidity of angular rate w/ a covariance matrix
         # whose first element is -1:
-        self.gyroAbsence_covariance = [-1, 0., 0.,
+        self.gyroAbsence_covariance = [-1., 0., 0.,
                                        0., 0., 0.,
                                        0., 0., 0.]
     
     def obtainWiimoteData(self):
         """Retrieve one set of Wiimote measurements from the Wiimote instance. Return scaled accelerator and gyro readings.
         
-        We lock self.wiiLock, grab the data, and release the lock.
-        Then we canonicalize both accelerator and gyro data through
+        We canonicalize both accelerator and gyro data through
         scaling them by constants that turn them into m/sec^2, and 
         radians/sec, respectively.
         
@@ -94,10 +94,11 @@ class WiimoteDataSender(threading.Thread):
         """
         
         while not rospy.is_shutdown():
-            self.wiiLock.acquire()
-            self.wiistate = self.wiiMote.wiiMoteState
-            self.wiiLock.release()
-            if self.wiistate is not None and self.wiistate.acc is not None: break
+            self.wiistate = self.wiiMote.getWiimoteState()
+            if self.wiistate is not None and self.wiistate.acc is not None:
+                break
+            else:
+                rospy.sleep(0.1)
             
         return self.canonicalizeWiistate()
         
@@ -122,19 +123,16 @@ class WiimoteDataSender(threading.Thread):
 class IMUSender(WiimoteDataSender):
     """Broadcasting Wiimote accelerator and gyro readings as IMU messages to Topic imu_data"""
     
-    def __init__(self, wiiLock, wiiMote, freq=100):
+    def __init__(self, wiiMote, freq=100):
         """Initializes the Wiimote IMU publisher.
     
         Parameters:
-            wiiLock: a threading.Lock object that will be used by the accelerator data sender,
-                     the gyro data sender, and the Wiimote driver to stay out of each
-                     others' hair.
             wiiMote: a bluetooth-connected, calibrated WIIMote instance
             freq:    the message sending frequency in messages/sec. Max is 100, because
                      the Wiimote only samples the sensors at 100Hz.
         """
         
-        WiimoteDataSender.__init__(self, wiiLock, wiiMote, freq)
+        WiimoteDataSender.__init__(self, wiiMote, freq)
         
         self.pub = rospy.Publisher('imu_data', Imu)        
         
@@ -158,8 +156,8 @@ class IMUSender(WiimoteDataSender):
             (canonicalAccel, canonicalAngleRate) = self.obtainWiimoteData()
             
             msg = Imu(header=None,
-                      orientation=None,                                       # will default to [0.,0.,0.,0],
-                      orientation_covariance=[-1,0.,0.,0.,0.,0.,0.,0.,0],     # -1 indicates that orientation is unknown
+                      orientation=None,                                         # will default to [0.,0.,0.,0],
+                      orientation_covariance=[-1.,0.,0.,0.,0.,0.,0.,0.,0.],     # -1 indicates that orientation is unknown
                       angular_velocity=None,
                       angular_velocity_covariance=self.angular_velocity_covariance,
                       linear_acceleration=None,
@@ -196,19 +194,16 @@ class IMUSender(WiimoteDataSender):
 class JoySender(WiimoteDataSender):
     """Broadcasting Wiimote accelerator and gyro readings as Joy(stick) messages to Topic imu_data"""
     
-    def __init__(self, wiiLock, wiiMote, freq=100):
+    def __init__(self, wiiMote, freq=100):
         """Initializes the Wiimote Joy(stick) publisher.
     
         Parameters:
-            wiiLock: a threading.Lock object that will be used by the accelerator data sender,
-                     the gyro data sender, and the Wiimote driver to stay out of each
-                     others' hair.
             wiiMote: a bluetooth-connected, calibrated WIIMote instance
             freq:    the message sending frequency in messages/sec. Max is 100, because
                      the Wiimote only samples the sensors at 100Hz.
         """
         
-        WiimoteDataSender.__init__(self, wiiLock, wiiMote, freq)
+        WiimoteDataSender.__init__(self, wiiMote, freq)
 
         
         self.pub = rospy.Publisher('joy', Joy)        
@@ -264,7 +259,7 @@ if __name__ == '__main__':
     try:
         runWiimoteNode()
     except KeyboardInterrupt, e:
-        rospy.rospy.loginfo("Received keyboard interrupr.")
+        rospy.rospy.loginfo("Received keyboard interrupt.")
     except WiimoteNotFoundError, e:
         rospy.logfatal(str(e))
     except WiimoteEnableError, e:

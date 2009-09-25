@@ -42,3 +42,4 @@ class ResumeNonPausedError(WiimoteError):
 
 class CallbackStackEmptyError(WiimoteError):
   """Attemp to operate on an empty callback stack."""
+  
