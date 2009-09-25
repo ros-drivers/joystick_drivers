@@ -3,7 +3,8 @@
 
     Open source, unofficial driver for the 3d Connexion Space Navigator.
 		This is a third party package. See the External Documentation for
-		API details.
+		API details. Currently, revision r91 of upstream repository is being
+		used in this package. 
 
   </description>
   <author>John Tsiombikas</author>
