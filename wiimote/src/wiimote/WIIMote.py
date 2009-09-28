@@ -81,6 +81,10 @@ class WIIMote(object):
   
   """
 
+  # Public constants:
+  
+  BATTERY_MAX = cwiid.BATTERY_MAX
+  
   # Public vars:
 
   wiiMoteState = None        # Object holding a snapshot of the Wiimote state
@@ -146,6 +150,8 @@ class WIIMote(object):
             theSampleRate=  x: every x seconds   
     """
 
+    self.lastZeroingTime = 0.
+    
     # Create a threading.Lock instance.
     # The instance variable wiiMoteState is only updated after acquiring that
     # lock. This is true for both reading and writing. The same is
@@ -321,7 +327,7 @@ class WIIMote(object):
     
         # Restore the callback that was in force before zeroing:
         self._wiiCallbackStack.pop()
-
+        self.lastZeroingTime = getTimeStamp()
     
     finally:
         self.wiiStateLock.release()

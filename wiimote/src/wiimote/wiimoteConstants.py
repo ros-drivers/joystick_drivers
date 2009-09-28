@@ -71,7 +71,13 @@ LED2_ON = 0x02
 LED3_ON = 0x04
 LED4_ON = 0x08
 
-BATTERY_MAX = 0xD0                  # cwiid.CWIID_BATTERY_MAX
+# Indices into a two-tuple of info about battery state
+# in wiimote messages:
+#   0: Percentage of battery left.
+#   1: The raw battery reading
+
+BATTERY_PERCENTAGE = 0
+BATTERY_RAW = 1
 
 # Turning wiimote accelerator readings from g's to m/sec^2:
 EARTH_GRAVITY = 9.80665             # m/sec^2
