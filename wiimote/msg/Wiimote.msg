@@ -57,23 +57,14 @@ uint8 rumble
 #----------------------
 # IR Light sensors
 #-----------------------------
-# Each light has a 2D position and
-# a size. If size is set to -1, then no light was 
-# detected, and the respective position value is
-# undefined:
+# Each light has a 2D position
+# If the dimensions are set to -1, then no light was 
+# detected for this light
 
-float32[2] ir1_position
-int32     ir1_size
-
-float32[2] ir2_position
-int32     ir2_size
-
-float32[2] ir3_position
-int32     ir3_size
-
-float32[2] ir4_position
-int32     ir4_size
-
+int32[2] ir1_position
+int32[2] ir2_position
+int32[2] ir3_position
+int32[2] ir4_position
 
 #----------------------
 # Wiimote battery

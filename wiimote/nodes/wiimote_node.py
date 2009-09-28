@@ -51,12 +51,16 @@ def runWiimoteNode():
     rospy.init_node('wiimote', anonymous=True, log_level=rospy.ERROR) # log_level=rospy.DEBUG
     wiimoteDevice = wiimote.WIIMote.WIIMote()
     wiimoteDevice.zeroDevice()
-    IMUSender(wiimoteDevice, freq=100).start()
-    JoySender(wiimoteDevice, freq=100).start()
-    WiiSender(wiimoteDevice, freq=100).start()
-    
-    while not rospy.is_shutdown():
-        rospy.spin()
+    try:
+        IMUSender(wiimoteDevice, freq=100).start()
+        JoySender(wiimoteDevice, freq=100).start()
+        WiiSender(wiimoteDevice, freq=100).start()
+        
+        while not rospy.is_shutdown():
+            rospy.spin()
+    except:
+        wiimoteDevice.shutdown()
+        raise
 
 class WiimoteDataSender(threading.Thread):
     
@@ -308,13 +312,9 @@ class WiiSender(WiimoteDataSender):
                           buttons=[0,0,0,0,0,0,0,0,0,0],
                           rumble=0,
                           LEDs=None,
-                          ir1_size=-1,
                           ir1_position=None,
-                          ir2_size=-1,
                           ir2_position=None,
-                          ir3_size=-1,
                           ir3_position=None,
-                          ir4_size=-1,
                           ir4_position=None,
                           battery=None,
                           zeroing_time=self.wiiMote.lastZeroingTime,
@@ -370,8 +370,27 @@ class WiiSender(WiimoteDataSender):
                 msg.battery[BATTERY_RAW] = batteryRaw
                 msg.battery[BATTERY_PERCENTAGE] = batteryRaw * 100./self.wiiMote.BATTERY_MAX
     
-                #*****msg.ir1_position = ...
-                #*****msg.ir1_size     = ... 
+                irSources = self.wiistate.IRSources
+                
+                if irSources[0] is not None:
+                    msg.ir1_position = irSources[0]['pos']
+                else:
+                    msg.ir1_position = [-1, -1]
+                    
+                if irSources[1] is not None:
+                    msg.ir2_position = irSources[1]['pos']
+                else:
+                    msg.ir2_position = [-1, -1]
+                    
+                if irSources[2] is not None:
+                    msg.ir3_position = irSources[2]['pos']
+                else:
+                    msg.ir3_position = [-1, -1]
+                    
+                if irSources[3] is not None:
+                    msg.ir4_position = irSources[3]['pos']
+                else:
+                    msg.ir4_position = [-1, -1]
                 
                 measureTime = self.wiistate.time
                 timeSecs = int(measureTime)

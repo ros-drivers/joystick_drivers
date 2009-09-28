@@ -74,7 +74,7 @@ class WIIState(object):
     self.time = theTime
     self.ascTime = `theTime`
     self.rumble = theRumble
-    self.IRSources = {IR1:None, IR2:None, IR3:None, IR4:None}
+    self.IRSources = [None, None, None, None]
     self.battery = None
     self.acc = None
     self.accRaw = None
@@ -86,7 +86,7 @@ class WIIState(object):
                       BTN_MINUS: False, BTN_A: False, BTN_B: False,
                       BTN_UP: False, BTN_DOWN: False, BTN_LEFT: False,
                       BTN_RIGHT: False, BTN_HOME: False}
-        
+
     # Handle buttons on the WII
     # A zero means no button is down.
 
@@ -130,14 +130,15 @@ class WIIState(object):
 
       elif msgType == WII_MSG_TYPE_IR:
 
-        # Second list member is a list of 4 elements,
-        # one for each of the Wii LEDs:
+        # Second list member is a list of 4 dictionaries,
+        # one for each of the Wii IR sources:
 
         IRStatus = msgComp[1]
-        self.IRSources[IR1] = IRStatus[0]
-        self.IRSources[IR2] = IRStatus[1]
-        self.IRSources[IR3] = IRStatus[2]
-        self.IRSources[IR4] = IRStatus[3]
+        # IRStatus is an array of four Dicts. Ex: [{'pos': (317, 445)}, None, None, None]
+        self.IRSources[0] = IRStatus[0]
+        self.IRSources[1] = IRStatus[1]
+        self.IRSources[2] = IRStatus[2]
+        self.IRSources[3] = IRStatus[3]
 
         continue
 
