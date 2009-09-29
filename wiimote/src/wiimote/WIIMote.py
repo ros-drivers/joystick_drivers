@@ -437,6 +437,7 @@ class WIIMote(object):
   #------------------
 
   def setRumble(self, switchPos):
+    """Start of stop rumble (i.e. vibration). 1: start; 0: stop""" 
     self._wm.rumble = switchPos
 
 

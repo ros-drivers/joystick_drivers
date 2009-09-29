@@ -56,11 +56,9 @@ def runWiimoteNode():
         IMUSender(wiimoteDevice, freq=100).start()
         JoySender(wiimoteDevice, freq=100).start()
         WiiSender(wiimoteDevice, freq=100).start()
-        
         RumbleListener(wiimoteDevice).start()
         
-        while not rospy.is_shutdown():
-            rospy.spin()
+        rospy.spin()
     except:
         wiimoteDevice.shutdown()
         raise
@@ -414,32 +412,110 @@ class WiiSender(WiimoteDataSender):
             exit(0)
         
 class RumbleListener(threading.Thread):
-    """Listen for request to rumble.
+    """Listen for request to rumble. Subscribes to topic /rumble, listening for TimedSwitch messages.
     
-    This rumble listener subscribes to TimedSwitch messages
-    on topic /rumble. The switch_timer_setting field is either
+    Parameters: The switch_mode field is either
     -1.0 to turn rumble on, zero to turn it off, or a 
-    positive float to run the rumble for the specified
-    number of seconds and then turn off automatically.
+    positive float. If switch_mode is such a positive number,
+    it is taken to be the repeat count for an on/off rumble
+    pattern (see next parameter) 
+    
+    The pulse_pattern is a float32[MAX_RUMBLE_PATTERN_LENGTH],
+    which contains fractional seconds that rumble is to be
+    on or off.
     """    
     
     def __init__(self, wiiMote):
         
         threading.Thread.__init__(self)
-        self.wiiMote = wiiMote      
+        self.wiiMote = wiiMote    
+        self.pulserThread = None  
         
     def run(self):
         
-      def callback(msg):
-        #******************
-        print "Rumble request " + str(msg.switch_timer_setting)
-        #******************
-        rospy.logdebug(rospy.get_caller_id() + "Rumble request " + str(msg.switch_timer_setting))
+      def rumbleSwitchCallback(msg):
+        """Callback for turning rumble on/off, and to initiate pulse rumble."""
+        
+        rospy.loginfo(rospy.get_caller_id() + "Rumble request " + str(msg))
+        
+        # If a rumble pulser thread is running, stop it:
+        if self.pulserThread is not None:
+            self.pulserThread.stop = True 
+            # Wait for the thread to finish what it's doing
+            self.pulserThread.join()
+             
+        if msg.switch_mode == RUMBLE_ON:
+            self.wiiMote.setRumble(True)
+            exit(0)
+        elif msg.switch_mode == RUMBLE_OFF:
+            self.wiiMote.setRumble(False)
+            exit(0)
+            
+        # Client wants to start a rumble pulse sequence:
+        self.pulserThread = RumblePulser(msg.switch_mode, msg.pulse_pattern, self.wiiMote)
+        self.pulserThread.start()
+        
         
       rospy.loginfo("Wiimote rumble listener starting (topic /rumble).")
-      rospy.Subscriber("rumble", TimedSwitch, callback)
+      rospy.Subscriber("rumble", TimedSwitch, rumbleSwitchCallback)
       rospy.spin()
+
+#      try:
+#          while not rospy.is_shutdown():
+#              rospy.sleep(1)
+#              print "alive."
+#      except rospy.ROSInterruptException:
+#          rospy.loginfo("Shutdown request. Shutting down Rumble listener.")
+          
+class RumblePulser(threading.Thread):
+    """Thread for executing rumble pulse patterns."""
+    
+    def __init__(self, thePatternRepeats, theRumblePattern, theWiimoteDevice):
+        """Parameters: number of times the pattern is to be repeated, the MAX_RUMBLE_PATTERN_LENGTH
+        array of on/off times in fractional seconds, and the Wiimote device.
+        """
         
+        threading.Thread.__init__(self)
+        self.rumblePattern = theRumblePattern
+        self.wiimoteDevice = theWiimoteDevice
+        self.patternRepeats = thePatternRepeats
+        self.patternPt = 0
+        self.stop = False
+        
+    def run(self):
+
+        try:
+            while not rospy.is_shutdown() and not self.stop:
+            
+                if self.patternPt >= MAX_RUMBLE_PATTERN_LENGTH:
+                    self.wiimoteDevice.setRumble(False)
+                    exit(0)
+                    
+                nextDuration = self.rumblePattern[self.patternPt]
+                
+                if nextDuration == 0:
+                    # Pattern has ended
+                    self.wiimoteDevice.setRumble(False)
+                    self.patternRepeats -= 1
+                    if self.patternRepeats <= 0:
+                        exit(0)
+                    else:
+                        self.patternPt = 0
+                        nextDuration = self.rumblePattern[0] 
+                if self.wiimoteDevice.getRumble():
+                    self.wiimoteDevice.setRumble(False)
+                else:
+                    self.wiimoteDevice.setRumble(True)
+                    
+                self.patternPt += 1
+                rospy.sleep(nextDuration)
+            exit(0)
+        except rospy.ROSInterruptException:
+            rospy.loginfo("Shutdown request. Shutting down Rumble pulser.")
+            exit(0)
+    
+
+
 if __name__ == '__main__':
     try:
         runWiimoteNode()
@@ -466,4 +542,4 @@ if __name__ == '__main__':
 
     finally:
         rospy.rospy.loginfo("Exiting Wiimote node.")
-        sys.exit()
+        sys.exit(0)

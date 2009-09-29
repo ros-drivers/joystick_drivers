@@ -17,6 +17,10 @@
 _DEBUGLEVEL = 1
 _MONITOR_LEVEL = 1
 
+MAX_RUMBLE_PATTERN_LENGTH = 10
+RUMBLE_ON  = -1
+RUMBLE_OFF = 0
+
 BTN_1       = 0x0002                  # cwiid.CWIID_BTN_1
 BTN_2       = 0x0001                  # cwiid.CWIID_BTN_2
 BTN_B       = 0x0004                  # cwiid.CWIID_BTN_B
