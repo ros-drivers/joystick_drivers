@@ -62,7 +62,7 @@ class uinputjoy:
                 pass
         return None
 
-    def __init__(self, buttons, axes, axmin, axmax):
+    def __init__(self, buttons, axes, axmin, axmax, axfuzz, axflat):
         self.file = self.open_uinput()
         if self.file == None:
             print >> sys.stderr, "Trying to modprobe uinput."
@@ -98,6 +98,8 @@ class uinputjoy:
         for i in range(0, len(axes)):
             absmin[axes[i]] = axmin[i]
             absmax[axes[i]] = axmax[i]
+            absfuzz[axes[i]] = axfuzz[i]
+            absflat[axes[i]] = axflat[i]
 
         os.write(self.file, struct.pack(uinput_user_dev, "Sony Playstation SixAxis/DS3",
             uinput.BUS_USB, 0x054C, 0x0268, 0, 0, *(absmax + absmin + absfuzz + absflat)))
@@ -152,12 +154,14 @@ class decoder:
         axes = range(0, 20)
         axmin = [0] * 20
         axmax = [255] * 20
-        axmax[-4] = 8191
-        axmax[-3] = 8191
-        axmax[-2] = 8191
-        axmax[-1] = 8191
+        axfuzz = [2] * 20
+        axflat = [4] * 20
+        for i in range(-4,0):
+            axmax[i] = 1023
+            axfuzz[i] = 4
+            axflat[i] = 4
         self.axmid = [sum(pair)/2 for pair in zip(axmin, axmax)]
-        self.joy = uinputjoy(buttons, axes, axmin, axmax)
+        self.joy = uinputjoy(buttons, axes, axmin, axmax, axfuzz, axflat)
         self.outlen = len(buttons) + len(axes)
 
     def step(self, rawdata): # Returns true if the packet was legal
@@ -175,6 +179,7 @@ class decoder:
                     out.append(int((curbyte & (1 << k)) != 0))
             out = out + data
             self.joy.update(out)
+            print out
             return True
         elif len(rawdata) == 13:
             #print list(rawdata)
