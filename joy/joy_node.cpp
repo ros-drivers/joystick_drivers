@@ -117,7 +117,7 @@ public:
       ROS_WARN("joy_node: deadzone_ (%f) less than 0, setting to 0.", deadzone_);
       deadzone_ = 0;
     }
-    
+
     if (autorepeat_rate_ < 0)
     {
       ROS_WARN("joy_node: autorepeat_rate (%f) less than 0, setting to 0.", autorepeat_rate_);
@@ -133,7 +133,8 @@ public:
     // Parameter conversions
     double autorepeat_interval = 1 / autorepeat_rate_;
     double scale = -1. / (1. - deadzone_) / 32767.;
-    
+    double unscaled_deadzone = 32767. * deadzone_;
+
     js_event event;
     struct timeval tv;
     fd_set set;
@@ -243,15 +244,15 @@ public:
                 joy_msg.axes[i] = 0.0;
             }
             {
-              double val = scale * event.value;
+              double val = event.value;
               // Allows deadzone to be "smooth"
-              if (val > deadzone_)
-                val -= deadzone_;
-              else if (val < -deadzone_)
-                val += deadzone_;
+              if (val > unscaled_deadzone)
+                val -= unscaled_deadzone;
+              else if (val < -unscaled_deadzone)
+                val += unscaled_deadzone;
               else
                 val = 0;
-              joy_msg.axes[event.number] = val;
+              joy_msg.axes[event.number] = val * scale;
             }
             // Will wait a bit before sending to try to combine events. 				
             publish_soon = true;
