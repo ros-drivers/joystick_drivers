@@ -152,9 +152,9 @@ class decoder:
         axes = range(0, 20)
         axmin = [0] * 20
         axmax = [255] * 20
-        axmax[-1] = 8191
-        axmax[-1] = 8191
-        axmax[-1] = 8191
+        axmax[-4] = 8191
+        axmax[-3] = 8191
+        axmax[-2] = 8191
         axmax[-1] = 8191
         self.axmid = [sum(pair)/2 for pair in zip(axmin, axmax)]
         self.joy = uinputjoy(buttons, axes, axmin, axmax)
