@@ -179,7 +179,6 @@ class decoder:
                     out.append(int((curbyte & (1 << k)) != 0))
             out = out + data
             self.joy.update(out)
-            print out
             return True
         elif len(rawdata) == 13:
             #print list(rawdata)
