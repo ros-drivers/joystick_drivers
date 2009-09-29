@@ -36,6 +36,7 @@ from geometry_msgs.msg import Vector3
 from sensor_msgs.msg import Imu
 from joy.msg import Joy
 from wiimote.msg import Wiimote
+from wiimote.msg import TimedSwitch
 
 # -------- WIIMote Modules:
 from wiimote.wiimoteExceptions import *
@@ -55,6 +56,8 @@ def runWiimoteNode():
         IMUSender(wiimoteDevice, freq=100).start()
         JoySender(wiimoteDevice, freq=100).start()
         WiiSender(wiimoteDevice, freq=100).start()
+        
+        RumbleListener(wiimoteDevice).start()
         
         while not rospy.is_shutdown():
             rospy.spin()
@@ -409,6 +412,33 @@ class WiiSender(WiimoteDataSender):
         except rospy.ROSInterruptException:
             rospy.loginfo("Shutdown request. Shutting down Wiimote sender.")
             exit(0)
+        
+class RumbleListener(threading.Thread):
+    """Listen for request to rumble.
+    
+    This rumble listener subscribes to TimedSwitch messages
+    on topic /rumble. The switch_timer_setting field is either
+    -1.0 to turn rumble on, zero to turn it off, or a 
+    positive float to run the rumble for the specified
+    number of seconds and then turn off automatically.
+    """    
+    
+    def __init__(self, wiiMote):
+        
+        threading.Thread.__init__(self)
+        self.wiiMote = wiiMote      
+        
+    def run(self):
+        
+      def callback(msg):
+        #******************
+        print "Rumble request " + str(msg.switch_timer_setting)
+        #******************
+        rospy.logdebug(rospy.get_caller_id() + "Rumble request " + str(msg.switch_timer_setting))
+        
+      rospy.loginfo("Wiimote rumble listener starting (topic /rumble).")
+      rospy.Subscriber("rumble", TimedSwitch, callback)
+      rospy.spin()
         
 if __name__ == '__main__':
     try:
