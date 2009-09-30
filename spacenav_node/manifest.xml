@@ -1,6 +1,6 @@
 <package>
-  <description brief="Spacenav Node">
-    A node for publishing the state of the Space Navigator 6DOF joystick
+  <description brief="Node for the 3Dconnection SpaceNavigator">
+    A node for publishing the state of the 3Dconnection SpaceNavigator 6DOF joystick.
   </description>
   <author>Stuart Glaser sglaser@willowgarage.com, Blaise Gassend</author>
   <license>BSD</license>
