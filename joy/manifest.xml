@@ -1,7 +1,7 @@
 <package>
   <author>Morgan Quigley, Brian Gerkey, Kevin Watts and Blaise Gassend</author>
   <description brief="ROS driver for a generic Linux joystick.">
-    The joy package contains joy_node, to interface a generic Linux joystick to ROS. It publishes a "Joy" message, with buttons and axes for the joystick. 
+    The joy package contains joy_node, a node that interface a generic Linux joystick to ROS. This node publishes a "Joy" message, which contains the current state of each one of the joystick's buttons and axes.
   </description>
   <license>BSD</license>
   <url>http://www.ros.org/wiki/joy</url>
