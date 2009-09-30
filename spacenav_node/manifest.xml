@@ -1,5 +1,5 @@
 <package>
-  <description brief="Node for the 3Dconnection SpaceNavigator">
+  <description brief="Node for the 3Dconnexion SpaceNavigator">
     A node for publishing the state of the 3Dconnexion SpaceNavigator 6DOF joystick.
   </description>
   <author>Stuart Glaser sglaser@willowgarage.com, Blaise Gassend</author>
