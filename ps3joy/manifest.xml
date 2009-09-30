@@ -1,6 +1,6 @@
 <package>
   <description brief="Playstation 3 SIXAXIS or DUAL SHOCK 3 joystick driver.">
-	Driver for the Sony Playstation 3 SIXAXIS or DUAL SHOCK 3 joysticks. In
+	Driver for the Sony PlayStation 3 SIXAXIS or DUAL SHOCK 3 joysticks. In
 	its current state, this driver is not compatible with the use of other
 	Bluetooth HID devices. The driver listens for a connection on the HID ports,
 	starts the joystick streaming data, and passes the data to the Linux
