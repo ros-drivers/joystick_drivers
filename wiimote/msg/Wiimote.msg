@@ -61,10 +61,8 @@ uint8 rumble
 # If the dimensions are set to -1, then no light was 
 # detected for this light
 
-int32[2] ir1_position
-int32[2] ir2_position
-int32[2] ir3_position
-int32[2] ir4_position
+geometry_msgs/Point[4] ir_positions
+int64[4] ir_sizes
 
 #----------------------
 # Wiimote battery

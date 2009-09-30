@@ -42,10 +42,6 @@ THETA   = 1
 PSI     = 2
 
 
-IR1       = 'ir1'
-IR2       = 'ir2'
-IR3       = 'ir3'
-
 BTN_1       = 0x0002                  # cwiid.CWIID_BTN_1
 BTN_2       = 0x0001                  # cwiid.CWIID_BTN_2
 BTN_B       = 0x0004                  # cwiid.CWIID_BTN_B
@@ -65,6 +61,7 @@ NORM_X    = 'normX'
 NORM_Y    = 'normY'
 NORM_Z    = 'normZ'
 
+NUM_IR_SENSORS = 4
 IR1       = 'ir1'
 IR2       = 'ir2'
 IR3       = 'ir3'

@@ -33,6 +33,7 @@ import traceback
 import roslib; roslib.load_manifest('wiimote')
 import rospy
 from geometry_msgs.msg import Vector3
+from geometry_msgs.msg import Point
 from sensor_msgs.msg import Imu
 from joy.msg import Joy
 from wiimote.msg import Wiimote
@@ -313,10 +314,7 @@ class WiiSender(WiimoteDataSender):
                           buttons=[0,0,0,0,0,0,0,0,0,0],
                           rumble=0,
                           LEDs=None,
-                          ir1_position=None,
-                          ir2_position=None,
-                          ir3_position=None,
-                          ir4_position=None,
+                          ir_positions=None,
                           battery=None,
                           zeroing_time=self.wiiMote.lastZeroingTime,
                           errors=0)
@@ -373,25 +371,30 @@ class WiiSender(WiimoteDataSender):
     
                 irSources = self.wiistate.IRSources
                 
-                if irSources[0] is not None:
-                    msg.ir1_position = irSources[0]['pos']
-                else:
-                    msg.ir1_position = [-1, -1]
-                    
-                if irSources[1] is not None:
-                    msg.ir2_position = irSources[1]['pos']
-                else:
-                    msg.ir2_position = [-1, -1]
-                    
-                if irSources[2] is not None:
-                    msg.ir3_position = irSources[2]['pos']
-                else:
-                    msg.ir3_position = [-1, -1]
-                    
-                if irSources[3] is not None:
-                    msg.ir4_position = irSources[3]['pos']
-                else:
-                    msg.ir4_position = [-1, -1]
+                for irSensorIndx in range(NUM_IR_SENSORS):
+                    if irSources[irSensorIndx] is not None:
+                        # Did hardware deliver IR source position for this IR sensor?
+                        try:
+                          pos  = irSources[irSensorIndx]['pos']
+                        except KeyError:
+                            # If no position information from this IR sensor, use -1 for the dimensions:
+                            msg.ir_positions[irSensorIndx] = Point(-1, -1, -1)
+                        else:
+                            # Have IR position info from this IR sensor. We use the 3D Point
+                            # message and set the z-dimension to -1:
+                            msg.ir_positions[irSensorIndx] = Point(pos[0], pos[1], -1)
+                            
+                            # Same exercise for the IR source size measurement that the Wii driver might provide:
+                            try: 
+                                size = irSources[irSensorIndx]['size']
+                            except KeyError:
+                                # If the driver did not deliver size information, indicate by using -1:
+                                msg.ir_sizes[irSensorIndx] = -1
+                            else:
+                                msg.ir_sizes[irSensorIndx] = size
+                    else:
+                        msg.ir_positions[irSensorIndx] = Point(-1, -1, -1)
+                        msg.ir_sizes[irSensorIndx] = -1
                 
                 measureTime = self.wiistate.time
                 timeSecs = int(measureTime)
@@ -404,7 +407,7 @@ class WiiSender(WiimoteDataSender):
                 rospy.logdebug("Wiimote state:")
                 rospy.logdebug("    Accel: " + str(canonicalAccel) + "\n    Angular rate: " + str(canonicalAngleRate))
                 rospy.logdebug("    Rumble: " + str(msg.rumble) + "\n    Battery: [" + str(msg.battery[0]) + "," + str(msg.battery[1]))
-                rospy.logdebug("    IR1 position: " + str(msg.ir1_position) + " IR1 size: " + str(msg.ir1_position))
+                rospy.logdebug("    IR positions: " + str(msg.ir_positions) + " IR sizes: " + str(msg.ir_sizes))
                                 
                 rospy.sleep(self.sleepDuration)
         except rospy.ROSInterruptException:
