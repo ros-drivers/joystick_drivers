@@ -1,8 +1,8 @@
 <package>
   <description brief="Spacenav driver and SDK">
 
-    Open source, unofficial driver for the 3d Connexion Space Navigator.
-		This is a third party package. See the External Documentation for
+    Open source, unofficial driver for the 3Dconnexion SpaceNavigator.
+		This is a third party package. See the "External Documentation" for
 		API details. Currently, revision r91 of upstream repository is being
 		used in this package. 
 
