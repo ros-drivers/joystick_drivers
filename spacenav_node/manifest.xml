@@ -2,9 +2,9 @@
   <description brief="Node for the 3Dconnexion SpaceNavigator">
     A node for publishing the state of the 3Dconnexion SpaceNavigator 6DOF joystick.
   </description>
-  <author>Stuart Glaser sglaser@willowgarage.com, Blaise Gassend</author>
+  <author>Stuart Glaser, Blaise Gassend</author>
   <license>BSD</license>
-  <review status="unreviewed" notes=""/>
+  <review status="Doc reviwed" notes="reviewed 10-1-2009"/>
   <depend package="roscpp" />
   <depend package="spacenav" />
   <depend package="joy" />

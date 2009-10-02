@@ -9,7 +9,7 @@
   <author>Blaise Gassend and pascal@pabr.org</author>
   <license>BSD</license>
 
-  <review status="unreviewed" notes=""/>
+  <review status="Doc reviewed" notes="reviewed 10-1-2009"/>
   <depend package="roscpp"/>
   <depend package="joy"/>
   <url>http://www.ros.org/wiki/ps3joy</url>

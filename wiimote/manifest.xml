@@ -5,7 +5,7 @@
   </description>
   <author>Andreas Paepcke</author>
   <license>BSD</license>
-  <review status="unreviewed" notes=""/>
+  <review status="experimental" notes=""/>
   <url>http://pr.willowgarage.com/wiki/wiimote</url>
   <rosdep name="python-numpy" />
   <depend package="geometry_msgs" />

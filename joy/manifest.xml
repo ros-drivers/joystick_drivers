@@ -5,7 +5,7 @@
   </description>
   <license>BSD</license>
   <url>http://www.ros.org/wiki/joy</url>
-  <review status="unreviewed" notes=""/>
+  <review status="Doc reviewed" notes="reviewed 10-1-2009"/>
   <depend package="roscpp"/>
   <depend package="diagnostic_updater"/>
   <export>

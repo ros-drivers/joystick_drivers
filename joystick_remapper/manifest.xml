@@ -6,7 +6,7 @@
   </description>
   <author>Blaise Gassend</author>
   <license>BSD</license>
-  <review status="unreviewed" notes=""/>
+  <review status="experimental" notes=""/>
   <url>http://ros.org/wiki/joystick_remapper</url>
   <depend package="joy"/>
   <depend package="rospy"/>

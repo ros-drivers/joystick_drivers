@@ -9,7 +9,7 @@
   </description>
   <author>John Tsiombikas</author>
   <license>ZLib</license>
-  <review status="3rdparty" notes=""/>
+  <review status="3rdparty doc reviewed" notes="reviewed 10-1-2009"/>
   <url>http://spacenav.sourceforge.net/</url>
   <export>
     <cpp cflags="-I${prefix}/libspnav/include/"
