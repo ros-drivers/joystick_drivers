@@ -457,9 +457,9 @@ class WIIMote(object):
     """Set the four Wii LEDs according to statusList
 
     statusList must be a 4-tuple. Each entry
-    is either True, False, or None. True will
-    turn the respective LED on; False turns it
-    off, and None leaves the state unchanged.
+    is either True/1, False/0, or None. True (or 1) 
+    will turn the respective LED on; False (or 0) 
+    turns it off, and None leaves the state unchanged.
 
     """
 

@@ -17,9 +17,15 @@
 _DEBUGLEVEL = 1
 _MONITOR_LEVEL = 1
 
-MAX_RUMBLE_PATTERN_LENGTH = 10
-RUMBLE_ON  = -1
-RUMBLE_OFF = 0
+# TimedSwitch message field value constants:
+SWITCH_ON  = 1
+SWITCH_OFF = 0
+SWITCH_PULSE_PATTERN = -1
+
+# Output indicators on the Wiimote:
+
+RUMBLE = 1
+LED    = 2
 
 BTN_1       = 0x0002                  # cwiid.CWIID_BTN_1
 BTN_2       = 0x0001                  # cwiid.CWIID_BTN_2
@@ -67,6 +73,7 @@ IR2       = 'ir2'
 IR3       = 'ir3'
 IR4       = 'ir4'
 
+NUM_LEDS = 4
 LED1_ON = 0x01
 LED2_ON = 0x02
 LED3_ON = 0x04

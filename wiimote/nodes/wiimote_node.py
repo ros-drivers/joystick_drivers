@@ -18,11 +18,8 @@
 
 #!/usr/bin/env python
 
-# TODO: Polarity on linear acc y and z gets lost?
-# TODO: Removal of gyro is noticed (covar[0,0]<--1). But plugging back in won't rejunenate.
+# TODO: Removal of gyro is noticed (covar[0,0]<--1). But plugging back in won't rejuvenate.
 # TODO: Command line option: --no-zeroing
-# TODO: Full Wiimote msg type
-# TODO: Put ir light positions and sizes into msgs. Search for #****
 
 # -------- Python Standard Modules:
 import sys
@@ -38,6 +35,8 @@ from sensor_msgs.msg import Imu
 from joy.msg import Joy
 from wiimote.msg import Wiimote
 from wiimote.msg import TimedSwitch
+from wiimote.msg import LEDControl
+from wiimote.msg import RumbleControl
 
 # -------- WIIMote Modules:
 from wiimote.wiimoteExceptions import *
@@ -57,12 +56,17 @@ def runWiimoteNode():
         IMUSender(wiimoteDevice, freq=100).start()
         JoySender(wiimoteDevice, freq=100).start()
         WiiSender(wiimoteDevice, freq=100).start()
-        RumbleListener(wiimoteDevice).start()
+        WiimoteListeners(wiimoteDevice).start()
         
         rospy.spin()
-    except:
-        wiimoteDevice.shutdown()
+        
+    except:    
         raise
+    finally:
+        wiimoteDevice.setRumble(False)
+        wiimoteDevice.setLEDs([False, False, False, False])
+        wiimoteDevice.shutdown()
+
 
 class WiimoteDataSender(threading.Thread):
     
@@ -357,7 +361,7 @@ class WiiSender(WiimoteDataSender):
                 theButtons.append(self.wiistate.buttons[BTN_HOME])
                 
                 ledStates = self.wiiMote.getLEDs()
-                for indx in range(len(msg.LEDs) - 1):
+                for indx in range(len(msg.LEDs)):
                     if ledStates[indx]: 
                         msg.LEDs[indx] = 1
                     else:
@@ -414,8 +418,11 @@ class WiiSender(WiimoteDataSender):
             rospy.loginfo("Shutdown request. Shutting down Wiimote sender.")
             exit(0)
         
-class RumbleListener(threading.Thread):
-    """Listen for request to rumble. Subscribes to topic /rumble, listening for TimedSwitch messages.
+class WiimoteListeners(threading.Thread):
+    """Listen for request to rumble and LED blinking.
+    
+    Subscribes to topics /rumble and /leds, listening for RumbleControl 
+    and LEDControl messages.
     
     Parameters: The switch_mode field is either
     -1.0 to turn rumble on, zero to turn it off, or a 
@@ -439,85 +446,370 @@ class RumbleListener(threading.Thread):
       def rumbleSwitchCallback(msg):
         """Callback for turning rumble on/off, and to initiate pulse rumble."""
         
-        rospy.loginfo(rospy.get_caller_id() + "Rumble request " + str(msg))
+        rospy.logdebug("From: " + rospy.get_caller_id() + ". Rumble request \n" + str(msg))
         
         # If a rumble pulser thread is running, stop it:
         if self.pulserThread is not None:
             self.pulserThread.stop = True 
             # Wait for the thread to finish what it's doing
             self.pulserThread.join()
+            self.pulserThread = None
              
-        if msg.switch_mode == RUMBLE_ON:
+        if msg.rumble.switch_mode == SWITCH_ON:
             self.wiiMote.setRumble(True)
-            exit(0)
-        elif msg.switch_mode == RUMBLE_OFF:
+            return
+        elif msg.rumble.switch_mode == SWITCH_OFF:
             self.wiiMote.setRumble(False)
-            exit(0)
+            return
+        elif msg.rumble.switch_mode != SWITCH_PULSE_PATTERN:
+            rospy.loginfo("Illegal switch_mode value in rumble request from " + \
+                     rospy.get_caller_id() + \
+                     ": \n" + \
+                     str(msg))
+            return
             
         # Client wants to start a rumble pulse sequence:
-        self.pulserThread = RumblePulser(msg.switch_mode, msg.pulse_pattern, self.wiiMote)
+        if msg.rumble.num_cycles == 0:
+            return
+            
+        # Pulser takes an *array* of OutputPattern. For rumble that array is
+        # always of length 1. But for other feedback indicators, like LEDs,
+        # there are more:
+        self.pulserThread = SwitchPulser([OutputPattern(msg.rumble.pulse_pattern, msg.rumble.num_cycles)], RUMBLE, self.wiiMote)
         self.pulserThread.start()
+        self.pulserThread.join()
+        
+        return # end rumbleSwitchCallback
         
         
-      rospy.loginfo("Wiimote rumble listener starting (topic /rumble).")
-      rospy.Subscriber("rumble", TimedSwitch, rumbleSwitchCallback)
-      rospy.spin()
+      def ledControlCallback(msg):
+        """Callback for incoming LEDCOntrol requests."""
+        
+        rospy.logdebug(rospy.get_caller_id() + "LED Control request " + str(msg))
+        
+        # Are they using the simple switch_array field, or the
+        # more complex TimedSwitch array?
+        
+        if msg.switch_array[0] != -1:
+            # Simply set the LEDs appropriately, and be done:
+            self.wiiMote.setLEDs(msg.switch_array)
+            return
+        
+        # Each LED has a TimedSwitch associated with it. Unpack
+        # the data structure (an array of TimedSwitch) for passage
+        # to the SwitchPulser thread. We need to pull out the 
+        # number of requested cycles for each LED's on/off pattern,
+        # and the pattern arrays themselves:
+        
+        patterns = []
+        
+        for timedSwitch in msg.timed_switch_array:
+            patterns.append(OutputPattern(timedSwitch.pulse_pattern, timedSwitch.num_cycles))
+            
+        self.pulserThread = SwitchPulser(patterns, LED, self.wiiMote)
+        self.pulserThread.start()
+        self.pulserThread.join()
+        
+        return  # end ledControlCallback()
 
-#      try:
-#          while not rospy.is_shutdown():
-#              rospy.sleep(1)
-#              print "alive."
-#      except rospy.ROSInterruptException:
-#          rospy.loginfo("Shutdown request. Shutting down Rumble listener.")
+      # Done with embedded function definitions. Back at the top
+      # level of WiimoteListeners' run() function.
+       
+      # Subscribe to rumble and LED control messages and sit:
+      rospy.loginfo("Wiimote rumble listener starting (topic /rumble).")
+      rospy.Subscriber("rumble", RumbleControl, rumbleSwitchCallback)
+      rospy.loginfo("Wiimote LED control listener starting (topic /leds).")
+      rospy.Subscriber("leds", LEDControl, ledControlCallback)
+      
+      try:
+          rospy.spin()
+      except rospy.ROSInterruptException:
+        rospy.loginfo("Shutdown request. Shutting down Wiimote listeners.")
+        exit(0)
           
-class RumblePulser(threading.Thread):
-    """Thread for executing rumble pulse patterns."""
+class SwitchPulser(threading.Thread):
+    """Thread for executing rumble and LED pulse patterns."""
     
-    def __init__(self, thePatternRepeats, theRumblePattern, theWiimoteDevice):
-        """Parameters: number of times the pattern is to be repeated, the MAX_RUMBLE_PATTERN_LENGTH
-        array of on/off times in fractional seconds, and the Wiimote device.
+    def __init__(self, patternArray, outputIndicator, wiimoteDevice):
+        """Parameters: 
+        o patternArray: For each pattern: an OutputPattern object
+          There will only be one such object for Rumble output.
+          For LEDs there will  be one for each LED on the Wiimote.
+          If one of the elements is None, that output indicator
+          is left unchanged. For example, if the 2nd element
+          in an LED pattern object array is None, the 2nd LED on the
+          Wiimote will be left in its current state.
+          
+          Note that the patterns may be of different lengths.
+          So, one LED might have a 3-state pattern, while another
+          LED's pattern is 5 states long.
+        o RUMBLE or LED to indicate what is to be pulsed
+        o A Wiimote device object
+        
+        Note: We always start the affected indicators as if they were
+              in the OFF state, and we always leave them in the off state.
         """
         
         threading.Thread.__init__(self)
-        self.rumblePattern = theRumblePattern
-        self.wiimoteDevice = theWiimoteDevice
-        self.patternRepeats = thePatternRepeats
-        self.patternPt = 0
+        self.patternArray = patternArray
+        self.wiimoteDevice = wiimoteDevice
+        # Whether to pulse rumble or LEDs
+        self.outputIndicator = outputIndicator
+        # Allow this thread to be stopped by setting
+        # instance variable 'stop' to True:
         self.stop = False
         
     def run(self):
 
+        rospy.logdebug("In pulser thread. patternArray: " + str(self.patternArray) + ". Len: " + str(len(self.patternArray)))
+            
+        # First state is always ON:
+        self.turnIndicatorOn(self.outputIndicator)
+            
+        numPatterns = len(self.patternArray)
         try:
             while not rospy.is_shutdown() and not self.stop:
-            
-                if self.patternPt >= MAX_RUMBLE_PATTERN_LENGTH:
-                    self.wiimoteDevice.setRumble(False)
-                    exit(0)
-                    
-                nextDuration = self.rumblePattern[self.patternPt]
-                
-                if nextDuration == 0:
-                    # Pattern has ended
-                    self.wiimoteDevice.setRumble(False)
-                    self.patternRepeats -= 1
-                    if self.patternRepeats <= 0:
-                        exit(0)
-                    else:
-                        self.patternPt = 0
-                        nextDuration = self.rumblePattern[0] 
-                if self.wiimoteDevice.getRumble():
-                    self.wiimoteDevice.setRumble(False)
-                else:
-                    self.wiimoteDevice.setRumble(True)
-                    
-                self.patternPt += 1
-                rospy.sleep(nextDuration)
-            exit(0)
-        except rospy.ROSInterruptException:
-            rospy.loginfo("Shutdown request. Shutting down Rumble pulser.")
-            exit(0)
-    
 
+                # Initialize nextDuration for sleeping to infinity:
+                nextDuration = float('inf')
+        
+                # Get the next sleep duration, which is the
+                # minimum of all nextDurations times:
+                
+                for pattern in self.patternArray:
+                    
+                    if pattern is None: continue
+                    patternHeadTime = pattern.timeRemaining()
+                    if patternHeadTime is None: continue
+                    nextDuration = min(nextDuration, patternHeadTime)
+                    
+                # All patterns done?
+                if nextDuration == float('inf'):
+                    rospy.logdebug("End of pattern.")
+                    exit(0)
+                
+                rospy.sleep(nextDuration)
+                
+                # Time for a state change in at least one of the
+                # patterns. We:
+                #     o Flip the state of the respective output indicator(s)
+                #     o Obtain the next duration entry in the pattern(s) with
+                #       the timeout we just finished. 
+                #     o We subtract the amout of sleep that we just
+                #       awoke from in all other nextDurations
+                #     o We find the new minimum next delay and sleep
+
+                durationJustFinished = nextDuration
+                for pattern, patternIndex in zip(self.patternArray, range(numPatterns)):
+                    
+                    # reduceTimer() returns pattern header minus given time duration,
+                    # or None if the pattern is spent. As side effect
+                    # this operation also takes care of the repeats:
+                    
+                    reducedTime = pattern.reduceTimer(durationJustFinished)
+                    # If this call started the pattern over, we
+                    # need to turn the indicator(s) on during this
+                    # coming new duration:
+                    
+                    if pattern.startOfRepeat:
+                        self.turnIndicatorOn(self.outputIndicator)
+                    
+                    if reducedTime is None: continue
+                    if reducedTime == 0.:
+                        # This pattern had a timeout:
+                        self.flipRumbleOrLED(patternIndex)
+                        
+            # continue while not rospy.is_shutdown() and not self.stop
+                
+        except rospy.ROSInterruptException:
+            rospy.loginfo("Shutdown request. Shutting down pulse switcher.")
+        finally:
+            # Make sure that the indicators that we manipulated 
+            # get turned off:
+            
+            if self.outputIndicator == RUMBLE:
+                self.wiimoteDevice.setRumble(False)
+                exit(0)
+            elif self.outputIndicator == LED:
+                for oneLED, LEDIndex in zip(self.LEDMask, range(len(self.LEDMask))):
+                    if oneLED is not None:
+                        self.LEDMask[LEDIndex] = False
+                self.wiimoteDevice.setLEDs(self.LEDMask)
+                
+    
+    
+    def turnIndicatorOn(self, theIndicator):
+        """Turns indicator(s) of interest ON.
+        
+        Parameter: RUMBLE or LED
+        """ 
+        
+        # Recall: patterns are None, we must leave 
+        # the respective output Indicator alone:
+        
+        if theIndicator == RUMBLE and self.patternArray[0] is not None:
+            # Start to rumble:
+            self.wiimoteDevice.setRumble(True)
+            
+        # Is this LED action?
+        elif theIndicator == LED:
+            # Get a clean 4-tuple with True/None depending on
+            # whether we have a TimedSwitch for the respective
+            # LED. For LEDs for which we don't have 
+            # a TimedSwitch: leave those alone:
+            
+            self.LEDMask = []
+            for i in range(min(NUM_LEDS, len(self.patternArray))):
+                try:
+                    if self.patternArray[i] is None:
+                        self.LEDMask.append(None)
+                    else:
+                        self.LEDMask.append(True)
+                except IndexError:
+                    pass
+                    
+            self.wiimoteDevice.setLEDs(self.LEDMask)
+        else:
+            raise ValueError("Only RUMBLE and LED are legal values here.")
+        
+    
+    def flipRumbleOrLED(self, index=0):
+
+        if self.outputIndicator == RUMBLE:
+            self.flipRumble()
+        else:
+            self.flipLED(index)
+             
+        
+    def flipRumble(self):
+        self.wiimoteDevice.setRumble(not self.wiimoteDevice.getRumble())
+
+    
+    def flipLED(self, index):
+        
+        LEDStatus = self.wiimoteDevice.getLEDs()
+        
+        # None's leave the respective LED unchanged:
+        newLEDStatus = [None, None, None, None]
+        
+        newLEDStatus[index] = not LEDStatus[index] 
+        self.wiimoteDevice.setLEDs(newLEDStatus)
+
+class OutputPattern(object):
+    """Instances encapsulate rumble or LED on/off time patterns as received from related ROS messages.
+    
+    This class provides convenient encapsulation for the pattern arrays themselves,
+    for associated pointers into the arrays, and for status change and inquiry requests.
+    Terminology: 'Pattern Head' is the currently used time duration. A pattern is 'Spent'
+    if all the time sequences have run, and no repeats are left.
+    
+    Public instance variables:
+      o startOfRepeat    ; indicates whether pattern just starts to repeat. (see method reduceTimer())
+    """
+
+    
+    def __init__(self, rosMsgPattern, numReps):
+        """Takes a TimedSwitch type ROS message (pattern and number of repeats), and initializes the pointers."""
+
+        # Copy the rosMsgPattern, which is a tuple, and therefore immutable,
+        # to an array that we'll be able to modify:
+         
+        self.origTimePattern = []
+        for timeDuration in rosMsgPattern:
+            self.origTimePattern.append(timeDuration) 
+        
+        # Make a working copy of the time series, so that we can subtract from the
+        # elements and still have access to the original pattern for repeats:
+        
+        self.timePattern = self.origTimePattern[:]
+        self.numReps = numReps
+        # Make first element the pattern head:
+        self.patternPt = 0
+        self.patternSpent = False
+        self.startOfRepeat = False
+
+    def timeRemaining(self):
+        """Return the time at the pattern head. If pattern is spent, return None instead."""
+        
+        if self.patternSpent:
+            return None
+        return self.timePattern[self.patternPt]
+        
+    def resetForRepeat(self):
+        """Get ready to repeat the pattern. Returns True if another repeat is allowed, else returns False"""
+        
+        if self.patternSpent:
+            return False
+        
+        self.numReps -= 1
+        if self.numReps <= 0:
+            return False
+        
+        # Have at least one repetion of the pattern left: 
+        self.patternPt = 0
+        
+        # Need to start with a fresh copy of the pattern, b/c we 
+        # may subtracted time from the elements as we went
+        # through the patters in the previous cycle:
+        
+        self.timePattern = self.origTimePattern[:]
+        
+        return True
+     
+    def reduceTimer(self, time):
+        """Given a float fractional number of seconds, subtract the time from the pattern head
+        
+        Returns the remaining time, rounded to 100th of a second, or None. If the
+        remaining time after subtraction is <= 0, we check whether any repeats
+        are left. If so, we get ready for another repeat, and return the time of the
+        first pattern time. Else we return None, indicating that this pattern
+        is spent.
+        
+        After this method returns, this instance's public startOfRepeat variable
+        will hold True or False, depending on whether the pattern is
+        just starting over.
+        """
+        
+        if self.patternSpent:
+            return None
+        
+        res = self.timePattern[self.patternPt] - time
+        # Guard against weird rounding errors:
+        if res < 0:
+            res = 0.0        
+        # Update the head of the pattern:
+        self.timePattern[self.patternPt] = res
+        res = round(res,2)
+        
+        self.startOfRepeat = False
+        
+        if res <= 0:
+            
+            self.patternPt += 1
+            if self.patternPt < len(self.timePattern):
+                return res
+            
+            # Repeat the pattern if there's a rep left:
+            canRepeat = self.resetForRepeat()
+            
+            if canRepeat:
+                self.startOfRepeat = True
+                # Return as next timeout the first delay
+                # of the pattern:
+                return self.timePattern[self.patternPt]
+            else:
+                # Pattern has finished for good, including all repeats:
+                self.patternSpent = True
+                return None
+        return res
+    
+    def __repr__(self):
+        res = "<OutputPattern.  Reps:" + str(self.numReps) + ". Pattern: ["
+        for i in range(min(3, len(self.timePattern))):
+            res += str(self.timePattern[i]) + ", "
+        
+        return res + "...]>"
+        
 
 if __name__ == '__main__':
     try:
