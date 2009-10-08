@@ -18,7 +18,42 @@
 
 #!/usr/bin/env python
 
-# TODO: Removal of gyro is noticed (covar[0,0]<--1). But plugging back in won't rejuvenate.
+"""The wiimote_node broadcasts three topics, and listens to messages that control
+the Wiimote stick's rumble (vibration) and LEDs. Transmitted topics (@100Hz):
+
+   o /joy        Messages contain the accelerometer and gyro axis data, and all button states.
+   o /imu_data   Messages contain the accelerometer and gyro axis data, and covariance matrices
+   o /wiimote    Messages contain the accelerometer and gyro axis data (both zeroed as in
+                 the /joy and /imu_data messages, and raw), the button states, the LED states,
+                 rumble (i.e. vibrator) state, IR light sensor readings, time since last zeroed, 
+                 and battery state. See Wiimote.msg
+                 
+The node listens to the following messages:
+
+   o /rumble     Instruct this node to turn on/off the rumble (i.e. vibrator). Rather
+                 than just switching rumble, the message can instead contain
+                 an array of on/off durations. This node will pulse the rumbler
+                 accordingly without the message sender's additional cooperation.
+                 See RumbleControl.mg and TimedSwitch.msg
+   o /led        Turn each LED on the Wiimote on/off. The message can instead 
+                 contain an array of TimedSwitch structures. Each such structure
+                 turns a respective LED on and off according to time intervals that
+                 are stored in the structure. See LEDControl.msg and TimedSwitch.msg
+                 
+No command line parameters.
+"""
+
+# Code structure: The main thread spawns one thread each for the 
+# three message senders, and one thread each for the message listeners.
+# The respective classes are IMUSender, JoySender, and WiiSender for
+# topic sending, and WiimoteListeners for the two message listeners.
+#
+# The Wiimote driver is encapsulated in class WIIMote (see WIIMote.py).
+# That class' singleton instance runs in its own thread, and uses 
+# the third-party cwiid access software.
+
+
+# TODO: Removal of gyro is noticed (covar[0,0]<--1). But software does not notice plugging in.
 # TODO: Command line option: --no-zeroing
 
 # -------- Python Standard Modules:
@@ -208,7 +243,8 @@ class IMUSender(WiimoteDataSender):
             
             
 class JoySender(WiimoteDataSender):
-    """Broadcasting Wiimote accelerator and gyro readings as Joy(stick) messages to Topic imu_data"""
+    
+    """Broadcasting Wiimote accelerator and gyro readings as Joy(stick) messages to Topic joy"""
     
     def __init__(self, wiiMote, freq=100):
         """Initializes the Wiimote Joy(stick) publisher.
