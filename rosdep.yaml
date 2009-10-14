@@ -12,6 +12,7 @@ python-bluez:
   arch: python-pybluez
 bluez:
   ubuntu:
+    9.10: bluez
     9.04: bluez
     8.04: bluetooth
   debian: bluez
