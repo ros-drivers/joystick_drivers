@@ -14,6 +14,7 @@ bluez:
   ubuntu:
     9.10: bluez
     9.04: bluez
+    8.10: bluez
     8.04: bluetooth
   debian: bluez
   arch: bluez
