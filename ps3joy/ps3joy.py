@@ -87,7 +87,7 @@ class uinputjoy:
         UI_DEV_CREATE  = 0x5501
         UI_SET_RELBIT  = 0x40045566
         UI_SET_ABSBIT  = 0x40045567
-        uinput_user_dev = "80sHHHHi" + (uinput.ABS_MAX+1)*4*'I'
+        uinput_user_dev = "80sHHHHi" + (uinput.ABS_MAX+1)*4*'i'
 
         if len(axes) != len(axmin) or len(axes) != len(axmax):
             raise Exception("uinputjoy.__init__: axes, axmin and axmax should have same length")
@@ -154,16 +154,14 @@ class decoder:
         axmax = [255] * 20
         axfuzz = [2] * 20
         axflat = [4] * 20
-        for i in range(-4,0):
+        for i in range(-4,0): # Gyros have more bits than other axes
             axmax[i] = 1023
             axfuzz[i] = 4
             axflat[i] = 4
+        for i in range(4,len(axmin)-4): # Buttons should be zero when not pressed
+            axmin[i] = -axmax[i]
         self.joy = uinputjoy(buttons, axes, axmin, axmax, axfuzz, axflat)
         self.axmid = [sum(pair)/2 for pair in zip(axmin, axmax)]
-        self.fullstop() # Probably useless because of uinput startup bug
-        for i in range(4,len(self.axmid)-4):
-            self.axmid[i] = axmin[i] # Button neutral is axmin.
-        time.sleep(5)
         self.fullstop() # Probably useless because of uinput startup bug
         self.outlen = len(buttons) + len(axes)
 
