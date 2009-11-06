@@ -104,8 +104,6 @@ class uinputjoy:
         os.write(self.file, struct.pack(uinput_user_dev, "Sony Playstation SixAxis/DS3",
             uinput.BUS_USB, 0x054C, 0x0268, 0, 0, *(absmax + absmin + absfuzz + absflat)))
 
-        self.midpoint = [sum(pair)/2 for pair in zip(absmin, absmax)] 
-
         fcntl.ioctl(self.file, UI_SET_EVBIT, uinput.EV_KEY)
         
         for b in buttons:
@@ -160,8 +158,13 @@ class decoder:
             axmax[i] = 1023
             axfuzz[i] = 4
             axflat[i] = 4
-        self.axmid = [sum(pair)/2 for pair in zip(axmin, axmax)]
         self.joy = uinputjoy(buttons, axes, axmin, axmax, axfuzz, axflat)
+        self.axmid = [sum(pair)/2 for pair in zip(axmin, axmax)]
+        self.fullstop() # Probably useless because of uinput startup bug
+        for i in range(4,len(self.axmid)-4):
+            self.axmid[i] = axmin[i] # Button neutral is axmin.
+        time.sleep(5)
+        self.fullstop() # Probably useless because of uinput startup bug
         self.outlen = len(buttons) + len(axes)
 
     def step(self, rawdata): # Returns true if the packet was legal
