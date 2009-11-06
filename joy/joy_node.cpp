@@ -213,6 +213,8 @@ public:
             break; // Joystick is probably closed. Definitely occurs.
           
           //ROS_INFO("Read data...");
+         
+          ROS_WARN("joy_node: Unknown event type. Please file a ticket. time=%u, value=%d, type=%Xh, number=%d", event.time, event.value, event.type, event.number);
           
           event_count_++;
           switch(event.type)
@@ -243,6 +245,7 @@ public:
               for(unsigned int i=old_size;i<joy_msg.axes.size();i++)
                 joy_msg.axes[i] = 0.0;
             }
+            if (!(event.type & JS_EVENT_INIT)) // Init event.value is wrong.
             {
               double val = event.value;
               // Allows deadzone to be "smooth"
