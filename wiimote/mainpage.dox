@@ -2,24 +2,7 @@
 \mainpage
 \htmlinclude manifest.html
 
-\b wiimote is a python encapsulation of Wiimote+ functions.
-
-     Publishes:
-       - Accelerator reading (~100hz)
-       - Gyro reading (~100hz)
-
-     Listens to status requests:
-       - LED1_Status ... LED4_Status
-       - Rumble_Status
-       - Battery_Status
-
-     Commands:
-       - set_LED1(0/1)
-       - set_LED2(0/1)
-       - set_LED3(0/1)
-       - set_LED4(0/1)
-       - set_Rumble(0/1)
- 
+\b No code API. Wiimote is a self-contained ROS node. See package documentation for details.
 
 <!-- 
 In addition to providing an overview of your package,
