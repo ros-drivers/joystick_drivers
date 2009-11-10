@@ -7,7 +7,7 @@
 #               and allows Wiimote rumble/LED setting.
 # Author:       Andreas Paepcke
 # Created:      Thu Sep 10 10:31:44 2009
-# Modified:     Thu Sep 24 14:41:10 2009 (Andreas Paepcke) paepcke@anw.willowgarage.com
+# Modified:     Mon Nov  9 15:59:45 2009 (Andreas Paepcke) paepcke@anw.willowgarage.com
 # Language:     Python
 # Package:      N/A
 # Status:       Experimental (Do Not Distribute)
@@ -280,19 +280,22 @@ class JoySender(WiimoteDataSender):
                 if self.wiistate.motionPlusPresent:
                     msg.axes.extend([canonicalAngleRate[PHI], canonicalAngleRate[THETA], canonicalAngleRate[PSI]])
                           
-                theButtons = []
-                theButtons.append(self.wiistate.buttons[BTN_1])
-                theButtons.append(self.wiistate.buttons[BTN_2])
-                theButtons.append(self.wiistate.buttons[BTN_PLUS])
-                theButtons.append(self.wiistate.buttons[BTN_MINUS])
-                theButtons.append(self.wiistate.buttons[BTN_A])
-                theButtons.append(self.wiistate.buttons[BTN_B])
-                theButtons.append(self.wiistate.buttons[BTN_UP])
-                theButtons.append(self.wiistate.buttons[BTN_DOWN])
-                theButtons.append(self.wiistate.buttons[BTN_LEFT])
-                theButtons.append(self.wiistate.buttons[BTN_RIGHT])
-                theButtons.append(self.wiistate.buttons[BTN_HOME])
-                
+                # Fill in the ROS message's buttons field (there *must* be
+                #     a better way in python to declare an array of 11 zeroes...]
+
+                theButtons = [0,0,0,0,0,0,0,0,0,0,0]
+                theButtons[MSG_BTN_1]     = self.wiistate.buttons[BTN_1]
+                theButtons[MSG_BTN_2]     = self.wiistate.buttons[BTN_2]
+                theButtons[MSG_BTN_A]     = self.wiistate.buttons[BTN_A]
+                theButtons[MSG_BTN_B]     = self.wiistate.buttons[BTN_B]
+                theButtons[MSG_BTN_PLUS]  = self.wiistate.buttons[BTN_PLUS]
+                theButtons[MSG_BTN_MINUS] = self.wiistate.buttons[BTN_MINUS]
+                theButtons[MSG_BTN_LEFT]  = self.wiistate.buttons[BTN_LEFT]
+                theButtons[MSG_BTN_RIGHT] = self.wiistate.buttons[BTN_RIGHT]
+                theButtons[MSG_BTN_UP]    = self.wiistate.buttons[BTN_UP]
+                theButtons[MSG_BTN_DOWN]  = self.wiistate.buttons[BTN_DOWN]
+                theButtons[MSG_BTN_HOME]  = self.wiistate.buttons[BTN_HOME]
+
                 msg.buttons = theButtons
                 
                 measureTime = self.wiistate.time
@@ -526,7 +529,7 @@ class WiimoteListeners(threading.Thread):
         # Are they using the simple switch_array field, or the
         # more complex TimedSwitch array?
         
-        if msg.switch_array[0] != -1:
+	if (msg.switch_array[0] > -2) and (msg.switch_array[0] < 2):
             # Simply set the LEDs appropriately, and be done:
             self.wiiMote.setLEDs(msg.switch_array)
             return

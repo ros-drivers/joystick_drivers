@@ -5,7 +5,7 @@
 # Description:  Constants for Wii Arm Control
 # Author:       Andreas Paepcke
 # Created:      Thu Aug 13 11:44:04 2009
-# Modified:     Wed Aug 19 08:13:40 2009 (Andreas Paepcke) paepcke@anw.willowgarage.com
+# Modified:     Mon Nov  9 12:43:53 2009 (Andreas Paepcke) paepcke@anw.willowgarage.com
 # Language:     Python
 # Package:      N/A
 # Status:       Experimental (Do Not Distribute)
@@ -26,6 +26,8 @@ SWITCH_PULSE_PATTERN = -1
 
 RUMBLE = 1
 LED    = 2
+
+# Buttons in cwiid structure:
 
 BTN_1       = 0x0002                  # cwiid.CWIID_BTN_1
 BTN_2       = 0x0001                  # cwiid.CWIID_BTN_2
@@ -48,17 +50,19 @@ THETA   = 1
 PSI     = 2
 
 
-BTN_1       = 0x0002                  # cwiid.CWIID_BTN_1
-BTN_2       = 0x0001                  # cwiid.CWIID_BTN_2
-BTN_B       = 0x0004                  # cwiid.CWIID_BTN_B
-BTN_A       = 0x0008                  # cwiid.CWIID_BTN_A
-BTN_MINUS = 0x0010                  # cwiid.CWIID_BTN_MINUS
-BTN_PLUS  = 0x1000                  # cwiid.CWIID_BTN_PLUS
-BTN_LEFT  = 0x0100                  # cwiid.CWIID_BTN_LEFT
-BTN_RIGHT = 0x0200                  # cwiid.CWIID_BTN_RIGHT
-BTN_DOWN  = 0x0400                  # cwiid.CWIID_BTN_DOWN
-BTN_UP    = 0x0800                  # cwiid.CWIID_BTN_UP
-BTN_HOME  = 0x0080                  # cwiid.CWIID_BTN_HOME
+# Buttons order in Wiimote ROS message array:
+
+MSG_BTN_1     = 0
+MSG_BTN_2     = 1
+MSG_BTN_A     = 2
+MSG_BTN_B     = 3
+MSG_BTN_PLUS  = 4
+MSG_BTN_MINUS = 5
+MSG_BTN_LEFT  = 6
+MSG_BTN_RIGHT = 7
+MSG_BTN_UP    = 8
+MSG_BTN_DOWN  = 9
+MSG_BTN_HOME  = 10
 
 X_COORD   = 'x'
 Y_COORD   = 'y'

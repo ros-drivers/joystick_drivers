@@ -1,4 +1,14 @@
 #!/usr/bin/env python
+
+# Test rumbler. Expect:
+#
+#  INTER_PATTERN_SLEEP_DURATION seconds of no rumble
+#  Rumble: .-..
+#  INTER_PATTERN_SLEEP_DURATION seconds of no rumble
+#  Rumble: .-.. INTER_PATTERN_SLEEP_DURATION seconds  Rumble: .-..
+
+
+
 import roslib; roslib.load_manifest('wiimote')
 import rospy
 from wiimote.msg import TimedSwitch
@@ -13,6 +23,8 @@ morsePause 	= 0.1
 morseDa    	= 0.6
 morseLongPause  = 1.0
     
+INTER_PATTERN_SLEEP_DURATION = 2.0
+
 
 def printMsg(msg):
   pattern = msg.rumble.pulse_pattern
@@ -33,17 +45,17 @@ def talker():
 
 
     sendBlank(pub)
-    rospy.sleep(2)
+    rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
 
     # ------------------
 
     sendOneMorse(pub)
-    rospy.sleep(5)
+    rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
 
     # ------------------
     
     sendTwoMorse(pub)
-    rospy.sleep(5)
+    rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
 
 
 def sendBlank(pub):

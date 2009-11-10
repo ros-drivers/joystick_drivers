@@ -16,7 +16,7 @@ Header header
 #----------------------
 # Gyro reading
 #-----------------------------
-# In radians/sec. If reading is invalid
+# In radians/sec. If reading is invalid,
 # for instance b/c no gyro is attached to the Wii, then
 # set first element of covariance to -1 (same as imu_data.msg):
 
@@ -82,6 +82,6 @@ float64 zeroing_time
 # Error vector
 #-----------------------------
 # For error condition definitions see wiimoteConstants.py
-# Value of zero means all is well.
+# Value of zero means all is well. (Currently NOT used).
 
 uint64 errors
