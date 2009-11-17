@@ -214,8 +214,6 @@ public:
           
           //ROS_INFO("Read data...");
          
-          ROS_WARN("joy_node: Unknown event type. Please file a ticket. time=%u, value=%d, type=%Xh, number=%d", event.time, event.value, event.type, event.number);
-          
           event_count_++;
           switch(event.type)
           {
