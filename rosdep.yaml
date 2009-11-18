@@ -2,14 +2,20 @@ joystick:
   ubuntu: joystick
   debian: joystick
   arch: kernel-headers
+  fedora: joystick
+  rhel: joystick
 libusb:
   ubuntu: libusb-dev
   debian: libusb-dev
   arch: libusb
+  fedora: libusb-devel
+  rhel: libusb-devel
 python-bluez:
   ubuntu: python-bluez
   debian: python-bluez
   arch: python-pybluez
+  fedora: python-bluez
+  rhel: python-bluez
 bluez:
   ubuntu:
     9.10: bluez
@@ -18,3 +24,5 @@ bluez:
     8.04: bluetooth
   debian: bluez
   arch: bluez
+  fedora: bluez-libs
+  rhel: bluez-libs
