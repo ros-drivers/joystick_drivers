@@ -24,4 +24,5 @@
   <depend package="sensor_msgs" />
   <depend package="rospy"/>
   <depend package="joy"/>
+  <depend package="roslib"/>
 </package>

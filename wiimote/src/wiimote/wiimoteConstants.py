@@ -129,3 +129,4 @@ WII_MSG_TYPE_UNKNOWN     = 9
 #define CWIID_IR_X_MAX        1024
 #define CWIID_IR_Y_MAX        768
 
+ 

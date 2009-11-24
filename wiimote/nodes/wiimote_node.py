@@ -21,12 +21,11 @@
 """The wiimote_node broadcasts three topics, and listens to messages that control
 the Wiimote stick's rumble (vibration) and LEDs. Transmitted topics (@100Hz):
 
-   o /joy        Messages contain the accelerometer and gyro axis data, and all button states.
-   o /imu_data   Messages contain the accelerometer and gyro axis data, and covariance matrices
-   o /wiimote    Messages contain the accelerometer and gyro axis data (both zeroed as in
-                 the /joy and /imu_data messages, and raw), the button states, the LED states,
-                 rumble (i.e. vibrator) state, IR light sensor readings, time since last zeroed, 
-                 and battery state. See Wiimote.msg
+   o joy/Joy           Messages contain the accelerometer and gyro axis data, and all button states.
+   o sensor_data/Imu   Messages contain the accelerometer and gyro axis data, and covariance matrices
+   o wiimote/Wiimote   the /Joy and /Imu messages, and raw), the button states, the LED states,
+                       rumble (i.e. vibrator) state, IR light sensor readings, time since last zeroed, 
+                       and battery state. See Wiimote.msg
                  
 The node listens to the following messages:
 
@@ -65,9 +64,9 @@ import traceback
 import roslib; roslib.load_manifest('wiimote')
 import rospy
 from geometry_msgs.msg import Vector3
-from geometry_msgs.msg import Point
 from sensor_msgs.msg import Imu
 from joy.msg import Joy
+from wiimote.msg import IR_source_info
 from wiimote.msg import Wiimote
 from wiimote.msg import TimedSwitch
 from wiimote.msg import LEDControl
@@ -167,7 +166,7 @@ class WiimoteDataSender(threading.Thread):
 
             
 class IMUSender(WiimoteDataSender):
-    """Broadcasting Wiimote accelerator and gyro readings as IMU messages to Topic imu_data"""
+    """Broadcasting Wiimote accelerator and gyro readings as IMU messages to Topic sensor_data/Imu"""
     
     def __init__(self, wiiMote, freq=100):
         """Initializes the Wiimote IMU publisher.
@@ -180,7 +179,7 @@ class IMUSender(WiimoteDataSender):
         
         WiimoteDataSender.__init__(self, wiiMote, freq)
         
-        self.pub = rospy.Publisher('imu_data', Imu)        
+        self.pub = rospy.Publisher('imu', Imu)        
         
     def run(self):
         """Loop that obtains the latest wiimote state, publishes the IMU data, and sleeps.
@@ -197,7 +196,7 @@ class IMUSender(WiimoteDataSender):
         diagonal. We obtain the variance from the Wiimote instance.  
         """
         
-        rospy.loginfo("Wiimote IMU publisher starting (topic /imu_data).")
+        rospy.loginfo("Wiimote IMU publisher starting (topic /imu).")
         try:
             while not rospy.is_shutdown():
                 (canonicalAccel, canonicalAngleRate) = self.obtainWiimoteData()
@@ -283,7 +282,7 @@ class JoySender(WiimoteDataSender):
                 # Fill in the ROS message's buttons field (there *must* be
                 #     a better way in python to declare an array of 11 zeroes...]
 
-                theButtons = [0,0,0,0,0,0,0,0,0,0,0]
+                theButtons = [False,False,False,False,False,False,False,False,False,False,False]
                 theButtons[MSG_BTN_1]     = self.wiistate.buttons[BTN_1]
                 theButtons[MSG_BTN_2]     = self.wiistate.buttons[BTN_2]
                 theButtons[MSG_BTN_A]     = self.wiistate.buttons[BTN_A]
@@ -333,7 +332,7 @@ class WiiSender(WiimoteDataSender):
     def run(self):
         """Loop that obtains the latest wiimote state, publishes the data, and sleeps.
         
-        The wiimote message, if fully filled in, contains information in common with imu_data.msg:
+        The wiimote message, if fully filled in, contains information in common with Imu.msg:
         acceleration (in m/s^2), and angular rate (in radians/sec). For each of
         these quantities, the IMU message format also wants the corresponding
         covariance matrix.
@@ -347,6 +346,8 @@ class WiiSender(WiimoteDataSender):
             while not rospy.is_shutdown():
                 (canonicalAccel, canonicalAngleRate) = self.obtainWiimoteData()
                 
+                zeroingTimeSecs = int(self.wiiMote.lastZeroingTime)
+                zeroingTimeNSecs = int((self.wiiMote.lastZeroingTime - zeroingTimeSecs) * 10**9)
                 msg = Wiimote(header=None,
                           angular_velocity_zeroed=None,
                           angular_velocity_raw=None,
@@ -354,12 +355,14 @@ class WiiSender(WiimoteDataSender):
                           linear_acceleration_zeroed=None,
                           linear_acceleration_raw=None,
                           linear_acceleration_covariance=self.linear_acceleration_covariance,
-                          buttons=[0,0,0,0,0,0,0,0,0,0],
-                          rumble=0,
+                          buttons=[False,False,False,False,False,False,False,False,False,False],
+                          rumble=False,
                           LEDs=None,
-                          ir_positions=None,
-                          battery=None,
-                          zeroing_time=self.wiiMote.lastZeroingTime,
+                          ir_tracking=None,
+                          raw_battery=None,
+                          percent_battery=None,
+                          #zeroing_time=roslib.msg.Time(header=None, rostime=roslib.rostime.Time(zeroingTimeSecs, zeroingTimeNSecs)),
+                          zeroing_time=roslib.msg.Time(header=None, rostime=rospy.Time(zeroingTimeSecs, zeroingTimeNSecs)),
                           errors=0)
                     
                 # If a gyro is plugged into the Wiimote, then note the 
@@ -402,15 +405,14 @@ class WiiSender(WiimoteDataSender):
                 ledStates = self.wiiMote.getLEDs()
                 for indx in range(len(msg.LEDs)):
                     if ledStates[indx]: 
-                        msg.LEDs[indx] = 1
+                        msg.LEDs[indx] = True
                     else:
-                        msg.LEDs[indx] = 0
+                        msg.LEDs[indx] = False
                 
                 msg.buttons = theButtons
     
-                batteryRaw = self.wiiMote.getBattery()
-                msg.battery[BATTERY_RAW] = batteryRaw
-                msg.battery[BATTERY_PERCENTAGE] = batteryRaw * 100./self.wiiMote.BATTERY_MAX
+                msg.raw_battery = self.wiiMote.getBattery()
+                msg.percent_battery = msg.raw_battery * 100./self.wiiMote.BATTERY_MAX
     
                 irSources = self.wiistate.IRSources
                 
@@ -420,24 +422,21 @@ class WiiSender(WiimoteDataSender):
                         try:
                           pos  = irSources[irSensorIndx]['pos']
                         except KeyError:
-                            # If no position information from this IR sensor, use -1 for the dimensions:
-                            msg.ir_positions[irSensorIndx] = Point(-1, -1, -1)
+                            # If no position information from this IR sensor, use INVALID for the dimensions:
+                            msg.ir_tracking.append(IR_source_info(Wiimote.INVALID_FLOAT, Wiimote.INVALID_FLOAT, Wiimote.INVALID))
+                        # The following else is unusual: its statements are bypassed is except clause had control:
                         else:
-                            # Have IR position info from this IR sensor. We use the 3D Point
-                            # message and set the z-dimension to -1:
-                            msg.ir_positions[irSensorIndx] = Point(pos[0], pos[1], -1)
-                            
-                            # Same exercise for the IR source size measurement that the Wii driver might provide:
+                            # Have IR position info from this IR sensor. We use the IR_source_info
+                            # message type. Get size (intensity?):
                             try: 
                                 size = irSources[irSensorIndx]['size']
                             except KeyError:
-                                # If the driver did not deliver size information, indicate by using -1:
-                                msg.ir_sizes[irSensorIndx] = -1
-                            else:
-                                msg.ir_sizes[irSensorIndx] = size
+                                # If the driver did not deliver size information, indicate by using INVALID:
+                                size = Wiimote.INVALID
+                            lightInfo = IR_source_info(pos[0], pos[1], size)
+                            msg.ir_tracking.append(lightInfo)
                     else:
-                        msg.ir_positions[irSensorIndx] = Point(-1, -1, -1)
-                        msg.ir_sizes[irSensorIndx] = -1
+                        msg.ir_tracking.append(IR_source_info(Wiimote.INVALID_FLOAT, Wiimote.INVALID_FLOAT, Wiimote.INVALID))
                 
                 measureTime = self.wiistate.time
                 timeSecs = int(measureTime)
@@ -449,8 +448,8 @@ class WiiSender(WiimoteDataSender):
                 
                 rospy.logdebug("Wiimote state:")
                 rospy.logdebug("    Accel: " + str(canonicalAccel) + "\n    Angular rate: " + str(canonicalAngleRate))
-                rospy.logdebug("    Rumble: " + str(msg.rumble) + "\n    Battery: [" + str(msg.battery[0]) + "," + str(msg.battery[1]))
-                rospy.logdebug("    IR positions: " + str(msg.ir_positions) + " IR sizes: " + str(msg.ir_sizes))
+                rospy.logdebug("    Rumble: " + str(msg.rumble) + "\n    Battery: [" + str(msg.raw_battery) + "," + str(msg.percent_battery))
+                rospy.logdebug("    IR positions: " + str(msg.ir_tracking))
                                 
                 rospy.sleep(self.sleepDuration)
         except rospy.ROSInterruptException:
@@ -494,10 +493,10 @@ class WiimoteListeners(threading.Thread):
             self.pulserThread.join()
             self.pulserThread = None
              
-        if msg.rumble.switch_mode == SWITCH_ON:
+        if msg.rumble.switch_mode == TimedSwitch.ON:
             self.wiiMote.setRumble(True)
             return
-        elif msg.rumble.switch_mode == SWITCH_OFF:
+        elif msg.rumble.switch_mode == TimedSwitch.OFF:
             self.wiiMote.setRumble(False)
             return
         elif msg.rumble.switch_mode != SWITCH_PULSE_PATTERN:
@@ -526,14 +525,6 @@ class WiimoteListeners(threading.Thread):
         
         rospy.logdebug(rospy.get_caller_id() + "LED Control request " + str(msg))
         
-        # Are they using the simple switch_array field, or the
-        # more complex TimedSwitch array?
-        
-	if (msg.switch_array[0] > -2) and (msg.switch_array[0] < 2):
-            # Simply set the LEDs appropriately, and be done:
-            self.wiiMote.setLEDs(msg.switch_array)
-            return
-        
         # Each LED has a TimedSwitch associated with it. Unpack
         # the data structure (an array of TimedSwitch) for passage
         # to the SwitchPulser thread. We need to pull out the 
@@ -541,10 +532,44 @@ class WiimoteListeners(threading.Thread):
         # and the pattern arrays themselves:
         
         patterns = []
+        ledCommands = [None, None, None, None]
+        individualLED_simple_on_or_off = False
         
-        for timedSwitch in msg.timed_switch_array:
+        # Go through each switch. The array contains one TimedSwitch for
+        # each of the LEDs. In each case determine whether the switch simply
+        # calls for the LED to be turned on or off (as opposed to blinking in
+        # a pattern). If so, set the ledCommands array to ON or OFF in the
+        # respective position. Recall that None for an LED means 'leave as is.'
+        for timedSwitch, switchIndex in zip(msg.timed_switch_array, range(len(msg.timed_switch_array))):
+            # Is this a simple on/off request?
+            if timedSwitch.switch_mode == TimedSwitch.ON:
+                # Yes: simple ON:
+                individualLED_simple_on_or_off = True
+                ledCommands[switchIndex] = TimedSwitch.ON
+                # Ensure that the pulse pattern engine blinks the
+                # correct LEDs: indicate 'no blink action' for this LED: 
+                patterns.append(None)
+                continue
+            elif timedSwitch.switch_mode == TimedSwitch.OFF:
+                # Yes: simple OFF:                
+                individualLED_simple_on_or_off = True                
+                ledCommands[switchIndex] = TimedSwitch.OFF
+                # Ensure that the pulse pattern engine blinks the
+                # correct LEDs: indicate 'no blink action' for this LED: 
+                patterns.append(None)
+                continue
+            elif timedSwitch.switch_mode == TimedSwitch.NO_CHANGE:
+                patterns.append(None)
+                continue
+            # This LED is to blink by pattern:
             patterns.append(OutputPattern(timedSwitch.pulse_pattern, timedSwitch.num_cycles))
             
+        # The ledCommands array may now have a mix of None, ON, or OFF.
+        # If any of the LEDs are to be statically turned ON or OFF, do that now:
+        if individualLED_simple_on_or_off:
+            self.wiiMote.setLEDs(ledCommands)
+            
+        # Start pulsing all other LEDs:
         self.pulserThread = SwitchPulser(patterns, LED, self.wiiMote)
         self.pulserThread.start()
         self.pulserThread.join()
@@ -640,6 +665,9 @@ class SwitchPulser(threading.Thread):
 
                 durationJustFinished = nextDuration
                 for pattern, patternIndex in zip(self.patternArray, range(numPatterns)):
+                    
+                    if pattern is None:
+                        continue
                     
                     # reduceTimer() returns pattern header minus given time duration,
                     # or None if the pattern is spent. As side effect

@@ -139,7 +139,7 @@ class WIIState(object):
         self.IRSources[1] = IRStatus[1]
         self.IRSources[2] = IRStatus[2]
         self.IRSources[3] = IRStatus[3]
-
+        
         continue
 
       elif msgType == WII_MSG_TYPE_MOTIONPLUS:

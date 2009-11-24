@@ -83,7 +83,7 @@ class WIIMote(object):
 
   # Public constants:
   
-  BATTERY_MAX = cwiid.BATTERY_MAX
+  BATTERY_MAX = cwiid.BATTERY_MAX  # 208 a.k.a. 0xD0
   
   # Public vars:
 
@@ -307,7 +307,8 @@ class WIIMote(object):
         
         self.meanAcc = np.vstack(accArrays).mean(axis=0)
         self.stdevAcc = np.vstack(accArrays).std(axis=0)
-        self.varAcc = np.sqrt(self.stdevAcc)
+        accStdevMetric = self.stdevAcc * EARTH_GRAVITY
+        self.varAcc = np.square(accStdevMetric)
         
         # Same for Gyro readings:
         
@@ -319,7 +320,9 @@ class WIIMote(object):
         if len(gyroArrays) != 0:
             self.meanGyro = np.vstack(gyroArrays).mean(axis=0)
             self.stdevGyro = np.vstack(gyroArrays).std(axis=0)
-            self.varGyro = np.sqrt(self.stdevGyro)
+            # Convert stdev to m/sec^2:
+            gyroStdevMetric = self.stdevGyro * EARTH_GRAVITY
+            self.varGyro = np.square(gyroStdevMetric)
 
             # Initialize WIIState's gyro zero reading, so that future
             # readings can be corrected when a WIIState is created:
