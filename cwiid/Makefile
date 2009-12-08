@@ -2,7 +2,7 @@ all: installed
 
 SVN_DIR = build/cwiid-svn
 SVN_URL = http://abstrakraft.org/cwiid/svn/trunk
-SVN_REVISION = -r201
+SVN_REVISION = -r 201
 SVN_PATCH =  cwiid-201.patch
 include $(shell rospack find mk)/svn_checkout.mk
 
