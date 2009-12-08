@@ -1,0 +1,13 @@
+Index: python/Makefile.in
+===================================================================
+--- python/Makefile.in	(revision 201)
++++ python/Makefile.in	(working copy)
+@@ -7,7 +7,7 @@
+ endif
+ 
+ all:
+-	$(PYTHON) setup.py build_ext $(DEBUGFLAGS) -I@top_builddir@/libcwiid -L@top_builddir@/libcwiid -lcwiid
++	$(PYTHON) setup.py build_ext $(DEBUGFLAGS) -I@top_builddir@/libcwiid -L@top_builddir@/libcwiid -lcwiid --rpath ${libdir}
+ 
+ install:
+ 	$(PYTHON) setup.py install --install-lib=${libdir}/python@PYTHON_VERSION@/site-packages $(SET_ROOT_DIR)
