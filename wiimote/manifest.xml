@@ -25,4 +25,5 @@
   <depend package="rospy"/>
   <depend package="joy"/>
   <depend package="roslib"/>
+  <depend package="cwiid"/>
 </package>
