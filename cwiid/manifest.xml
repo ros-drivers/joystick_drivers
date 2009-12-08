@@ -11,9 +11,6 @@ in a way that can be managed by the ROS dependency system.
 <license>BSD</license>
 <review status="3rdparty" notes=""/>
 <url>http://github.com/abstrakraft/cwiid</url>
-<export>
-  <cpp cflags="-I${prefix}/opencv/include -I${prefix}/opencv/include/opencv" lflags="-L${prefix}/opencv/lib -Wl,-rpath,${prefix}/opencv/lib -lcvaux -lcv -lcxcore -lhighgui -lml"/>
-</export>
 <versioncontrol type="svn" url="http://abstrakraft.org/cwiid/svn/trunk"/>
 <rosdep name="autoconf"/>
 <rosdep name="automake"/>
