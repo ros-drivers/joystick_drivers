@@ -8,7 +8,7 @@ in a way that can be managed by the ROS dependency system.
 
 </description>
 <author>L. Donnie Smith. ROS package maintained by Blaise Gassend.</author>
-<license>BSD</license>
+<license>GPL</license>
 <review status="3rdparty" notes=""/>
 <url>http://github.com/abstrakraft/cwiid</url>
 <versioncontrol type="svn" url="http://abstrakraft.org/cwiid/svn/trunk"/>
