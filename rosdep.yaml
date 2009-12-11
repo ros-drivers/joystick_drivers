@@ -26,3 +26,5 @@ bluez:
   arch: bluez
   fedora: bluez-libs
   rhel: bluez-libs
+libbluetooth-dev:
+  ubuntu: libbluetooth-dev
