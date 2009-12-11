@@ -15,8 +15,7 @@ in a way that can be managed by the ROS dependency system.
 <rosdep name="autoconf"/>
 <rosdep name="automake"/>
 <rosdep name="python"/>
-<!-- bluez isn't enough; we need the bluetooth development libraries, which
-on Ubuntu 8.04, come from libbluetooth-dev -->
+<rosdep name="libbluetooth-dev"/>
 <rosdep name="bluez"/>
 </package>
 
