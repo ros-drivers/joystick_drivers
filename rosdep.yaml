@@ -18,10 +18,10 @@ python-bluez:
   rhel: python-bluez
 bluez:
   ubuntu:
-    9.10: bluez
-    9.04: bluez
-    8.10: bluez
-    8.04: bluetooth
+    '9.10': bluez
+    '9.04': bluez
+    '8.10': bluez
+    '8.04': bluetooth
   debian: bluez
   arch: bluez
   fedora: bluez-libs
