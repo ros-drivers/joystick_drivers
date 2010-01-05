@@ -26,4 +26,7 @@
   <depend package="joy"/>
   <depend package="roslib"/>
   <depend package="cwiid"/>
+  <export>
+    <cpp cflags="-I${prefix}/msg/cpp"/>
+  </export>
 </package>
