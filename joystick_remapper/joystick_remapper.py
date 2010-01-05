@@ -99,7 +99,7 @@ def get_param_list(name):
             return None # Identity
         return map(int, s.split())
     except KeyError:
-        rospy.logerr("No %s parameter found. Using identity mapping."%name)
+        rospy.logwarn("No %s parameter found. Using identity mapping."%name)
         return None
     except ValueError:
         rospy.logfatal("Parameter '%s' contains a non-integer element. Aborting."%name)
