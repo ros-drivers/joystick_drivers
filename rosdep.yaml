@@ -28,3 +28,5 @@ bluez:
   rhel: bluez-libs
 libbluetooth-dev:
   ubuntu: libbluetooth-dev
+libx11-dev:
+  ubuntu: libx11-dev

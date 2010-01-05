@@ -11,6 +11,7 @@
   <license>ZLib</license>
   <review status="3rdparty doc reviewed" notes="reviewed 10-1-2009"/>
   <url>http://spacenav.sourceforge.net/</url>
+  <rosdep name="libx11-dev" />
   <export>
     <cpp cflags="-I${prefix}/libspnav/include/"
       lflags="-L${prefix}/libspnav/lib/ -Wl,-rpath,${prefix}/libspnav/lib/ -L${prefix}/libspnav/lib64/ -Wl,-rpath,${prefix}/libspnav/lib64/ -lspnav -lX11" />
