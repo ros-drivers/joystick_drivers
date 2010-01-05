@@ -13,7 +13,7 @@
   <url>http://spacenav.sourceforge.net/</url>
   <export>
     <cpp cflags="-I${prefix}/libspnav/include/"
-         lflags="-L${prefix}/libspnav/lib/ -L${prefix}/libspnav/lib64/ -lspnav -lX11" />
+      lflags="-L${prefix}/libspnav/lib/ -Wl,-rpath,${prefix}/libspnav/lib/ -L${prefix}/libspnav/lib64/ -Wl,-rpath,${prefix}/libspnav/lib64/ -lspnav -lX11" />
   </export>
   <versioncontrol type="svn" url="https://spacenav.svn.sourceforge.net/svnroot/spacenav/trunk" />
 </package>
