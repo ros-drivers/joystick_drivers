@@ -248,7 +248,7 @@ class connection_manager:
         try:
             sock.bind(("", port))
         except:
-            print >> sys.stderr, "Error binding to socket."
+            print >> sys.stderr, "Error binding to socket. Do you have another ps3joy.py running? This error occurs on some distributions (such as Ubuntu Karmic), for which this driver does not currently work."
             quit(-1)
         sock.listen(1)
         return sock
