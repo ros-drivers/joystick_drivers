@@ -65,6 +65,9 @@ import roslib; roslib.load_manifest('wiimote')
 import rospy
 from geometry_msgs.msg import Vector3
 from sensor_msgs.msg import Imu
+from std_srvs.srv import Empty
+from std_srvs.srv import EmptyResponse
+from std_msgs.msg import Bool
 from joy.msg import Joy
 from wiimote.msg import IR_source_info
 from wiimote.msg import Wiimote
@@ -77,31 +80,57 @@ from wiimote.wiimoteExceptions import *
 from wiimote.wiimoteConstants import *
 import wiimote.WIIMote
 
-def runWiimoteNode():
-    """Initialize the wiimote_node, establishing its name for communication with the Master"""
-
-    # All exceptions will end up in the __main__ section
-    # and are handled there:
+class WiimoteNode():
     
-    rospy.init_node('wiimote', anonymous=True, log_level=rospy.ERROR) # log_level=rospy.DEBUG
-    wiimoteDevice = wiimote.WIIMote.WIIMote()
-    wiimoteDevice.zeroDevice()
-    try:
-        IMUSender(wiimoteDevice, freq=100).start()
-        JoySender(wiimoteDevice, freq=100).start()
-        WiiSender(wiimoteDevice, freq=100).start()
-        WiimoteListeners(wiimoteDevice).start()
-        
-        rospy.spin()
-        
-    except:    
-        raise
-    finally:
-        wiimoteDevice.setRumble(False)
-        wiimoteDevice.setLEDs([False, False, False, False])
-        wiimoteDevice.shutdown()
 
-
+    def runWiimoteNode(self):
+        """Initialize the wiimote_node, establishing its name for communication with the Master"""
+    
+        # All exceptions will end up in the __main__ section
+        # and are handled there:
+        
+        rospy.init_node('wiimote', anonymous=True, log_level=rospy.ERROR) # log_level=rospy.DEBUG
+        wiimoteDevice = wiimote.WIIMote.WIIMote()
+        wiimoteDevice.zeroDevice()
+        #******
+    	# numOfCalibrations = 30
+    	# numSuccesses = 0
+    	# for i in range(numOfCalibrations):
+    	#     print ("zeroing loop: " + repr(i))
+    	#     if (wiimoteDevice.zeroDevice()):
+    	#         numSuccesses += 1
+    	# percentSuccess = numSuccesses * 100/numOfCalibrations
+    	# print ("Calibration success rate: " + repr(percentSuccess))
+        #******
+        try:
+            IMUSender(wiimoteDevice, freq=100).start()
+            JoySender(wiimoteDevice, freq=100).start()
+            WiiSender(wiimoteDevice, freq=100).start()
+            WiimoteListeners(wiimoteDevice).start()
+            
+            rospy.spin()
+        
+        except:    
+            rospy.loginfo("Error in startup")
+            trace = sys.last_traceback
+            traceback.print_tb(trace)
+        finally:
+            try:
+                wiimoteDevice.setRumble(False)
+                wiimoteDevice.setLEDs([False, False, False, False])
+                wiimoteDevice.shutdown()
+            except:
+                pass
+    
+    def shutdown(self):
+        try:
+            IMUSender.stop
+            JoySender.stop
+            WiiSender.stop
+            WiimoteListener.stop
+        except:
+            pass
+        
 class WiimoteDataSender(threading.Thread):
     
     def __init__(self, wiiMote, freq=100):
@@ -144,25 +173,30 @@ class WiimoteDataSender(threading.Thread):
                 break
             else:
                 rospy.sleep(0.1)
-            
+
         return self.canonicalizeWiistate()
         
     def canonicalizeWiistate(self):
         """Scale accelerator and gyro readings to be m/sec^2, and radians/sec, respectively."""
         
-        # Convert acceleration, which is in g's into m/sec^@:
-        canonicalAccel = self.wiistate.acc.scale(EARTH_GRAVITY)
-            
-        # If the gyro is connected, then 
-        # Convert gyro reading to radians/sec (see wiimoteConstants.py
-        # for origin of this scale factor):
-        if self.wiistate.motionPlusPresent:
-            canonicalAngleRate = self.wiistate.angleRate.scale(GYRO_SCALE_FACTOR)
-        else:
-             canonicalAngleRate = None
-        
-        return [canonicalAccel, canonicalAngleRate]
-
+        try: 
+    	    # Convert acceleration, which is in g's into m/sec^@:
+    	    canonicalAccel = self.wiistate.acc.scale(EARTH_GRAVITY)
+    	        
+    	    # If the gyro is connected, then 
+    	    # Convert gyro reading to radians/sec (see wiimoteConstants.py
+    	    # for origin of this scale factor):
+    	    if self.wiistate.motionPlusPresent:
+    	        canonicalAngleRate = self.wiistate.angleRate.scale(GYRO_SCALE_FACTOR)
+    	    else:
+    	         canonicalAngleRate = None
+    	    
+    	    return [canonicalAccel, canonicalAngleRate]
+        except AttributeError:
+            # An attribute error here occurs when user shuts
+            # off the Wiimote before stopping the wiimote_node:
+            rospy.loginfo(self.threadName + " shutting down.")
+            exit(0)
 
             
 class IMUSender(WiimoteDataSender):
@@ -197,6 +231,7 @@ class IMUSender(WiimoteDataSender):
         """
         
         rospy.loginfo("Wiimote IMU publisher starting (topic /imu).")
+        self.threadName = "IMU topic Publisher"
         try:
             while not rospy.is_shutdown():
                 (canonicalAccel, canonicalAngleRate) = self.obtainWiimoteData()
@@ -266,6 +301,7 @@ class JoySender(WiimoteDataSender):
         """
         
         rospy.loginfo("Wiimote joystick publisher starting (topic /joy).")
+        self.threadName = "Joy topic Publisher"
         try:
             while not rospy.is_shutdown():
                 (canonicalAccel, canonicalAngleRate) = self.obtainWiimoteData()
@@ -283,17 +319,17 @@ class JoySender(WiimoteDataSender):
                 #     a better way in python to declare an array of 11 zeroes...]
 
                 theButtons = [False,False,False,False,False,False,False,False,False,False,False]
-                theButtons[MSG_BTN_1]     = self.wiistate.buttons[BTN_1]
-                theButtons[MSG_BTN_2]     = self.wiistate.buttons[BTN_2]
-                theButtons[MSG_BTN_A]     = self.wiistate.buttons[BTN_A]
-                theButtons[MSG_BTN_B]     = self.wiistate.buttons[BTN_B]
-                theButtons[MSG_BTN_PLUS]  = self.wiistate.buttons[BTN_PLUS]
-                theButtons[MSG_BTN_MINUS] = self.wiistate.buttons[BTN_MINUS]
-                theButtons[MSG_BTN_LEFT]  = self.wiistate.buttons[BTN_LEFT]
-                theButtons[MSG_BTN_RIGHT] = self.wiistate.buttons[BTN_RIGHT]
-                theButtons[MSG_BTN_UP]    = self.wiistate.buttons[BTN_UP]
-                theButtons[MSG_BTN_DOWN]  = self.wiistate.buttons[BTN_DOWN]
-                theButtons[MSG_BTN_HOME]  = self.wiistate.buttons[BTN_HOME]
+                theButtons[Wiimote.MSG_BTN_1]     = self.wiistate.buttons[BTN_1]
+                theButtons[Wiimote.MSG_BTN_2]     = self.wiistate.buttons[BTN_2]
+                theButtons[Wiimote.MSG_BTN_A]     = self.wiistate.buttons[BTN_A]
+                theButtons[Wiimote.MSG_BTN_B]     = self.wiistate.buttons[BTN_B]
+                theButtons[Wiimote.MSG_BTN_PLUS]  = self.wiistate.buttons[BTN_PLUS]
+                theButtons[Wiimote.MSG_BTN_MINUS] = self.wiistate.buttons[BTN_MINUS]
+                theButtons[Wiimote.MSG_BTN_LEFT]  = self.wiistate.buttons[BTN_LEFT]
+                theButtons[Wiimote.MSG_BTN_RIGHT] = self.wiistate.buttons[BTN_RIGHT]
+                theButtons[Wiimote.MSG_BTN_UP]    = self.wiistate.buttons[BTN_UP]
+                theButtons[Wiimote.MSG_BTN_DOWN]  = self.wiistate.buttons[BTN_DOWN]
+                theButtons[Wiimote.MSG_BTN_HOME]  = self.wiistate.buttons[BTN_HOME]
 
                 msg.buttons = theButtons
                 
@@ -342,6 +378,7 @@ class WiiSender(WiimoteDataSender):
         """
         
         rospy.loginfo("Wiimote publisher starting (topic /wiimote).")
+        self.threadName = "Wiimote topic Publisher"
         try:
             while not rospy.is_shutdown():
                 (canonicalAccel, canonicalAngleRate) = self.obtainWiimoteData()
@@ -477,7 +514,16 @@ class WiimoteListeners(threading.Thread):
         
         threading.Thread.__init__(self)
         self.wiiMote = wiiMote    
-        self.pulserThread = None  
+        self.pulserThread = None
+        
+        # Even though this thread mostly listens,
+        # we do publish the is_calibrated() message
+        # here, because this msg is so closely related
+        # to the calibrate() service:
+        self.is_calibratedPublisher = rospy.Publisher('is_calibrated', Bool, latch=True)
+        # We'll always just reuse this msg object:        
+        self.is_CalibratedResponseMsg = Bool();
+          
         
     def run(self):
         
@@ -576,6 +622,18 @@ class WiimoteListeners(threading.Thread):
         
         return  # end ledControlCallback()
 
+      def calibrateCallback(req):
+        rospy.loginfo("Calibration request")
+        calibrationSuccess = self.wiiMote.zeroDevice()
+        if (calibrationSuccess):
+            rospy.loginfo("Calibration succeeded.")
+        else:
+            rospy.loginfo("Calibration failed.")
+        # Update the latched is_calibrated state:
+        self.is_CalibratedResponseMsg.data = calibrationSuccess
+        self.is_calibratedPublisher.publish(self.is_CalibratedResponseMsg)
+        return EmptyResponse()
+
       # Done with embedded function definitions. Back at the top
       # level of WiimoteListeners' run() function.
        
@@ -584,12 +642,14 @@ class WiimoteListeners(threading.Thread):
       rospy.Subscriber("rumble", RumbleControl, rumbleSwitchCallback)
       rospy.loginfo("Wiimote LED control listener starting (topic /leds).")
       rospy.Subscriber("leds", LEDControl, ledControlCallback)
+      rospy.Service("imu_data/calibrate", Empty, calibrateCallback)
       
       try:
           rospy.spin()
       except rospy.ROSInterruptException:
         rospy.loginfo("Shutdown request. Shutting down Wiimote listeners.")
         exit(0)
+        
           
 class SwitchPulser(threading.Thread):
     """Thread for executing rumble and LED pulse patterns."""
@@ -879,8 +939,9 @@ class OutputPattern(object):
         
 
 if __name__ == '__main__':
+    wiimoteNode = WiimoteNode()
     try:
-        runWiimoteNode()
+        wiimoteNode.runWiimoteNode()
     except rospy.ROSInterruptException:
         rospy.rospy.loginfo("ROS Shutdown Request.")
     except KeyboardInterrupt, e:
@@ -903,5 +964,7 @@ if __name__ == '__main__':
         traceback.print_exception(excType, excValue, excTraceback)
 
     finally:
+        if (wiimoteNode is not None):
+            wiimoteNode.shutdown()
         rospy.rospy.loginfo("Exiting Wiimote node.")
         sys.exit(0)

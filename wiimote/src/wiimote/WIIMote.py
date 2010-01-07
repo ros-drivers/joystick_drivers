@@ -87,30 +87,11 @@ class WIIMote(object):
   
   # Public vars:
 
-  wiiMoteState = None        # Object holding a snapshot of the Wiimote state
-  sampleRate = -1            # How often to update wiiMoteState
-                             #    -1: Never
-                             #     0: Everytime the underlying system offers state
-                             #  else: (Possibly fractional) seconds between updates
-
-   
-  meanAcc = [None, None, None]  # Mean x/y/z of most recent accelerometer zeroing
-                                # Elements of the list are AccReading instances
-  stdevAcc = [None, None, None] # Stdev x/y/z of most recent accelerometer zeroing
-                                # Elements of the list are AccReading instances
-  varAcc = [None, None, None]   # Variance x/y/z of most recent accelerometer zeroing                    
-
-  meanGyro = [None, None, None]  # Mean x/y/z of most recent accelerometer zeroing
-                                 # Elements of the list are GyroReading instances
-  stdevGyro = [None, None, None] # Stdev x/y/z of most recent accelerometer zeroing
-                                 # Elements of the list are GyroReading instances
-  varGyro = [None, None, None]   # Variance x/y/z of most recent accelerometer zeroing                                 
-                                 
-
+  
   # Private constants:
 
-  _NUM_ZEROING_READINGS = 10 # Number of readings to take for zeroing acc and gyro
-  _NUM_WARMUP_READINGS =  10 # Number of readings to throw away initially so that
+  _NUM_ZEROING_READINGS = 100 # Number of readings to take for zeroing acc and gyro
+  _NUM_WARMUP_READINGS =  100 # Number of readings to throw away initially so that
                              # the gyro starts providing data.
 
   # Private vars:
@@ -162,6 +143,31 @@ class WIIMote(object):
     # the time zeroDevice() begins and ends:
     
     self.wiiStateLock = threading.Lock()
+    self.wiiMoteState = None        # Object holding a snapshot of the Wiimote state
+    self.sampleRate = -1            # How often to update wiiMoteState
+                               #    -1: Never
+                               #     0: Everytime the underlying system offers state
+                               #  else: (Possibly fractional) seconds between updates
+  
+    # Mean x/y/z of most recent accelerometer zeroing in Gs and metric:
+    self.meanAcc = np.array([None, None, None],dtype=np.float64)   
+    self.meanAccMetric = np.array([None, None, None],dtype=np.float64)
+    # Stdev x/y/z of most recent accelerometer zeroing in Gs and metric:
+    self.stdevAcc = np.array([None, None, None],dtype=np.float64)        
+    self.stdevAccMetric = np.array([None, None, None],dtype=np.float64)
+    # Variance x/y/z of most recent accelerometer zeroing                    
+    self.varAcc = np.array([None, None, None],dtype=np.float64)
+    
+    # Mean x/y/z of most recent gyro zeroing in Gs and metric:
+    self.meanGyro = np.array([None, None, None],dtype=np.float64)
+    self.meanGyroMetric = np.array([None, None, None],dtype=np.float64)
+    # Stdev x/y/z of most recent gyro zeroing in Gs and metric:
+    self.stdevGyro = np.array([None, None, None],dtype=np.float64)
+    self.stdevGyroMetric = np.array([None, None, None],dtype=np.float64)
+    # Variance x/y/z of most recent gyro zeroing                                 
+    self.varGyro = np.array([None, None, None],dtype=np.float64)
+                                 
+    self.latestCalibrationSuccessful = False;
     
     promptUsr("Press buttons 1 and 2 together to pair (within 6 seconds).\n    (If no blinking lights, press power button for ~3 seconds.)")
 
@@ -187,17 +193,6 @@ class WIIMote(object):
     # Enable reports from the WII:
     self._wm.rpt_mode = cwiid.RPT_ACC | cwiid.RPT_MOTIONPLUS | cwiid.RPT_BTN | cwiid.RPT_IR
     
-    # Initialize accelerometer zeroing: get the calibration information
-    # from the Wiimote. The result consists of a list of lists. The
-    # first element is x/y/z of zero, the second element is x/y/z of
-    # the reading at one: 
-    accCalibration = self.getAccCal()
-    
-    # Tell the WIIState factory that all WIIMote state instance creations
-    # should correct accelerometer readings automatically: 
-    wiistate.WIIState.setAccelerometerCalibration(wiistate.WIIReading(accCalibration[0]), 
-                                                  wiistate.WIIReading(accCalibration[1]))
-
     time.sleep(0.2)
     self._wiiCallbackStack.push(self._steadyStateCallback)
 
@@ -275,12 +270,18 @@ class WIIMote(object):
     self._gyroList = []
     self._readingsCnt = 0
     self._warmupCnt = 0
+    # The factory calibration setting for the accelerometer:
+    accCalibration = self.getAccCal()
     
     try:
         self.wiiStateLock.acquire()
 
         self._wiiCallbackStack.push(self._calibrationCallback)
         
+        # Wipe out previous calibration correction data:
+        wiistate.WIIState.setGyroCalibration(None)
+        wiistate.WIIState.setAccelerometerCalibration(None, None)
+                                                              
         while (self._readingsCnt < self._NUM_ZEROING_READINGS) or (self._warmupCnt < self._NUM_WARMUP_READINGS):
           time.sleep(.1)
          
@@ -291,12 +292,18 @@ class WIIMote(object):
         # all x-coords, one for all y-coords, and one for all z-coords:
     
     
-        # Turn list of acc WIIState objects into list of numpy triplets:
+        # Turn list of acc WIIState objects into list of numpy triplets.
+        # Also: find the largest values of all readings in x, y, and z.
+        # That will be used to find outliers when we validate the calibration
+        # below:
         #accArrays = map(lambda wiiReading: wiiReading.tuple(), self._accList)
         accArrays = []
+        maxAccReading = np.array([0,0,0],dtype=np.float64)
         for accWiiReading in self._accList:
             if accWiiReading is not None:
-                accArrays.append(accWiiReading.tuple())
+                oneAccReading = accWiiReading.tuple()
+                accArrays.append(oneAccReading)
+                maxAccReading = np.maximum(maxAccReading, np.abs(oneAccReading))
         
         # Turn list of numpy triplets into three columns containing
         # all x, all y, and all z values, respectively:
@@ -306,38 +313,101 @@ class WIIMote(object):
         # with: [55.0 110.0 165.0]
         
         self.meanAcc = np.vstack(accArrays).mean(axis=0)
+        self.meanAccMetric = self.meanAcc * EARTH_GRAVITY
         self.stdevAcc = np.vstack(accArrays).std(axis=0)
-        accStdevMetric = self.stdevAcc * EARTH_GRAVITY
-        self.varAcc = np.square(accStdevMetric)
+        self.stdevAccMetric = self.stdevAcc * EARTH_GRAVITY
+        self.varAcc = np.square(self.stdevAccMetric)
         
         # Same for Gyro readings:
         
         gyroArrays = []
+        maxGyroReading = np.array([0,0,0],dtype=np.float64)        
         for gyroReading in self._gyroList:
             if (gyroReading is not None):
-                gyroArrays.append(gyroReading.tuple())
+                oneGyroReading = gyroReading.tuple()
+                gyroArrays.append(oneGyroReading)
+                maxGyroReading = np.maximum(maxGyroReading, np.abs(oneGyroReading))
         
         if len(gyroArrays) != 0:
             self.meanGyro = np.vstack(gyroArrays).mean(axis=0)
+            self.meanGyroMetric = self.meanGyro * EARTH_GRAVITY
             self.stdevGyro = np.vstack(gyroArrays).std(axis=0)
             # Convert stdev to m/sec^2:
-            gyroStdevMetric = self.stdevGyro * EARTH_GRAVITY
-            self.varGyro = np.square(gyroStdevMetric)
+            self.stdevGyroMetric = self.stdevGyro * EARTH_GRAVITY
+            self.varGyro = np.square(self.stdevGyroMetric)
 
-            # Initialize WIIState's gyro zero reading, so that future
-            # readings can be corrected when a WIIState is created:
-            wiistate.WIIState.setGyroCalibration(self.meanGyro)
-    
+    finally:
         # Restore the callback that was in force before zeroing:
         self._wiiCallbackStack.pop()
-        self.lastZeroingTime = getTimeStamp()
-    
-    finally:
         self.wiiStateLock.release()
 
-    # TODO: If stdev too large, throw error
-
-    return
+    # Check whether the Wiimote was moved too much during
+    # calibration. If the difference between any axis value 
+    # of accelerometer/gyro and the respective axis'
+    # arithmetic mean reading is above twice the 
+    # respective sensor axis' stdev, we consider 
+    # calibration a failure. All the computations
+    # below are vectors. 
+    
+    accOutlierCutoffMetric   = self.stdevAccMetric * OUTLIER_STDEV_MULTIPLE
+    gyroOutlierCutoffMetric = self.stdevGyroMetric * OUTLIER_STDEV_MULTIPLE
+    
+    #******************
+    # Just for debugging, to see the calibration values:
+#    maxAccReadingMetric = maxAccReading * EARTH_GRAVITY
+#    maxAccDiff = abs(maxAccReadingMetric - self.meanAccMetric)
+#    maxGyroReadingMetric = maxGyroReading * EARTH_GRAVITY
+#    maxGyroDiff = abs(maxGyroReadingMetric - self.meanGyroMetric)
+#    print("maxAccMetric: " + repr(maxAccReadingMetric))
+#    print ("meanAccMetric: " + repr(self.meanAccMetric))
+#    print ("maxAccDiffMetric: " + repr(maxAccDiff))
+#    print ("AccCutoffMetric: " + repr(accOutlierCutoffMetric) + " (stdev * " + repr(OUTLIER_STDEV_MULTIPLE) + ")")
+#    print ("AccStdevMetric: " + repr(self.stdevAccMetric))
+#    print ("")
+#    print ("maxGyroMetric: " + repr(maxGyroReadingMetric))
+#    print ("meanGyroMetric: " + repr(self.meanGyroMetric))
+#    print ("maxGyroDiffMetric: " + repr(maxGyroDiff))
+#    print ("GyroCutoffMetric: " + repr(gyroOutlierCutoffMetric))
+#    print ("GyroStdevMetric: " + repr(self.stdevGyroMetric))
+    
+    #******************
+    
+    existAccOutliers  = (abs((maxAccReading * EARTH_GRAVITY) - self.meanAccMetric)) > accOutlierCutoffMetric
+    existGyroOutliers = (abs((maxGyroReading * EARTH_GRAVITY) - self.meanGyroMetric)) > gyroOutlierCutoffMetric
+    existOutliers = np.logical_or(existAccOutliers, existGyroOutliers)
+    if (existOutliers.any()):
+        rospy.loginfo("Failed calibration; continuing nonetheless.")
+        self.latestCalibrationSuccessful = False;
+        # We can calibrate the Wiimote anyway, b/c usually only one
+        # axis among the six accelerometer/gyro axes is off:
+        if (calibrateWithFailedCalibrationData):
+            wiistate.WIIState.setAccelerometerCalibration(wiistate.WIIReading(accCalibration[0]), 
+                                                          wiistate.WIIReading(accCalibration[1]))
+            wiistate.WIIState.setGyroCalibration(self.meanGyro)
+        return False
+    
+    # Initialize accelerometer zeroing: get the calibration information
+    # from the Wiimote's factory setting. We ignore the zeroing that we
+    # measured, because the factory setting seems reliable. The result 
+    # of the following call consists of a list of lists. The
+    # first element is x/y/z of zero, the second element is x/y/z of
+    # the reading at one: 
+    accCalibration = self.getAccCal()
+    
+    # Tell the WIIState factory that all WIIMote state instance creations
+    # should correct accelerometer readings automatically, using the 
+    # Nintendo-factory-set values: 
+    wiistate.WIIState.setAccelerometerCalibration(wiistate.WIIReading(accCalibration[0]), 
+                                                  wiistate.WIIReading(accCalibration[1]))
+    
+    # Initialize WIIState's gyro zero reading, so that future
+    # readings can be corrected when a WIIState is created:
+    wiistate.WIIState.setGyroCalibration(self.meanGyro)
+            
+    self.lastZeroingTime = getTimeStamp()
+    rospy.loginfo("Successful calibration.")
+    self.latestCalibrationSuccessful = True;
+    return True;
 
  
   #----------------------------------------

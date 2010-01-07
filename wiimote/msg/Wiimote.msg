@@ -10,6 +10,18 @@
 int8    INVALID       = -1
 float32 INVALID_FLOAT = -1.0
 
+int8 MSG_BTN_1     = 0
+int8 MSG_BTN_2     = 1
+int8 MSG_BTN_A     = 2
+int8 MSG_BTN_B     = 3
+int8 MSG_BTN_PLUS  = 4
+int8 MSG_BTN_MINUS = 5
+int8 MSG_BTN_LEFT  = 6
+int8 MSG_BTN_RIGHT = 7
+int8 MSG_BTN_UP    = 8
+int8 MSG_BTN_DOWN  = 9
+int8 MSG_BTN_HOME  = 10
+
 #-----------------------------
 # Header
 #----------------------
@@ -42,7 +54,7 @@ float64[9] linear_acceleration_covariance
 # Wiimote buttons
 #-----------------------------
 # Mappings from Wiimote button name
-# to array position are defined in wiimoteConstants.py.
+# to array position are defined above.
 #
 bool[11] buttons
 

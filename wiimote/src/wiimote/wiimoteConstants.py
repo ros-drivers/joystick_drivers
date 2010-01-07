@@ -17,6 +17,18 @@
 _DEBUGLEVEL = 1
 _MONITOR_LEVEL = 1
 
+
+# Number of standard deviations that accelerator or
+# gyro measurements need to be beyond the mean (axis
+# by axis) to be considered an outlier:
+
+OUTLIER_STDEV_MULTIPLE = 3
+
+# Whether to calibrate the Wiimote even when
+# the calibration process was less than perfect:
+
+calibrateWithFailedCalibrationData = True
+
 # TimedSwitch message field value constants:
 SWITCH_ON  = 1
 SWITCH_OFF = 0
@@ -51,18 +63,21 @@ PSI     = 2
 
 
 # Buttons order in Wiimote ROS message array:
+# These buttons are now defined in Wiimote.msg,
+# so that they are available to other languages.
 
-MSG_BTN_1     = 0
-MSG_BTN_2     = 1
-MSG_BTN_A     = 2
-MSG_BTN_B     = 3
-MSG_BTN_PLUS  = 4
-MSG_BTN_MINUS = 5
-MSG_BTN_LEFT  = 6
-MSG_BTN_RIGHT = 7
-MSG_BTN_UP    = 8
-MSG_BTN_DOWN  = 9
-MSG_BTN_HOME  = 10
+#MSG_BTN_1     = 0
+#MSG_BTN_2     = 1
+#MSG_BTN_A     = 2
+#MSG_BTN_B     = 3
+#MSG_BTN_PLUS  = 4
+#MSG_BTN_MINUS = 5
+#MSG_BTN_LEFT  = 6
+#MSG_BTN_RIGHT = 7
+#MSG_BTN_UP    = 8
+#MSG_BTN_DOWN  = 9
+#MSG_BTN_HOME  = 10
+
 
 X_COORD   = 'x'
 Y_COORD   = 'y'
