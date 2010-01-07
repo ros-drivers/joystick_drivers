@@ -625,11 +625,8 @@ class WiimoteListeners(threading.Thread):
       def calibrateCallback(req):
         rospy.loginfo("Calibration request")
         calibrationSuccess = self.wiiMote.zeroDevice()
-        if (calibrationSuccess):
-            rospy.loginfo("Calibration succeeded.")
-        else:
-            rospy.loginfo("Calibration failed.")
         # Update the latched is_calibrated state:
+
         self.is_CalibratedResponseMsg.data = calibrationSuccess
         self.is_calibratedPublisher.publish(self.is_CalibratedResponseMsg)
         return EmptyResponse()

@@ -27,7 +27,7 @@ OUTLIER_STDEV_MULTIPLE = 3
 # Whether to calibrate the Wiimote even when
 # the calibration process was less than perfect:
 
-calibrateWithFailedCalibrationData = True
+CALIBRATE_WITH_FAILED_CALIBRATION_DATA = True
 
 # TimedSwitch message field value constants:
 SWITCH_ON  = 1

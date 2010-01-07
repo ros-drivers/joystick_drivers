@@ -165,7 +165,7 @@ class WIIMote(object):
     self.stdevGyro = np.array([None, None, None],dtype=np.float64)
     self.stdevGyroMetric = np.array([None, None, None],dtype=np.float64)
     # Variance x/y/z of most recent gyro zeroing                                 
-    self.varGyro = np.array([None, None, None],dtype=np.float64)
+    self.varGyroMetric = np.array([None, None, None],dtype=np.float64)
                                  
     self.latestCalibrationSuccessful = False;
     
@@ -297,96 +297,33 @@ class WIIMote(object):
         # That will be used to find outliers when we validate the calibration
         # below:
         #accArrays = map(lambda wiiReading: wiiReading.tuple(), self._accList)
-        accArrays = []
-        maxAccReading = np.array([0,0,0],dtype=np.float64)
-        for accWiiReading in self._accList:
-            if accWiiReading is not None:
-                oneAccReading = accWiiReading.tuple()
-                accArrays.append(oneAccReading)
-                maxAccReading = np.maximum(maxAccReading, np.abs(oneAccReading))
-        
-        # Turn list of numpy triplets into three columns containing
-        # all x, all y, and all z values, respectively:
-        #  [array(10,20,30), array(100,200,300)] ==> [[10   20  30],
-        #                                             [100 200 300]]
-        # and take the means of each column. We will end up
-        # with: [55.0 110.0 165.0]
-        
-        self.meanAcc = np.vstack(accArrays).mean(axis=0)
-        self.meanAccMetric = self.meanAcc * EARTH_GRAVITY
-        self.stdevAcc = np.vstack(accArrays).std(axis=0)
-        self.stdevAccMetric = self.stdevAcc * EARTH_GRAVITY
-        self.varAcc = np.square(self.stdevAccMetric)
+    
+        self.computeAccStatistics()
         
         # Same for Gyro readings:
-        
-        gyroArrays = []
-        maxGyroReading = np.array([0,0,0],dtype=np.float64)        
-        for gyroReading in self._gyroList:
-            if (gyroReading is not None):
-                oneGyroReading = gyroReading.tuple()
-                gyroArrays.append(oneGyroReading)
-                maxGyroReading = np.maximum(maxGyroReading, np.abs(oneGyroReading))
-        
-        if len(gyroArrays) != 0:
-            self.meanGyro = np.vstack(gyroArrays).mean(axis=0)
-            self.meanGyroMetric = self.meanGyro * EARTH_GRAVITY
-            self.stdevGyro = np.vstack(gyroArrays).std(axis=0)
-            # Convert stdev to m/sec^2:
-            self.stdevGyroMetric = self.stdevGyro * EARTH_GRAVITY
-            self.varGyro = np.square(self.stdevGyroMetric)
+        self.computeGyroStatistics()
 
     finally:
         # Restore the callback that was in force before zeroing:
         self._wiiCallbackStack.pop()
         self.wiiStateLock.release()
-
-    # Check whether the Wiimote was moved too much during
-    # calibration. If the difference between any axis value 
-    # of accelerometer/gyro and the respective axis'
-    # arithmetic mean reading is above twice the 
-    # respective sensor axis' stdev, we consider 
-    # calibration a failure. All the computations
-    # below are vectors. 
-    
-    accOutlierCutoffMetric   = self.stdevAccMetric * OUTLIER_STDEV_MULTIPLE
-    gyroOutlierCutoffMetric = self.stdevGyroMetric * OUTLIER_STDEV_MULTIPLE
-    
-    #******************
-    # Just for debugging, to see the calibration values:
-#    maxAccReadingMetric = maxAccReading * EARTH_GRAVITY
-#    maxAccDiff = abs(maxAccReadingMetric - self.meanAccMetric)
-#    maxGyroReadingMetric = maxGyroReading * EARTH_GRAVITY
-#    maxGyroDiff = abs(maxGyroReadingMetric - self.meanGyroMetric)
-#    print("maxAccMetric: " + repr(maxAccReadingMetric))
-#    print ("meanAccMetric: " + repr(self.meanAccMetric))
-#    print ("maxAccDiffMetric: " + repr(maxAccDiff))
-#    print ("AccCutoffMetric: " + repr(accOutlierCutoffMetric) + " (stdev * " + repr(OUTLIER_STDEV_MULTIPLE) + ")")
-#    print ("AccStdevMetric: " + repr(self.stdevAccMetric))
-#    print ("")
-#    print ("maxGyroMetric: " + repr(maxGyroReadingMetric))
-#    print ("meanGyroMetric: " + repr(self.meanGyroMetric))
-#    print ("maxGyroDiffMetric: " + repr(maxGyroDiff))
-#    print ("GyroCutoffMetric: " + repr(gyroOutlierCutoffMetric))
-#    print ("GyroStdevMetric: " + repr(self.stdevGyroMetric))
-    
-    #******************
-    
-    existAccOutliers  = (abs((maxAccReading * EARTH_GRAVITY) - self.meanAccMetric)) > accOutlierCutoffMetric
-    existGyroOutliers = (abs((maxGyroReading * EARTH_GRAVITY) - self.meanGyroMetric)) > gyroOutlierCutoffMetric
-    existOutliers = np.logical_or(existAccOutliers, existGyroOutliers)
-    if (existOutliers.any()):
+        
+    haveAccOutliers = self.checkForAccOutliers()
+    haveGyroOutliers = self.checkForGyroOutliers()
+        
+        
+    if (haveAccOutliers or haveGyroOutliers):
         rospy.loginfo("Failed calibration; continuing nonetheless.")
         self.latestCalibrationSuccessful = False;
         # We can calibrate the Wiimote anyway, b/c usually only one
         # axis among the six accelerometer/gyro axes is off:
-        if (calibrateWithFailedCalibrationData):
+        if (CALIBRATE_WITH_FAILED_CALIBRATION_DATA):
             wiistate.WIIState.setAccelerometerCalibration(wiistate.WIIReading(accCalibration[0]), 
                                                           wiistate.WIIReading(accCalibration[1]))
             wiistate.WIIState.setGyroCalibration(self.meanGyro)
         return False
     
-    # Initialize accelerometer zeroing: get the calibration information
+    # Do accelerometer zeroing: get the calibration information
     # from the Wiimote's factory setting. We ignore the zeroing that we
     # measured, because the factory setting seems reliable. The result 
     # of the following call consists of a list of lists. The
@@ -400,15 +337,147 @@ class WIIMote(object):
     wiistate.WIIState.setAccelerometerCalibration(wiistate.WIIReading(accCalibration[0]), 
                                                   wiistate.WIIReading(accCalibration[1]))
     
-    # Initialize WIIState's gyro zero reading, so that future
+    # Do WIIState's gyro zero reading, so that future
     # readings can be corrected when a WIIState is created:
     wiistate.WIIState.setGyroCalibration(self.meanGyro)
             
     self.lastZeroingTime = getTimeStamp()
-    rospy.loginfo("Successful calibration.")
+    rospy.loginfo("Calibration successful.")
     self.latestCalibrationSuccessful = True;
     return True;
 
+ 
+  #----------------------------------------
+  # computeAccStatistics
+  #------------------
+ 
+  def computeAccStatistics(self):
+      """Compute mean and stdev for accelerometer data list self._accList in both Gs and metric m/sec^2"""
+
+      accArrays = []
+      self.maxAccReading = np.array([0,0,0], dtype=None, copy=1, order=None, subok=0, ndmin=0)
+      for accWiiReading in self._accList:
+          if accWiiReading is not None:
+              oneAccReading = accWiiReading.tuple()
+              accArrays.append(oneAccReading)
+              self.maxAccReading = np.maximum(self.maxAccReading, np.abs(oneAccReading))
+        
+      # Turn list of numpy triplets into three columns containing
+      # all x, all y, and all z values, respectively:
+      #  [array(10,20,30), array(100,200,300)] ==> [[10   20  30],
+      #                                             [100 200 300]]
+      # and take the means of each column. We will end up
+      # with: [55.0 110.0 165.0]
+      
+      self.meanAcc = np.vstack(accArrays).mean(axis=0)
+      self.meanAccMetric = self.meanAcc * EARTH_GRAVITY
+      self.stdevAcc = np.vstack(accArrays).std(axis=0)
+      self.stdevAccMetric = self.stdevAcc * EARTH_GRAVITY
+      self.varAcc = np.square(self.stdevAccMetric)
+
+
+  #----------------------------------------
+  # computeGyroStatistics
+  #------------------
+  
+  def computeGyroStatistics(self):
+      """Compute mean and stdev for gyro data list self._gyroList in both Gs and metric m/sec^2"""      
+      gyroArrays = []
+      self.maxGyroReading = np.array([0,0,0],dtype=np.float64)        
+      for gyroReading in self._gyroList:
+          if (gyroReading is not None):
+              oneGyroReading = gyroReading.tuple()
+              gyroArrays.append(oneGyroReading)
+              self.maxGyroReading = np.maximum(self.maxGyroReading, np.abs(oneGyroReading))
+            
+      if len(gyroArrays) != 0:
+          self.meanGyro = np.vstack(gyroArrays).mean(axis=0)
+          # Convert to radians/sec:
+          self.meanGyroMetric = self.meanGyro * GYRO_SCALE_FACTOR
+          self.stdevGyro = np.vstack(gyroArrays).std(axis=0)
+          # Convert stdev to radians/sec:
+          self.stdevGyroMetric = self.stdevGyro * GYRO_SCALE_FACTOR
+          self.varGyroMetric = np.square(self.stdevGyroMetric)
+        
+  #----------------------------------------
+  # checkForGyroOutliers
+  #------------------
+ 
+  def checkForGyroOutliers(self):
+    """Return True if gyro has outliers."""
+      
+    # Check whether the Wiimote was moved too much during
+    # calibration. If the difference between any axis value 
+    # of the gyro and the respective axis'
+    # arithmetic mean reading is above OUTLIER_STDEV_MULTIPLE 
+    # times the respective sensor axis' stdev, we consider 
+    # calibration a failure. All the computations
+    # below are vectors. 
+    
+    self.gyroOutlierCutoffMetric   = self.stdevGyroMetric * OUTLIER_STDEV_MULTIPLE
+
+    #******************
+    # Just for debugging, to see the calibration values:
+#    self.maxAccReadingMetric = self.maxAccReading * EARTH_GRAVITY
+#    maxAccDiff = abs(self.maxAccReadingMetric - self.meanAccMetric)
+#    self.maxGyroReadingMetric = self.maxGyroReading * EARTH_GRAVITY
+#    maxGyroDiff = abs(self.maxGyroReadingMetric - self.meanGyroMetric)
+#    print("maxAccMetric: " + repr(self.maxAccReadingMetric))
+#    print ("meanAccMetric: " + repr(self.meanAccMetric))
+#    print ("maxAccDiffMetric: " + repr(maxAccDiff))
+#    print ("AccCutoffMetric: " + repr(accOutlierCutoffMetric) + " (stdev * " + repr(OUTLIER_STDEV_MULTIPLE) + ")")
+#    print ("AccStdevMetric: " + repr(self.stdevAccMetric))
+#    print ("")
+#    print ("maxGyroMetric: " + repr(self.maxGyroReadingMetric))
+#    print ("meanGyroMetric: " + repr(self.meanGyroMetric))
+#    print ("maxGyroDiffMetric: " + repr(maxGyroDiff))
+#    print ("GyroCutoffMetric: " + repr(gyroOutlierCutoffMetric))
+#    print ("GyroStdevMetric: " + repr(self.stdevGyroMetric))
+    
+    #******************
+    
+    existGyroOutliers = (abs((self.maxGyroReading * GYRO_SCALE_FACTOR) - self.meanGyroMetric)) > self.gyroOutlierCutoffMetric
+    return(np.any(existGyroOutliers))    
+      
+  #----------------------------------------
+  # checkForAccOutliers
+  #------------------
+ 
+  def checkForAccOutliers(self):
+    """Return True if accelerometer has outliers. Else return false."""
+      
+    # Check whether the Wiimote was moved too much during
+    # calibration. If the difference between any axis value 
+    # of acceleromter and the respective axis'
+    # arithmetic mean reading is above OUTLIER_STDEV_MULTIPLE 
+    # times the respective sensor axis' stdev, we consider 
+    # calibration a failure. All the computations
+    # below are vectors. 
+    
+    self.accOutlierCutoffMetric = self.stdevAccMetric * OUTLIER_STDEV_MULTIPLE
+
+    #******************
+    # Just for debugging, to see the calibration values:
+#    self.maxAccReadingMetric = self.maxAccReading * EARTH_GRAVITY
+#    maxAccDiff = abs(self.maxAccReadingMetric - self.meanAccMetric)
+#    self.maxGyroReadingMetric = self.maxGyroReading * EARTH_GRAVITY
+#    maxGyroDiff = abs(self.maxGyroReadingMetric - self.meanGyroMetric)
+#    print("maxAccMetric: " + repr(self.maxAccReadingMetric))
+#    print ("meanAccMetric: " + repr(self.meanAccMetric))
+#    print ("maxAccDiffMetric: " + repr(maxAccDiff))
+#    print ("AccCutoffMetric: " + repr(accOutlierCutoffMetric) + " (stdev * " + repr(OUTLIER_STDEV_MULTIPLE) + ")")
+#    print ("AccStdevMetric: " + repr(self.stdevAccMetric))
+#    print ("")
+#    print ("maxGyroMetric: " + repr(self.maxGyroReadingMetric))
+#    print ("meanGyroMetric: " + repr(self.meanGyroMetric))
+#    print ("maxGyroDiffMetric: " + repr(maxGyroDiff))
+#    print ("GyroCutoffMetric: " + repr(gyroOutlierCutoffMetric))
+#    print ("GyroStdevMetric: " + repr(self.stdevGyroMetric))
+    
+    #******************
+    
+    existAccOutliers  = (abs((self.maxAccReading * EARTH_GRAVITY) - self.meanAccMetric)) > self.accOutlierCutoffMetric
+    return(np.any(existAccOutliers))
  
   #----------------------------------------
   # getWiimoteState
@@ -497,7 +566,7 @@ class WIIMote(object):
           elif varName == "stdevGyro":
               res = self.stdevGyro
           elif varName == "varGyro":
-              res = self.varGyro
+              res = self.varGyroMetric
           else:
               raise ValueError("Instance variable name " + str(varName) + "is not under lock control." )
           
