@@ -80,7 +80,7 @@ private:
   }
   
 public:
-  Joystick() : nh_(), diagnostic_(nh_)
+  Joystick() : nh_(), diagnostic_()
   {}
   
   ///\brief Opens joystick port, reads from port and publishes while node is active
