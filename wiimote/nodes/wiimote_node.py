@@ -520,7 +520,7 @@ class WiimoteListeners(threading.Thread):
         # we do publish the is_calibrated() message
         # here, because this msg is so closely related
         # to the calibrate() service:
-        self.is_calibratedPublisher = rospy.Publisher('is_calibrated', Bool, latch=True)
+        self.is_calibratedPublisher = rospy.Publisher('imu/is_calibrated', Bool, latch=True)
         # We'll always just reuse this msg object:        
         self.is_CalibratedResponseMsg = Bool();
           
@@ -639,7 +639,7 @@ class WiimoteListeners(threading.Thread):
       rospy.Subscriber("rumble", RumbleControl, rumbleSwitchCallback)
       rospy.loginfo("Wiimote LED control listener starting (topic /leds).")
       rospy.Subscriber("leds", LEDControl, ledControlCallback)
-      rospy.Service("imu_data/calibrate", Empty, calibrateCallback)
+      rospy.Service("imu/calibrate", Empty, calibrateCallback)
       
       try:
           rospy.spin()
