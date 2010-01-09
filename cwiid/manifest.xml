@@ -17,5 +17,8 @@ in a way that can be managed by the ROS dependency system.
 <rosdep name="python"/>
 <rosdep name="libbluetooth-dev"/>
 <rosdep name="bluez"/>
+<rosdep name="flex"/>
+<rosdep name="bison"/>
+<rosdep name="pkg-config"/>
 </package>
 

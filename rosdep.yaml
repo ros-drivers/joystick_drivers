@@ -30,3 +30,11 @@ libbluetooth-dev:
   ubuntu: libbluetooth-dev
 libx11-dev:
   ubuntu: libx11-dev
+flex:
+  ubuntu: flex
+  debian: flex
+  arch: flex
+bison:
+  ubuntu: bison
+  debian: bison
+  arch: bison
