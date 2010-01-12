@@ -22,5 +22,8 @@ upstream revision r201 is being provided.
 <rosdep name="flex"/>
 <rosdep name="bison"/>
 <rosdep name="pkg-config"/>
+<export>
+  <doxymaker external="http://abstrakraft.org/cwiid/svn/trunk"/>
+</export>
 </package>
 
