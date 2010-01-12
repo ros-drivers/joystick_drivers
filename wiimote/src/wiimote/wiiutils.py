@@ -16,7 +16,9 @@
 import sys
 import time
 import wiimoteConstants as acConst
-
+from math import sqrt
+import numpy as np
+import random
 
 #;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 #
@@ -44,4 +46,19 @@ def promptUsr(str):
 def getTimeStamp():
   """Return current time as float of seconds since beginning of Epoch."""
   return time.time()
+  
+        
+if __name__ == '__main__':
+
+    foo = np.array([(4.0,3.0,3.0)])
+    bar = np.array([(4.0,3.0,3.0)])
+    
+    isGreater = np.greater(foo,bar)
+    isBad     = np.greater(foo,bar).any()
+    test = (foo > bar).any() 
+    
+    
+    print repr(isGreater)
+    print isBad
+    print test
 

@@ -21,23 +21,28 @@
 """The wiimote_node broadcasts three topics, and listens to messages that control
 the Wiimote stick's rumble (vibration) and LEDs. Transmitted topics (@100Hz):
 
-   o joy/Joy           Messages contain the accelerometer and gyro axis data, and all button states.
-   o sensor_data/Imu   Messages contain the accelerometer and gyro axis data, and covariance matrices
-   o wiimote/Wiimote   the /Joy and /Imu messages, and raw), the button states, the LED states,
+   o joy/joy           Messages contain the accelerometer and gyro axis data, and all button states.
+   o imu/data          Messages contain the accelerometer and gyro axis data, and covariance matrices
+   o wiimote/state     the /joy and /imu messages, and raw), the button states, the LED states,
                        rumble (i.e. vibrator) state, IR light sensor readings, time since last zeroed, 
-                       and battery state. See Wiimote.msg
+                       and battery state. See State.msg
+   o imu/is_calibrated Latched message
                  
 The node listens to the following messages:
 
-   o /rumble     Instruct this node to turn on/off the rumble (i.e. vibrator). Rather
+   o wiimote/rumble
+                 Instruct this node to turn on/off the rumble (i.e. vibrator). Rather
                  than just switching rumble, the message can instead contain
                  an array of on/off durations. This node will pulse the rumbler
                  accordingly without the message sender's additional cooperation.
                  See RumbleControl.mg and TimedSwitch.msg
-   o /led        Turn each LED on the Wiimote on/off. The message can instead 
+   o wiimote/leds
+                 Turn each LED on the Wiimote on/off. The message can instead 
                  contain an array of TimedSwitch structures. Each such structure
                  turns a respective LED on and off according to time intervals that
                  are stored in the structure. See LEDControl.msg and TimedSwitch.msg
+   o imu/calibrate
+                 Request to calibrate the device.
                  
 No command line parameters.
 """
@@ -69,8 +74,8 @@ from std_srvs.srv import Empty
 from std_srvs.srv import EmptyResponse
 from std_msgs.msg import Bool
 from joy.msg import Joy
-from wiimote.msg import IR_source_info
-from wiimote.msg import Wiimote
+from wiimote.msg import IrSourceInfo
+from wiimote.msg import State
 from wiimote.msg import TimedSwitch
 from wiimote.msg import LEDControl
 from wiimote.msg import RumbleControl
@@ -79,6 +84,9 @@ from wiimote.msg import RumbleControl
 from wiimote.wiimoteExceptions import *
 from wiimote.wiimoteConstants import *
 import wiimote.WIIMote
+import wiimote.wiiutils
+
+GATHER_CALIBRATION_STATS = True
 
 class WiimoteNode():
     
@@ -92,16 +100,7 @@ class WiimoteNode():
         rospy.init_node('wiimote', anonymous=True, log_level=rospy.ERROR) # log_level=rospy.DEBUG
         wiimoteDevice = wiimote.WIIMote.WIIMote()
         wiimoteDevice.zeroDevice()
-        #******
-    	# numOfCalibrations = 30
-    	# numSuccesses = 0
-    	# for i in range(numOfCalibrations):
-    	#     print ("zeroing loop: " + repr(i))
-    	#     if (wiimoteDevice.zeroDevice()):
-    	#         numSuccesses += 1
-    	# percentSuccess = numSuccesses * 100/numOfCalibrations
-    	# print ("Calibration success rate: " + repr(percentSuccess))
-        #******
+        
         try:
             IMUSender(wiimoteDevice, freq=100).start()
             JoySender(wiimoteDevice, freq=100).start()
@@ -112,8 +111,7 @@ class WiimoteNode():
         
         except:    
             rospy.loginfo("Error in startup")
-            trace = sys.last_traceback
-            traceback.print_tb(trace)
+            System.err.println (sys.exc_info()[0])
         finally:
             try:
                 wiimoteDevice.setRumble(False)
@@ -213,7 +211,7 @@ class IMUSender(WiimoteDataSender):
         
         WiimoteDataSender.__init__(self, wiiMote, freq)
         
-        self.pub = rospy.Publisher('imu', Imu)        
+        self.pub = rospy.Publisher('imu/data', Imu)        
         
     def run(self):
         """Loop that obtains the latest wiimote state, publishes the IMU data, and sleeps.
@@ -230,7 +228,7 @@ class IMUSender(WiimoteDataSender):
         diagonal. We obtain the variance from the Wiimote instance.  
         """
         
-        rospy.loginfo("Wiimote IMU publisher starting (topic /imu).")
+        rospy.loginfo("Wiimote IMU publisher starting (topic /imu/data).")
         self.threadName = "IMU topic Publisher"
         try:
             while not rospy.is_shutdown():
@@ -319,17 +317,17 @@ class JoySender(WiimoteDataSender):
                 #     a better way in python to declare an array of 11 zeroes...]
 
                 theButtons = [False,False,False,False,False,False,False,False,False,False,False]
-                theButtons[Wiimote.MSG_BTN_1]     = self.wiistate.buttons[BTN_1]
-                theButtons[Wiimote.MSG_BTN_2]     = self.wiistate.buttons[BTN_2]
-                theButtons[Wiimote.MSG_BTN_A]     = self.wiistate.buttons[BTN_A]
-                theButtons[Wiimote.MSG_BTN_B]     = self.wiistate.buttons[BTN_B]
-                theButtons[Wiimote.MSG_BTN_PLUS]  = self.wiistate.buttons[BTN_PLUS]
-                theButtons[Wiimote.MSG_BTN_MINUS] = self.wiistate.buttons[BTN_MINUS]
-                theButtons[Wiimote.MSG_BTN_LEFT]  = self.wiistate.buttons[BTN_LEFT]
-                theButtons[Wiimote.MSG_BTN_RIGHT] = self.wiistate.buttons[BTN_RIGHT]
-                theButtons[Wiimote.MSG_BTN_UP]    = self.wiistate.buttons[BTN_UP]
-                theButtons[Wiimote.MSG_BTN_DOWN]  = self.wiistate.buttons[BTN_DOWN]
-                theButtons[Wiimote.MSG_BTN_HOME]  = self.wiistate.buttons[BTN_HOME]
+                theButtons[State.MSG_BTN_1]     = self.wiistate.buttons[BTN_1]
+                theButtons[State.MSG_BTN_2]     = self.wiistate.buttons[BTN_2]
+                theButtons[State.MSG_BTN_A]     = self.wiistate.buttons[BTN_A]
+                theButtons[State.MSG_BTN_B]     = self.wiistate.buttons[BTN_B]
+                theButtons[State.MSG_BTN_PLUS]  = self.wiistate.buttons[BTN_PLUS]
+                theButtons[State.MSG_BTN_MINUS] = self.wiistate.buttons[BTN_MINUS]
+                theButtons[State.MSG_BTN_LEFT]  = self.wiistate.buttons[BTN_LEFT]
+                theButtons[State.MSG_BTN_RIGHT] = self.wiistate.buttons[BTN_RIGHT]
+                theButtons[State.MSG_BTN_UP]    = self.wiistate.buttons[BTN_UP]
+                theButtons[State.MSG_BTN_DOWN]  = self.wiistate.buttons[BTN_DOWN]
+                theButtons[State.MSG_BTN_HOME]  = self.wiistate.buttons[BTN_HOME]
 
                 msg.buttons = theButtons
                 
@@ -363,7 +361,7 @@ class WiiSender(WiimoteDataSender):
         
         WiimoteDataSender.__init__(self, wiiMote, freq)
         
-        self.pub = rospy.Publisher('wiimote', Wiimote)        
+        self.pub = rospy.Publisher('/wiimote/state', State)
         
     def run(self):
         """Loop that obtains the latest wiimote state, publishes the data, and sleeps.
@@ -377,7 +375,7 @@ class WiiSender(WiimoteDataSender):
         diagonal. We obtain the variance from the Wiimote instance.  
         """
         
-        rospy.loginfo("Wiimote publisher starting (topic /wiimote).")
+        rospy.loginfo("Wiimote state publisher starting (topic /wiimote/state).")
         self.threadName = "Wiimote topic Publisher"
         try:
             while not rospy.is_shutdown():
@@ -385,22 +383,22 @@ class WiiSender(WiimoteDataSender):
                 
                 zeroingTimeSecs = int(self.wiiMote.lastZeroingTime)
                 zeroingTimeNSecs = int((self.wiiMote.lastZeroingTime - zeroingTimeSecs) * 10**9)
-                msg = Wiimote(header=None,
-                          angular_velocity_zeroed=None,
-                          angular_velocity_raw=None,
-                          angular_velocity_covariance=self.angular_velocity_covariance,
-                          linear_acceleration_zeroed=None,
-                          linear_acceleration_raw=None,
-                          linear_acceleration_covariance=self.linear_acceleration_covariance,
-                          buttons=[False,False,False,False,False,False,False,False,False,False],
-                          rumble=False,
-                          LEDs=None,
-                          ir_tracking=None,
-                          raw_battery=None,
-                          percent_battery=None,
-                          #zeroing_time=roslib.msg.Time(header=None, rostime=roslib.rostime.Time(zeroingTimeSecs, zeroingTimeNSecs)),
-                          zeroing_time=roslib.msg.Time(header=None, rostime=rospy.Time(zeroingTimeSecs, zeroingTimeNSecs)),
-                          errors=0)
+                msg = State(header=None,
+                            angular_velocity_zeroed=None,
+                            angular_velocity_raw=None,
+                            angular_velocity_covariance=self.angular_velocity_covariance,
+                            linear_acceleration_zeroed=None,
+                            linear_acceleration_raw=None,
+                            linear_acceleration_covariance=self.linear_acceleration_covariance,
+                            buttons=[False,False,False,False,False,False,False,False,False,False],
+                            rumble=False,
+                            LEDs=None,
+                            ir_tracking = None,
+                            raw_battery=None,
+                            percent_battery=None,
+                            #zeroing_time=roslib.msg.Time(header=None, rostime=roslib.rostime.Time(zeroingTimeSecs, zeroingTimeNSecs)),
+                            zeroing_time=roslib.msg.Time(header=None, rostime=rospy.Time(zeroingTimeSecs, zeroingTimeNSecs)),
+                            errors=0)
                     
                 # If a gyro is plugged into the Wiimote, then note the 
                 # angular velocity in the message, else indicate with
@@ -460,7 +458,7 @@ class WiiSender(WiimoteDataSender):
                           pos  = irSources[irSensorIndx]['pos']
                         except KeyError:
                             # If no position information from this IR sensor, use INVALID for the dimensions:
-                            msg.ir_tracking.append(IR_source_info(Wiimote.INVALID_FLOAT, Wiimote.INVALID_FLOAT, Wiimote.INVALID))
+                            msg.ir_tracking.append(IrSourceInfo(State.INVALID_FLOAT, State.INVALID_FLOAT, State.INVALID))
                         # The following else is unusual: its statements are bypassed is except clause had control:
                         else:
                             # Have IR position info from this IR sensor. We use the IR_source_info
@@ -469,11 +467,11 @@ class WiiSender(WiimoteDataSender):
                                 size = irSources[irSensorIndx]['size']
                             except KeyError:
                                 # If the driver did not deliver size information, indicate by using INVALID:
-                                size = Wiimote.INVALID
-                            lightInfo = IR_source_info(pos[0], pos[1], size)
+                                size = State.INVALID
+                            lightInfo = IrSourceInfo(pos[0], pos[1], size)
                             msg.ir_tracking.append(lightInfo)
                     else:
-                        msg.ir_tracking.append(IR_source_info(Wiimote.INVALID_FLOAT, Wiimote.INVALID_FLOAT, Wiimote.INVALID))
+                        msg.ir_tracking.append(IrSourceInfo(State.INVALID_FLOAT, State.INVALID_FLOAT, State.INVALID))
                 
                 measureTime = self.wiistate.time
                 timeSecs = int(measureTime)
@@ -520,7 +518,7 @@ class WiimoteListeners(threading.Thread):
         # we do publish the is_calibrated() message
         # here, because this msg is so closely related
         # to the calibrate() service:
-        self.is_calibratedPublisher = rospy.Publisher('imu/is_calibrated', Bool, latch=True)
+        self.is_calibratedPublisher = rospy.Publisher('/imu/is_calibrated', Bool, latch=True)
         # We'll always just reuse this msg object:        
         self.is_CalibratedResponseMsg = Bool();
           
@@ -623,23 +621,30 @@ class WiimoteListeners(threading.Thread):
         return  # end ledControlCallback()
 
       def calibrateCallback(req):
+        """The imu/calibrate service handler."""
+          
         rospy.loginfo("Calibration request")
+        
         calibrationSuccess = self.wiiMote.zeroDevice()
+        
         # Update the latched is_calibrated state:
 
         self.is_CalibratedResponseMsg.data = calibrationSuccess
         self.is_calibratedPublisher.publish(self.is_CalibratedResponseMsg)
+        
         return EmptyResponse()
 
       # Done with embedded function definitions. Back at the top
       # level of WiimoteListeners' run() function.
        
       # Subscribe to rumble and LED control messages and sit:
-      rospy.loginfo("Wiimote rumble listener starting (topic /rumble).")
-      rospy.Subscriber("rumble", RumbleControl, rumbleSwitchCallback)
-      rospy.loginfo("Wiimote LED control listener starting (topic /leds).")
-      rospy.Subscriber("leds", LEDControl, ledControlCallback)
+      rospy.loginfo("Wiimote rumble listener starting (topic /wiimote/rumble).")
+      rospy.Subscriber("/wiimote/rumble", RumbleControl, rumbleSwitchCallback)
+      rospy.loginfo("Wiimote LED control listener starting (topic /wiimote/leds).")
+      rospy.Subscriber("/wiimote/leds", LEDControl, ledControlCallback)
+      rospy.loginfo("Wiimote calibration service starting (topic /imu/calibrate).")
       rospy.Service("imu/calibrate", Empty, calibrateCallback)
+      rospy.loginfo("Wiimote latched is_calibrated publisher starting (topic /imu/is_calibrated).")
       
       try:
           rospy.spin()
@@ -939,6 +944,7 @@ if __name__ == '__main__':
     wiimoteNode = WiimoteNode()
     try:
         wiimoteNode.runWiimoteNode()
+        
     except rospy.ROSInterruptException:
         rospy.rospy.loginfo("ROS Shutdown Request.")
     except KeyboardInterrupt, e:

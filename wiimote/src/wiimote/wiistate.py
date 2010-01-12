@@ -17,10 +17,6 @@
 from wiimoteConstants import *
 from wiiutils import *
 import numpy as np
-#import scipy as sp
-
-#import matplotlib as mpl
-#import matplotlib.pyplot as ppl
 
 #----------------------------------------
 # Class WIIState
@@ -154,11 +150,11 @@ class WIIState(object):
             # If this class knows about a zero-movement reading for the
             # gyro, subtract that reading from the raw measurement:
             
-            self.angleRateRaw = gyroDict['angle_rate']
+            self.angleRateRaw = GyroReading(gyroDict['angle_rate'], self.time)
             if self._gyroZeroReading is not None:
                 self.angleRate = GyroReading(self.angleRateRaw - self._gyroZeroReading, self.time)
             else:
-                self.angleRate = GyroReading(self.angleRateRaw, self.time)
+                self.angleRate = self.angleRateRaw
                 
             self.motionPlusPresent = True
 
@@ -171,8 +167,19 @@ class WIIState(object):
   
   @classmethod
   def setAccelerometerCalibration(cls, zeroReading, oneReading):
-      cls._accCalibrationZero = zeroReading
-      cls._accCalibrationOne = oneReading
+      """Set the current accelerometer zeroing calibration."""
+      cls._accCalibrationZero = WIIReading(zeroReading)
+      cls._accCalibrationOne = WIIReading(oneReading)
+
+  #----------------------------------------
+  # getAccelerometerCalibration
+  #----------
+  
+  @classmethod
+  def getAccelerometerCalibration(cls):
+      """Return current accelerometer zeroing offset as two lists of x/y/z: the 
+      zero-reading, and the one-reading."""
+      return (cls._accCalibrationZero.tuple(), cls._accCalibrationOne.tuple())
 
   #----------------------------------------
   # setGyroCalibration
@@ -180,7 +187,18 @@ class WIIState(object):
   
   @classmethod
   def setGyroCalibration(cls, zeroReading):
-      cls._gyroZeroReading = zeroReading
+      """Set the x/y/z zeroing offsets for the gyro. Argument is a list"""
+      
+      cls._gyroZeroReading = GyroReading(zeroReading)
+
+  #----------------------------------------
+  # getGyroCalibration
+  #----------
+  
+  @classmethod
+  def getGyroCalibration(cls):
+      """Return current gyro zeroing offset as a list of x/y/z. """
+      return cls._gyroZeroReading.tuple()
 
   #----------------------------------------
   # __str___

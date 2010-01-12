@@ -17,6 +17,12 @@
 _DEBUGLEVEL = 1
 _MONITOR_LEVEL = 1
 
+import numpy as np
+
+# Control over calibration:
+NUM_ZEROING_READINGS = 100 # Number of readings to take for zeroing acc and gyro
+NUM_WARMUP_READINGS =  100 # Number of readings to throw away initially so that
+                            # the gyro starts providing data for calibration
 
 # Number of standard deviations that accelerator or
 # gyro measurements need to be beyond the mean (axis
@@ -27,7 +33,7 @@ OUTLIER_STDEV_MULTIPLE = 3
 # Whether to calibrate the Wiimote even when
 # the calibration process was less than perfect:
 
-CALIBRATE_WITH_FAILED_CALIBRATION_DATA = True
+CALIBRATE_WITH_FAILED_CALIBRATION_DATA = False
 
 # TimedSwitch message field value constants:
 SWITCH_ON  = 1
@@ -143,5 +149,20 @@ WII_MSG_TYPE_UNKNOWN     = 9
 
 #define CWIID_IR_X_MAX        1024
 #define CWIID_IR_Y_MAX        768
+
+ACC_X_STDEV_THRESHOLD    = 1.0 
+ACC_Y_STDEV_THRESHOLD    = 1.0 
+ACC_Z_STDEV_THRESHOLD    = 1.0
+
+GYRO_X_STDEV_THRESHOLD    = 50.0 
+GYRO_Y_STDEV_THRESHOLD    = 50.0 
+GYRO_Z_STDEV_THRESHOLD    = 50.0
+
+THRESHOLDS_ARRAY = np.array([ACC_X_STDEV_THRESHOLD,
+                             ACC_Y_STDEV_THRESHOLD,
+                             ACC_Z_STDEV_THRESHOLD,
+                             GYRO_X_STDEV_THRESHOLD,
+                             GYRO_Y_STDEV_THRESHOLD,
+                             GYRO_Z_STDEV_THRESHOLD])
 
  
