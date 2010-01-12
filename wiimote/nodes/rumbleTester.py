@@ -40,7 +40,7 @@ def talker():
     # Send one message, or keep repeating?
     oneShot = True
     
-    pub = rospy.Publisher('rumble', RumbleControl)
+    pub = rospy.Publisher('/wiimote/rumble', RumbleControl)
     rospy.init_node('rumbleTester', anonymous=True)
 
 
@@ -60,7 +60,7 @@ def talker():
 
 def sendBlank(pub):
 
-    print("Ask for pattern, but set num_cycles=0. ==> No rumble")
+    print("Ask wiimote node for pattern, but set num_cycles=0. ==> No rumble")
     msg = RumbleControl(TimedSwitch(switch_mode=SWITCH_PULSE_PATTERN,
 				    num_cycles = 0,
 				    pulse_pattern=[morseDi,
@@ -78,7 +78,7 @@ def sendBlank(pub):
 
 def sendOneMorse(pub):
 
-    print("Ask for pattern, set num_cycles=1. ==> One Morse '. - . .' rumble")
+    print("Ask wiimote node for pattern, set num_cycles=1. ==> One Morse '. - . .' rumble")
     msg = RumbleControl(TimedSwitch(switch_mode=SWITCH_PULSE_PATTERN,
 				    num_cycles = 1,
 				    pulse_pattern=[morseDi,
@@ -96,7 +96,7 @@ def sendOneMorse(pub):
 
 def sendTwoMorse(pub):
 
-    print("Ask for pattern, set num_cycles=2. ==> Two Morse '. - . .' rumble cycles")
+    print("Ask wiimote node for rumble pattern, set num_cycles=2. ==> Two Morse '. - . .' rumble cycles")
     msg = RumbleControl(TimedSwitch(switch_mode=SWITCH_PULSE_PATTERN,
 				    num_cycles = 2,
 				    pulse_pattern=[morseDi,
@@ -114,5 +114,9 @@ def sendTwoMorse(pub):
 
 if __name__ == '__main__':
     try:
+        print("\n   ****************************************************************************************\n")
+        print("**** You should feel three repeated vibrations, spelling out Morse code pattern for 'L': .-.. *****\n")
+        print("Console messages below describe ROS messages being sent.")
+        print("\n   ****************************************************************************************\n\n")
         talker()
     except rospy.ROSInterruptException: pass

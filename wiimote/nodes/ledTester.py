@@ -4,7 +4,7 @@ import roslib; roslib.load_manifest('wiimote')
 import rospy
 from wiimote.msg import LEDControl
 from wiimote.msg import TimedSwitch
-from wiimote.msg import Wiimote
+from wiimote.msg import State
 
 
 # Test the wiimote package LED control. Expect the following LED
@@ -32,7 +32,7 @@ def talker():
     morseDa            = 0.6
     morseLongPause  = 1.0
     
-    pub = rospy.Publisher('leds', LEDControl)
+    pub = rospy.Publisher('/wiimote/leds', LEDControl)
     rospy.init_node('ledControlTester', anonymous=True)
     
     onSwitch       = TimedSwitch(switch_mode=TimedSwitch.ON)
@@ -94,47 +94,60 @@ def talker():
     while not rospy.is_shutdown():
 
       if msg0 is not None:
-          rospy.loginfo("Msg0: " + str(msg0))
+          rospy.logdebug("Msg0: " + str(msg0))
           pub.publish(msg0)
           rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
 
       if msg1 is not None:
-          rospy.loginfo("Msg1: " + str(msg1))
+          rospy.logdebug("Msg1: " + str(msg1))
           pub.publish(msg1)
           rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
 
       if msg2 is not None:
-          rospy.loginfo("Msg2: " + str(msg2))
+          rospy.logdebug("Msg2: " + str(msg2))
           pub.publish(msg2)
           rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
 
       if msg3 is not None:
-          rospy.loginfo("Msg3: " + str(msg3))
+          rospy.logdebug("Msg3: " + str(msg3))
           pub.publish(msg3)
           rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
 
       if msg4 is not None:
-          rospy.loginfo("Msg4: " + str(msg4))
+          rospy.logdebug("Msg4: " + str(msg4))
           pub.publish(msg4)
           rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
 
       if msg5 is not None:
-          rospy.loginfo("Msg5: " + str(msg5))
+          rospy.logdebug("Msg5: " + str(msg5))
           pub.publish(msg5)
           rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
 
       if msg6 is not None:
-          rospy.loginfo("Msg6: " + str(msg6))
+          rospy.logdebug("Msg6: " + str(msg6))
           pub.publish(msg6)
           rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
 
       if msg7 is not None:
-          rospy.loginfo("Msg7: " + str(msg7))
+          rospy.logdebug("Msg7: " + str(msg7))
           pub.publish(msg7)
           rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
 
 
 if __name__ == '__main__':
+    
+  print("\n   ****************************************************************\n")
+  print("****     You should see seven LED on/off configurations,  ****")
+  print("        plus a twice-repeated, all-ligths Morse code 'L' (.-..)") 
+  print("\n   **************************************************************")
+  print("[off, off, off, off]")
+  print("[on,  off, off, off]")
+  print("[off, on,  off, off]")
+  print("[off, off, on,  off]")
+  print("[off, off, off, on ]")
+  print("[off, on,  on,  on ]")
+  print("[on,  off, off, on ]")
+  print("Twice all LEDs flashing a Morse 'L': .-..\n")
   try:
     talker()
   except rospy.ROSInterruptException:
