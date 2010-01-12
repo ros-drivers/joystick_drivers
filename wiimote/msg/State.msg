@@ -1,5 +1,5 @@
 #
-#          Wiimote message containing one complete Wiimote state
+#          Wiimote State message containing one complete Wiimote state
 
 # Note: For ease of manipulation this message often uses
 #       int8[] when a bit vector would work. One might
@@ -80,7 +80,7 @@ bool rumble
 # we make the following array extensible, rather
 # than locking its length down to four:
 
-wiimote/IR_source_info[] ir_tracking
+wiimote/IrSourceInfo[] ir_tracking
 
 #----------------------
 # Wiimote battery
