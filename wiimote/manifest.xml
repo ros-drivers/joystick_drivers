@@ -1,19 +1,13 @@
 <package>
   <description brief="wiimote">
-    The wiimote package turns the WiimotePlus into a ROS node. This
-    node connects to a WiimotePlus via Bluetooth and broadcasts three
-    message types: Imu, Joy, Wiimote, and is_calibrated.
-
-    Information available through these messages are the accelerometer and gyro
-    data, the state of LEDs, the IR camera, rumble (vibrator),
-    buttons, and battery state.
-
-    The node also listens for request messages to operate the LEDs and
-    the rumble, and for re-calibration requests. Such request messages 
-    can switch rumble and LED outputs on or off. Or the messages can instead request 
-    that any of the LEDs or rumble are turned on and off according to a 
-    time pattern that is laid down in the messages.
-    
+    The wiimote package provides a ROS node for the Wiimote and an optional
+    Wii Motion Plus. The Wiimote is exposed as an IMU, as a joystick, and
+    as a Wiimote (to benefit from more Wiimote-specific features).
+    <br>
+    The ROS API gives access to the accelerometer data, the gyroscope
+    data (only with the Wii Motion Plus), the button state, and the battery state.
+    The ROS API can also be used to control the rumble (vibrator) and LEDs, including
+    specifying a time sequence of on/off transitions.
   </description>
   <author>Andreas Paepcke</author>
   <license>GPL</license>
