@@ -3,7 +3,7 @@
     The wiimote package provides a ROS node for the Wiimote and an optional
     Wii Motion Plus. The Wiimote is exposed as an IMU, as a joystick, and
     as a Wiimote (to benefit from more Wiimote-specific features).
-    <br>
+   
     The ROS API gives access to the accelerometer data, the gyroscope
     data (only with the Wii Motion Plus), the button state, and the battery state.
     The ROS API can also be used to control the rumble (vibrator) and LEDs, including
