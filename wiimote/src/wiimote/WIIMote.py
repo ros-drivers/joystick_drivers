@@ -324,43 +324,55 @@ class WIIMote(object):
             accArrays.append(oneAccReading)
     accArrays = np.reshape(accArrays, (-1,3))
     
-    # Extract the accelerometer reading triplets from the list of WIIReading()s:     
-    for gyroReading in self._gyroList:
-        if (gyroReading is not None):
-            oneGyroReading = gyroReading.tuple()
-            gyroArrays.append(oneGyroReading)
-    gyroArrays = np.reshape(gyroArrays, (-1,3))
+    # Extract the gyro reading triplets from the list of WIIReading()s:
+    if (self.motionPlusPresent()):     
+    	for gyroReading in self._gyroList:
+    	    if (gyroReading is not None):
+    	        oneGyroReading = gyroReading.tuple()
+    	        gyroArrays.append(oneGyroReading)
     
-    # We now have:
-    # [[accX1, accZ1, accZ1]
-    #  [accX2, accZ2, accZ2]
-    #      ...
-    #  ]
-    # 
-    # and:
-    # 
-    # [[gyroX1, gyroZ1, gyroZ1]
-    #  [gyroX2, gyroZ2, gyroZ2]
-    #      ...
-    #  ]
-    # 
-    # Combine all into:
-    # 
-    # [[accX1, accZ1, accZ1, gyroX1, gyroZ1, gyroZ1]
-    #  [accX2, accZ2, accZ2, gyroX2, gyroZ2, gyroZ2]
-    #      ...
-    #  ]
-    # 
-     
-    allData = np.append(accArrays, gyroArrays, axis=1)
-    
+    if (self.motionPlusPresent()):
+        gyroArrays = np.reshape(gyroArrays, (-1,3))
+        
+        # We now have:
+        # [[accX1, accZ1, accZ1]
+        #  [accX2, accZ2, accZ2]
+        #      ...
+        #  ]
+        # 
+        # and:
+        # 
+        # [[gyroX1, gyroZ1, gyroZ1]
+        #  [gyroX2, gyroZ2, gyroZ2]
+        #      ...
+        #  ]
+        # 
+        # Combine all into:
+        # 
+        # [[accX1, accZ1, accZ1, gyroX1, gyroZ1, gyroZ1]
+        #  [accX2, accZ2, accZ2, gyroX2, gyroZ2, gyroZ2]
+        #      ...
+        #  ]
+        # 
+       
+        allData = np.append(accArrays, gyroArrays, axis=1)
+        # Will compare both, accelerometer x/y/z, and gyro x/y/z
+        # to their stdev threshold to validate calibration:
+        thresholdsArray = THRESHOLDS_ARRAY
+    else:
+        allData = accArrays
+        # Will compare only accelerometer x/y/z to their stdev
+        # threshold to validate calibration. No Wiimote+ was
+        # detected:
+        thresholdsArray = THRESHOLDS_ARRAY[0:3]
+      
     # And take the std deviations column-wise:
     stdev = np.std(allData, axis=0)
     
     # See whether any of the six stdevs exceeds the
     # calibration threshold:
     
-    isBadCalibration = (stdev > THRESHOLDS_ARRAY).any()
+    isBadCalibration = (stdev > thresholdsArray).any()
 
     # We always use the factory-installed calibration info,
     self.setAccelerometerCalibration(accCalibrationOrig[0], accCalibrationOrig[1])
@@ -369,13 +381,14 @@ class WIIMote(object):
         self.latestCalibrationSuccessful = False;
         # We can calibrate the Wiimote anyway, if the preference
         # constant in wiimoteConstants.py is set accordingly:
-        if (CALIBRATE_WITH_FAILED_CALIBRATION_DATA):
+        if (CALIBRATE_WITH_FAILED_CALIBRATION_DATA and self.motionPlusPresent()):
             rospy.loginfo("Failed calibration; using questionable calibration anyway.")
             wiistate.WIIState.setGyroCalibration(self.meanGyro)
         else:
             if (gyroCalibrationOrig is not None):
                 rospy.loginfo("Failed calibration; retaining previous calibration.")
-                wiistate.WIIState.setGyroCalibration(gyroCalibrationOrig)
+                if (self.motionPlusPresent()):
+                    wiistate.WIIState.setGyroCalibration(gyroCalibrationOrig)
             else:
                 rospy.loginfo("Failed calibration; running without calibration now.")
         return False
@@ -643,6 +656,23 @@ class WIIMote(object):
 
   def setGyroCalibration(self, gyroTriplet):
       wiistate.WIIState.setGyroCalibration(gyroTriplet)
+    
+  #----------------------------------------
+  # motionPlusPresent
+  #------------------
+
+  def motionPlusPresent(self):
+      """Return True/False to indicate whether a Wiimotion Plus is detected.
+      
+      Note: The return value is accurate only after at least one 
+      Wiimote state has been read. This means that either 
+      _steadyStateCallback or _calibrationCallback must have
+      run at least once.
+      """
+      if (self.wiiMoteState is not None):
+          return self.wiiMoteState.motionPlusPresent
+      else:
+          return False
     
   #----------------------------------------
   # computeAccStatistics
