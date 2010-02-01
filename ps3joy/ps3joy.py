@@ -136,7 +136,7 @@ class BadJoystickException(Exception):
         Exception.__init__(self, "Unsupported joystick.")
 
 class decoder:
-    def __init__(self):
+    def __init__(self, inactivity_timeout = float(1e3000)):
         #buttons=[uinput.BTN_SELECT, uinput.BTN_THUMBL, uinput.BTN_THUMBR, uinput.BTN_START, 
         #         uinput.BTN_FORWARD, uinput.BTN_RIGHT, uinput.BTN_BACK, uinput.BTN_LEFT, 
         #         uinput.BTN_TL, uinput.BTN_TR, uinput.BTN_TL2, uinput.BTN_TR2,
@@ -163,7 +163,12 @@ class decoder:
         self.joy = uinputjoy(buttons, axes, axmin, axmax, axfuzz, axflat)
         self.axmid = [sum(pair)/2 for pair in zip(axmin, axmax)]
         self.fullstop() # Probably useless because of uinput startup bug
-        self.outlen = len(buttons) + len(axes)
+        self.outlen = len(buttons) + len(axes)           
+        self.inactivity_timeout = inactivity_timeout
+
+    step_active = 1
+    step_idle = 2
+    step_error = 3
 
     def step(self, rawdata): # Returns true if the packet was legal
         if len(rawdata) == 50:
@@ -172,22 +177,26 @@ class decoder:
             prefix = data.pop(0)
             if prefix != 161:
                 print >> sys.stderr, "Unexpected prefix (%i). Is this a PS3 Dual Shock or Six Axis?"%prefix
-                return False
+                return self.step_error
             out = []
-            for j in range(0,2):
+            for j in range(0,2): # Split out the buttons.
                 curbyte = data.pop(0)
                 for k in range(0,8):
                     out.append(int((curbyte & (1 << k)) != 0))
             out = out + data
             self.joy.update(out)
-            return True
+            axis_motion = [abs(out[17:][i] - self.axmid[i]) > 20 for i in range(0,len(out)-17-4)]  
+                                                                       # 17 buttons, 4 inertial sensors
+            if any(out[0:17]) or any(axis_motion):
+                return self.step_active
+            return self.step_idle
         elif len(rawdata) == 13:
             #print list(rawdata)
             print >> sys.stderr, "Your bluetooth adapter is not supported. Does it support Bluetooth 2.0? Please report its model to blaise@willowgarage.com"
             raise BadJoystickException()
         else:
             print >> sys.stderr, "Unexpected packet length (%i). Is this a PS3 Dual Shock or Six Axis?"%len(rawdata)
-            return False
+            return self.step_error
 
     def fullstop(self):
         self.joy.update([0] * 17 + self.axmid)
@@ -196,7 +205,7 @@ class decoder:
         activated = False
         try:
             self.fullstop()
-            lastvalidtime = time.time()
+            lastactivitytime = lastvalidtime = time.time()
             while True:
                 (rd, wr, err) = select.select([intr], [], [], 0.1)
                 curtime = time.time()
@@ -216,8 +225,14 @@ class decoder:
                     if len(rawdata) == 0: # Orderly shutdown of socket
                         print "Joystick shut down the connection, battery may be discharged."
                         return
-                    if self.step(rawdata):
+                    stepout = self.step(rawdata)
+                    if stepout != self.step_error:
                         lastvalidtime = curtime
+                    if stepout == self.step_active:
+                        lastactivitytime = curtime
+                if curtime - lastactivitytime > self.inactivity_timeout:
+                    print "Joystick inactive for %.0f seconds. Disconnecting to save battery."%self.inactivity_timeout
+                    return
                 if curtime - lastvalidtime >= 0.1: # Zero all outputs if we don't hear a valid frame for 0.1 to 0.2 seconds
                     self.fullstop()
                 if curtime - lastvalidtime >= 5: # Disconnect if we don't hear a valid frame for 5 seconds
@@ -296,9 +311,38 @@ class connection_manager:
                 print >> sys.stderr, "Caught exception: %s"%str(e)
                 time.sleep(1)
             print
+                    
+inactivity_timout_string = "--inactivity-timeout"
+                    
+def usage():
+    print "usage: ps3joy.py ["+inactivity_timout_string+"=n]"
+    print "n: inactivity timeout in seconds (saves battery life)."
+    sys.exit(0)
 
 if __name__ == "__main__":
     try:
+        inactivity_timeout = float(1e3000)
+        for arg in sys.argv[1:]: # Be very tolerant in case we are roslaunched.
+            if arg == "--help":
+                usage()
+            elif arg.startswith(inactivity_timout_string):
+                if not arg.startswith(inactivity_timout_string+"="):
+                    print "Expected '=' after "+inactivity_timout_string
+                    print
+                    usage()
+                str_value = arg[len(inactivity_timout_string)+1:]
+                try:
+                    inactivity_timeout = float(str_value)
+                    if inactivity_timeout < 0:
+                        print "Inactivity timeout must be positive."
+                        print
+                        usage()
+                except ValueError:
+                    print "Error parsing inactivity timeout: "+str_value
+                    print
+                    usage()
+            else:
+                print "Ignoring parameter: '%s'"%arg
         if os.getuid() != 0:
             print >> sys.stderr, "ps3joy.py must be run as root."
             quit(1)
@@ -307,8 +351,12 @@ if __name__ == "__main__":
             print >> sys.stderr,  "No bluetooth dongle found or bluez rosdep not installed. Will retry in 5 seconds."
             time.sleep(5)
         os.system("hciconfig hci0 up > /dev/null 2>&1")
-        os.system("hciconfig hci0 pscan > /dev/null 2>&1")
-        cm = connection_manager(decoder())
+        os.system("hciconfig hci0 pscan > /dev/null 2>&1")   
+        if inactivity_timeout == float(1e3000):
+            print "No inactivity timeout was set. (Run with --help for details.)"
+        else:
+            print "Inactivity timeout set to %.0f seconds."%inactivity_timeout
+        cm = connection_manager(decoder(inactivity_timeout = inactivity_timeout))
         cm.listen_bluetooth()
     except KeyboardInterrupt:
         print "CTRL+C detected. Exiting."
