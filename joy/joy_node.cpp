@@ -87,7 +87,8 @@ public:
   int main(int argc, char **argv)
   {
     diagnostic_.add("Joystick Driver Status", this, &Joystick::diagnostics);
-    
+    diagnostic_.setHardwareID("none");
+
     // Parameters
     ros::NodeHandle nh_param("~");
     pub_ = nh_.advertise<joy::Joy>("joy", 1);
