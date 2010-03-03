@@ -14,7 +14,7 @@ python-bluez:
   ubuntu: python-bluez
   debian: python-bluez
   arch: python-pybluez
-  fedora: python-bluez
+  fedora: pybluez
   rhel: python-bluez
 bluez:
   ubuntu:
@@ -28,13 +28,17 @@ bluez:
   rhel: bluez-libs
 libbluetooth-dev:
   ubuntu: libbluetooth-dev
+  fedora: bluez-libs-devel
 libx11-dev:
   ubuntu: libx11-dev
+  fedora: libX11-devel
 flex:
   ubuntu: flex
   debian: flex
   arch: flex
+  fedora: flex
 bison:
   ubuntu: bison
   debian: bison
   arch: bison
+  fedora: bison
