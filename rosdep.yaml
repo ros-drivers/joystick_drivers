@@ -4,18 +4,21 @@ joystick:
   arch: kernel-headers
   fedora: joystick
   rhel: joystick
+  gentoo: games-util/joystick
 libusb:
   ubuntu: libusb-dev
   debian: libusb-dev
   arch: libusb
   fedora: libusb-devel
   rhel: libusb-devel
+  gentoo: dev-libs/libusb
 python-bluez:
   ubuntu: python-bluez
   debian: python-bluez
   arch: python-pybluez
   fedora: pybluez
   rhel: python-bluez
+  gentoo: dev-python/pybluez
 bluez:
   ubuntu:
     '9.10': bluez
@@ -26,19 +29,24 @@ bluez:
   arch: bluez
   fedora: bluez-libs
   rhel: bluez-libs
+  gentoo: net-wireless/bluez-utils
 libbluetooth-dev:
   ubuntu: libbluetooth-dev
   fedora: bluez-libs-devel
+  gentoo: net-wireless/bluez-libs
 libx11-dev:
   ubuntu: libx11-dev
   fedora: libX11-devel
+  gentoo: x11-libs/libX11
 flex:
   ubuntu: flex
   debian: flex
   arch: flex
   fedora: flex
+  gentoo: sys-devel/flex
 bison:
   ubuntu: bison
   debian: bison
   arch: bison
   fedora: bison
+  gentoo: sys-devel/bison
