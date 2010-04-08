@@ -139,7 +139,11 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  if ( ! found ) printf("No controller found on USB busses. Please connect your joystick via USB.\n");
+  if ( ! found ) {
+    printf("No controller found on USB busses. Please connect your joystick via USB.\n");
+    return 1;
+  }
+
   return 0;
 
 }
