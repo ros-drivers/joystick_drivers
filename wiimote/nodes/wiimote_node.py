@@ -7,7 +7,7 @@
 #               and allows Wiimote rumble/LED setting.
 # Author:       Andreas Paepcke
 # Created:      Thu Sep 10 10:31:44 2009
-# Modified:     Mon Nov  9 15:59:45 2009 (Andreas Paepcke) paepcke@anw.willowgarage.com
+# Modified:     Thu Apr 15 13:44:17 2010 (Andreas Paepcke) paepcke@anw.willowgarage.com
 # Language:     Python
 # Package:      N/A
 # Status:       Experimental (Do Not Distribute)
@@ -15,10 +15,15 @@
 # (c) Copyright 2009, Willow Garage, all rights reserved.
 #
 ################################################################################
-
+#
+# Revisions:
+#
+# Thu Mar 18 10:56:09 2010 (David Lu) davidlu@wustl.edu
+#  Enabled nunchuck message publishing
+################################################################################
 #!/usr/bin/env python
 
-"""The wiimote_node broadcasts three topics, and listens to messages that control
+"""The wiimote_node broadcasts four topics, and listens to messages that control
 the Wiimote stick's rumble (vibration) and LEDs. Transmitted topics (@100Hz):
 
    o joy/joy           Messages contain the accelerometer and gyro axis data, and all button states.
@@ -27,6 +32,7 @@ the Wiimote stick's rumble (vibration) and LEDs. Transmitted topics (@100Hz):
                        rumble (i.e. vibrator) state, IR light sensor readings, time since last zeroed, 
                        and battery state. See State.msg
    o imu/is_calibrated Latched message
+   o nunchuck          Joy messages using the nunchuck as a joystick
                  
 The node listens to the following messages:
 
@@ -48,8 +54,8 @@ No command line parameters.
 """
 
 # Code structure: The main thread spawns one thread each for the 
-# three message senders, and one thread each for the message listeners.
-# The respective classes are IMUSender, JoySender, and WiiSender for
+# four message senders, and one thread each for the message listeners.
+# The respective classes are IMUSender, JoySender, NunSender and WiiSender for
 # topic sending, and WiimoteListeners for the two message listeners.
 #
 # The Wiimote driver is encapsulated in class WIIMote (see WIIMote.py).
@@ -105,6 +111,7 @@ class WiimoteNode():
             IMUSender(wiimoteDevice, freq=100).start()
             JoySender(wiimoteDevice, freq=100).start()
             WiiSender(wiimoteDevice, freq=100).start()
+            NunSender(wiimoteDevice, freq=100).start()
             WiimoteListeners(wiimoteDevice).start()
             
             rospy.spin()
@@ -125,6 +132,7 @@ class WiimoteNode():
             IMUSender.stop
             JoySender.stop
             WiiSender.stop
+            NunSender.stop
             WiimoteListener.stop
         except:
             pass
@@ -347,6 +355,75 @@ class JoySender(WiimoteDataSender):
             rospy.loginfo("Shutdown request. Shutting down Joy sender.")
             exit(0)
 
+class NunSender(WiimoteDataSender):
+    
+    """Broadcasting Nunchuck accelerator and joystick readings as Joy(stick) messages to Topic joy"""
+    
+    def __init__(self, wiiMote, freq=100):
+        """Initializes the Nunchuck Joy(stick) publisher.
+    
+        Parameters:
+            wiiMote: a bluetooth-connected, calibrated WIIMote instance
+            freq:    the message sending frequency in messages/sec. Max is 100, because
+                     the Wiimote only samples the sensors at 100Hz.
+        """
+        
+        WiimoteDataSender.__init__(self, wiiMote, freq)
+
+        
+        self.pub = rospy.Publisher('/wiimote/nunchuk', Joy)        
+        
+    def run(self):
+        """Loop that obtains the latest nunchuck state, publishes the joystick data, and sleeps.
+        
+        The Joy.msg message types calls for just two fields: float32[] axes, and int32[] buttons.
+        """
+        
+        rospy.loginfo("Wiimote Nunchuk joystick publisher starting (topic /wiimote/nunchuk).")
+        self.threadName = "Nunchuck Joy topic Publisher"
+        try:
+            while not rospy.is_shutdown():
+                self.obtainWiimoteData()
+                if not self.wiistate.nunchukPresent:
+                    continue
+                scaledAcc = self.wiistate.nunchukAcc
+                (joyx, joyy) = self.wiistate.nunchukStick
+                # scale the joystick to [-1, 1]
+                joyx = -(joyx-127)/100.
+                joyy = (joyy-127)/100.
+                # create a deadzone in the middle
+                if abs(joyx) < .05:
+                    joyx = 0
+                if abs(joyy) < .05:
+                    joyy = 0
+                
+                msg = Joy(# the Joy msg does not have a header :-( header=None,
+                          axes=[joyx, joyy,
+                                scaledAcc[X], scaledAcc[Y], scaledAcc[Z]],
+                          buttons=None)
+
+                theButtons = [False,False]
+                theButtons[State.MSG_BTN_C]     = self.wiistate.nunchukButtons[BTN_C]
+                theButtons[State.MSG_BTN_Z]     = self.wiistate.nunchukButtons[BTN_Z]
+
+                msg.buttons = theButtons
+                
+                measureTime = self.wiistate.time
+                timeSecs = int(measureTime)
+                timeNSecs = int(abs(timeSecs - measureTime) * 10**9)
+                # the Joy msg does not have a header :-(
+                # msg.header.stamp.secs = timeSecs
+                # msg.header.stamp.nsecs = timeNSecs
+                
+                self.pub.publish(msg)
+                
+                rospy.logdebug("Nunchuck state:")
+                rospy.logdebug("    Nunchuck buttons: " + str(theButtons) + "\n    Nuchuck axes: " + str(msg.axes) + "\n")
+                rospy.sleep(self.sleepDuration)
+        except rospy.ROSInterruptException:
+            rospy.loginfo("Shutdown request. Shutting down Nun sender.")
+            exit(0)
+
 class WiiSender(WiimoteDataSender):
     """Broadcasting complete Wiimote messages to Topic wiimote"""
     
@@ -396,8 +473,7 @@ class WiiSender(WiimoteDataSender):
                             ir_tracking = None,
                             raw_battery=None,
                             percent_battery=None,
-                            #zeroing_time=roslib.msg.Time(header=None, rostime=roslib.rostime.Time(zeroingTimeSecs, zeroingTimeNSecs)),
-                            zeroing_time=roslib.msg.Time(header=None, rostime=rospy.Time(zeroingTimeSecs, zeroingTimeNSecs)),
+                            zeroing_time=roslib.msg.Clock(clock=rospy.Time(zeroingTimeSecs, zeroingTimeNSecs)),
                             errors=0)
                     
                 # If a gyro is plugged into the Wiimote, then note the 

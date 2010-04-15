@@ -4,14 +4,20 @@
 # RCS:          $Header: $
 # Description:  Object representation of Wiimote's state
 # Author:       Andreas Paepcke
-# Created:      Thu Aug 13 11:01:34 2009
-# Modified:     Thu Aug 20 08:46:24 2009 (Andreas Paepcke) paepcke@anw.willowgarage.com
+# Created:      Thu Aug 13 11:01:34 2009 (Andreas Paepcke) paepcke@anw.willowgarage.com
+# Modified:     Thu Mar 18 10:54:59 2010 (David Lu) davidlu@wustl.edu
 # Language:     Python
 # Package:      N/A
 # Status:       Experimental (Do Not Distribute)
 #
 # 
 #
+################################################################################
+#
+# Revisions:
+#
+# Thu Mar 18 10:56:09 2010 (David Lu) davidlu@wustl.edu
+#  Added nunchuck state variables
 ################################################################################
 
 from wiimoteConstants import *
@@ -82,6 +88,10 @@ class WIIState(object):
                       BTN_MINUS: False, BTN_A: False, BTN_B: False,
                       BTN_UP: False, BTN_DOWN: False, BTN_LEFT: False,
                       BTN_RIGHT: False, BTN_HOME: False}
+    self.nunchukPresent = False
+    self.nunchukAcc = None
+    self.nunchukStick = None
+    self.nunchukButtons = {BTN_C: False, BTN_Z: False}
 
     # Handle buttons on the WII
     # A zero means no button is down.
@@ -158,6 +168,16 @@ class WIIState(object):
                 
             self.motionPlusPresent = True
 
+        continue
+      elif msgType == WII_MSG_TYPE_NUNCHUK:
+        nunChuk = msgComp[1];
+        if nunChuk is not None:
+            self.nunchukPresent = True
+            self.nunchukAcc = WIIReading(nunChuk['acc'], self.time)
+            self.nunchukStick = nunChuk['stick']
+            nunButtons = nunChuk['buttons']
+            self.nunchukButtons[BTN_C]  = (nunButtons & BTN_C) > 0
+            self.nunchukButtons[BTN_Z]  = (nunButtons & BTN_Z) > 0
         continue
        
 

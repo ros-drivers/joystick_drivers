@@ -4,15 +4,20 @@
 # RCS:          $Header: $
 # Description:  Constants for Wii Arm Control
 # Author:       Andreas Paepcke
-# Created:      Thu Aug 13 11:44:04 2009
-# Modified:     Mon Nov  9 12:43:53 2009 (Andreas Paepcke) paepcke@anw.willowgarage.com
+# Created:      Thu Aug 13 11:44:04 2009 (Andreas Paepcke) paepcke@anw.willowgarage.com
+# Modified:     Thu Mar 18 10:56:09 2010 (David Lu) davidlu@wustl.edu
 # Language:     Python
 # Package:      N/A
 # Status:       Experimental (Do Not Distribute)
 #
 # #
 ################################################################################
-
+#
+# Revisions:
+#
+# Thu Mar 18 10:56:09 2010 (David Lu) davidlu@wustl.edu
+#  Added nunchuck options
+################################################################################
 
 _DEBUGLEVEL = 1
 _MONITOR_LEVEL = 1
@@ -58,6 +63,10 @@ BTN_RIGHT = 0x0200                  # cwiid.CWIID_BTN_RIGHT
 BTN_DOWN  = 0x0400                  # cwiid.CWIID_BTN_DOWN
 BTN_UP    = 0x0800                  # cwiid.CWIID_BTN_UP
 BTN_HOME  = 0x0080                  # cwiid.CWIID_BTN_HOME
+
+# Nunchuck Buttons
+BTN_C     = 0x0002
+BTN_Z     = 0x0001
 
 X   = 0
 Y   = 1
@@ -139,7 +148,7 @@ WII_MSG_TYPE_STATUS      = 0
 WII_MSG_TYPE_BTN         = 1
 WII_MSG_TYPE_ACC         = 2
 WII_MSG_TYPE_IR          = 3
-# WII_MSG_TYPE_NUNCHUK     = 4
+WII_MSG_TYPE_NUNCHUK     = 4
 # WII_MSG_TYPE_CLASSIC     = 5
 # WII_MSG_TYPE_BALANCE     = 6
 WII_MSG_TYPE_MOTIONPLUS  = 7 # Gyro

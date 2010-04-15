@@ -18,6 +18,8 @@
 #
 # Thu Sep 10 10:27:38 2009 (Andreas Paepcke) paepcke@anw.willowgarage.com
 #  Added option to lock access to wiiMoteState instance variable.
+# Thu Mar 18 10:56:09 2010 (David Lu) davidlu@wustl.edu
+#  Enabled nunchuck reports
 ################################################################################
 
 # ROS-Related Imports
@@ -195,7 +197,7 @@ class WIIMote(object):
     self._wiiCallbackStack = _WiiCallbackStack(self._wm)
 
     # Enable reports from the WII:
-    self._wm.rpt_mode = cwiid.RPT_ACC | cwiid.RPT_MOTIONPLUS | cwiid.RPT_BTN | cwiid.RPT_IR
+    self._wm.rpt_mode = cwiid.RPT_ACC | cwiid.RPT_MOTIONPLUS | cwiid.RPT_BTN | cwiid.RPT_IR | cwiid.RPT_NUNCHUK
     
     # Set accelerometer calibration to factory defaults:
     (factoryZero, factoryOne) = self.getAccFactoryCalibrationSettings()

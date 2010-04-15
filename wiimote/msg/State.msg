@@ -21,6 +21,8 @@ int8 MSG_BTN_RIGHT = 7
 int8 MSG_BTN_UP    = 8
 int8 MSG_BTN_DOWN  = 9
 int8 MSG_BTN_HOME  = 10
+int8 MSG_BTN_Z     = 0
+int8 MSG_BTN_C     = 1
 
 #-----------------------------
 # Header
@@ -97,7 +99,7 @@ float32 percent_battery
 # Time of most recent zeroing:
 #-----------------------------
 
-roslib/Time zeroing_time
+roslib/Clock zeroing_time
 
 #----------------------
 # Error vector
