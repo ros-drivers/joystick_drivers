@@ -473,7 +473,7 @@ class WiiSender(WiimoteDataSender):
                             ir_tracking = None,
                             raw_battery=None,
                             percent_battery=None,
-                            zeroing_time=roslib.msg.Clock(clock=rospy.Time(zeroingTimeSecs, zeroingTimeNSecs)),
+                            zeroing_time=rospy.Time(zeroingTimeSecs, zeroingTimeNSecs),
                             errors=0)
                     
                 # If a gyro is plugged into the Wiimote, then note the 

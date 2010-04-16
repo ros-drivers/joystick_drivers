@@ -99,7 +99,7 @@ float32 percent_battery
 # Time of most recent zeroing:
 #-----------------------------
 
-roslib/Clock zeroing_time
+time zeroing_time
 
 #----------------------
 # Error vector
