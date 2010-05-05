@@ -384,6 +384,7 @@ if __name__ == "__main__":
             elif is_arg_with_param(arg, redirect_output_string):
                 str_value = arg[len(redirect_output_string)+1:]
                 try:
+                    print "Redirecting output to:", str_value
                     sys.stdout = open(str_value, "a", 1)        
                 except IOError, e:
                     print "Error opening file to redirect output:", str_value
