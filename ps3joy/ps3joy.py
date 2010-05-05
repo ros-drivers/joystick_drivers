@@ -40,6 +40,7 @@ import os
 import time
 import sys                    
 import traceback
+import subprocess
 
 L2CAP_PSM_HIDP_CTRL = 17
 L2CAP_PSM_HIDP_INTR = 19
@@ -242,9 +243,19 @@ class decoder:
         finally:
             self.fullstop()
 
-def quit(i):
-    os.system("/etc/init.d/bluetooth start > /dev/null 2>&1")
-    exit(i)
+class Quit(Exception):
+    def __init__(self, errorcode):
+        Exception.__init__(self)
+        self.errorcode = errorcode
+
+def check_hci_status():
+    # Check if hci0 is up and pscanning, take action as necessary.
+    proc = subprocess.Popen(['hciconfig'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (out, err) = proc.communicate()
+    if out.find('UP') == -1:
+        os.system("hciconfig hci0 up > /dev/null 2>&1")
+    if out.find('PSCAN') == -1:
+        os.system("hciconfig hci0 pscan > /dev/null 2>&1")   
 
 class connection_manager:
     def __init__(self, decoder):
@@ -260,13 +271,19 @@ class connection_manager:
         return self.prepare_socket(sock, port)
 
     def prepare_socket(self, sock, port):
-        try:
-            sock.bind(("", port))
-        except:
-            print >> sys.stderr, "Error binding to socket. Do you have another ps3joy.py running? This error occurs on some distributions (such as Ubuntu Karmic). Please read http://www.ros.org/wiki/ps3joy/Troubleshooting for solutions."
-            quit(-1)
-        sock.listen(1)
-        return sock
+        first_loop = True
+        while True:
+            try:
+                sock.bind(("", port))
+            except Exception, e:
+                print repr(e)
+                if first_loop:
+                    print >> sys.stderr, "Error binding to socket, will retry every 5 seconds. Do you have another ps3joy.py running? This error occurs on some distributions (such as Ubuntu Karmic). Please read http://www.ros.org/wiki/ps3joy/Troubleshooting for solutions."
+                first_loop = False
+                time.sleep(0.5)
+                continue 
+            sock.listen(1)
+            return sock
 
     def listen_net(self,intr_port, ctrl_port):
         intr_sock = self.prepare_net_socket(intr_port)
@@ -283,14 +300,24 @@ class connection_manager:
         while not self.shutdown:
             print "Waiting for connection. Disconnect your PS3 joystick from USB and press the pairing button."
             try:
-                (intr, (idev, iport)) = intr_sock.accept();
+                intr_sock.settimeout(5)
+                ctrl_sock.settimeout(1)
+                while True:
+                    try:
+                        (intr, (idev, iport)) = intr_sock.accept();
+                        break
+                    except Exception, e:
+                        if str(e) == 'timed out':
+                            check_hci_status()
+                        else:
+                            raise
+                    
                 try:
-                    (rd, wr, err) = select.select([ctrl_sock], [], [], 1)
-                    if len(rd) == 0:
+                    try:
+                        (ctrl, (cdev, cport)) = ctrl_sock.accept();
+                    except Exception, e:
                         print >> sys.stderr, "Got interrupt connection without control connection. Giving up on it."
-                        intr.close()
                         continue
-                    (ctrl, (cdev, cport)) = ctrl_sock.accept();
                     try:
                         if idev == cdev:
                             self.decoder.run(intr, ctrl)
@@ -313,52 +340,79 @@ class connection_manager:
             print
                     
 inactivity_timout_string = "--inactivity-timeout"
+no_disable_bluetoothd_string = "--no-disable-bluetoothd"
+redirect_output_string = "--redirect-output"
                     
-def usage():
-    print "usage: ps3joy.py ["+inactivity_timout_string+"=n]"
-    print "n: inactivity timeout in seconds (saves battery life)."
-    sys.exit(0)
+def usage(errcode):
+    print "usage: ps3joy.py ["+inactivity_timout_string+"=<n>] ["+no_disable_bluetoothd_string+"] ["+redirect_output_string+"]=<f>"
+    print "<n>: inactivity timeout in seconds (saves battery life)."
+    print "<f>: file name to redirect output to."
+    print "Unless "+no_disable_bluetoothd_string+" is specified, bluetoothd will be stopped."
+    raise Quit(errcode)
+
+def is_arg_with_param(arg, prefix):
+    if not arg.startswith(prefix):
+        return False
+    if not arg.startswith(prefix+"="):
+        print "Expected '=' after "+prefix
+        print
+        usage(1)
+    return True
 
 if __name__ == "__main__":
+    errorcode = 0
     try:
         inactivity_timeout = float(1e3000)
+        disable_bluetoothd = True
         for arg in sys.argv[1:]: # Be very tolerant in case we are roslaunched.
             if arg == "--help":
-                usage()
-            elif arg.startswith(inactivity_timout_string):
-                if not arg.startswith(inactivity_timout_string+"="):
-                    print "Expected '=' after "+inactivity_timout_string
-                    print
-                    usage()
+                usage(0)
+            elif is_arg_with_param(arg, inactivity_timout_string):
                 str_value = arg[len(inactivity_timout_string)+1:]
                 try:
                     inactivity_timeout = float(str_value)
                     if inactivity_timeout < 0:
                         print "Inactivity timeout must be positive."
                         print
-                        usage()
+                        usage(1)
                 except ValueError:
                     print "Error parsing inactivity timeout: "+str_value
                     print
-                    usage()
+                    usage(1)
+            elif arg == no_disable_bluetoothd_string:
+                disable_bluetoothd = False
+            elif is_arg_with_param(arg, redirect_output_string):
+                str_value = arg[len(redirect_output_string)+1:]
+                try:
+                    sys.stdout = open(str_value, "a", 1)        
+                except IOError, e:
+                    print "Error opening file to redirect output:", str_value
+                    raise Quit(1)
+                sys.stderr = sys.stdout
             else:
                 print "Ignoring parameter: '%s'"%arg
         if os.getuid() != 0:
             print >> sys.stderr, "ps3joy.py must be run as root."
             quit(1)
-        os.system("/etc/init.d/bluetooth stop > /dev/null 2>&1")
-        while os.system("hciconfig hci0 > /dev/null 2>&1") != 0:
-            print >> sys.stderr,  "No bluetooth dongle found or bluez rosdep not installed. Will retry in 5 seconds."
-            time.sleep(5)
-        os.system("hciconfig hci0 up > /dev/null 2>&1")
-        os.system("hciconfig hci0 pscan > /dev/null 2>&1")   
-        if inactivity_timeout == float(1e3000):
-            print "No inactivity timeout was set. (Run with --help for details.)"
-        else:
-            print "Inactivity timeout set to %.0f seconds."%inactivity_timeout
-        cm = connection_manager(decoder(inactivity_timeout = inactivity_timeout))
-        cm.listen_bluetooth()
+        if disable_bluetoothd:
+            os.system("/etc/init.d/bluetooth stop > /dev/null 2>&1")
+            time.sleep(1) # Give the socket time to be available.
+        try:
+            while os.system("hciconfig hci0 > /dev/null 2>&1") != 0:
+                print >> sys.stderr,  "No bluetooth dongle found or bluez rosdep not installed. Will retry in 5 seconds."
+                time.sleep(5)
+            if inactivity_timeout == float(1e3000):
+                print "No inactivity timeout was set. (Run with --help for details.)"
+            else:
+                print "Inactivity timeout set to %.0f seconds."%inactivity_timeout
+            cm = connection_manager(decoder(inactivity_timeout = inactivity_timeout))
+            cm.listen_bluetooth()
+        finally:
+            if disable_bluetoothd:
+                os.system("/etc/init.d/bluetooth start > /dev/null 2>&1")
+    except Quit, e:
+        errorcode = e.errorcode
     except KeyboardInterrupt:
         print "CTRL+C detected. Exiting."
-    quit(0)
-        
+    exit(errorcode)
+
