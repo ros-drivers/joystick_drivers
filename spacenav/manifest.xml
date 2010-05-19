@@ -18,5 +18,8 @@
     <doxymaker external="http://spacenav.sourceforge.net/"/>
   </export>
   <versioncontrol type="svn" url="https://spacenav.svn.sourceforge.net/svnroot/spacenav/trunk" />
+  <platform os="ubuntu" version="9.04"/>
+  <platform os="ubuntu" version="9.10"/>
+  <platform os="ubuntu" version="10.04"/>
 </package>
 
