@@ -1,11 +1,18 @@
 all: installed
 
 SVN_DIR = spacenav_svn
-SVN_URL = https://spacenav.svn.sourceforge.net/svnroot/spacenav/trunk
-SVN_REVISION = -r 91
-include $(shell rospack find mk)/svn_checkout.mk
+#SVN_URL = https://spacenav.svn.sourceforge.net/svnroot/spacenav/trunk
+#SVN_REVISION = -r 91
+#include $(shell rospack find mk)/svn_checkout.mk
 
-installed: $(SVN_DIR) patched
+TAR = spacenav_svn_r91.tgz
+URL = http://pr.willowgarage.com/downloads/$(TAR)
+
+$(SVN_DIR):
+	wget $(URL)
+	tar xvzf $(TAR) 
+
+installed: $(SVN_DIR) 
 	cd $(SVN_DIR)/spacenavd && ./configure --prefix=$(CURDIR)/spacenavd
 	cd $(SVN_DIR)/spacenavd && make
 	#cd $(SVN_DIR)/spacenavd && make && make install
