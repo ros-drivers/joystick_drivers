@@ -22,6 +22,7 @@ python-bluez:
 bluez:
   ubuntu:
     '10.04': bluez
+    '10.04': bluez
     '9.10': bluez
     '9.04': bluez
     '8.10': bluez
