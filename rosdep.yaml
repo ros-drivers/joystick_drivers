@@ -20,13 +20,7 @@ python-bluez:
   rhel: python-bluez
   gentoo: dev-python/pybluez
 bluez:
-  ubuntu:
-    '10.04': bluez
-    '10.04': bluez
-    '9.10': bluez
-    '9.04': bluez
-    '8.10': bluez
-    '8.04': bluetooth
+  ubuntu: bluez
   debian: bluez
   arch: bluez
   fedora: bluez-libs
