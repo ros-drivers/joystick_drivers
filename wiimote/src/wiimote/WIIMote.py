@@ -19,7 +19,9 @@
 # Thu Sep 10 10:27:38 2009 (Andreas Paepcke) paepcke@anw.willowgarage.com
 #  Added option to lock access to wiiMoteState instance variable.
 # Thu Mar 18 10:56:09 2010 (David Lu) davidlu@wustl.edu
-#  Enabled nunchuck reports
+#  Enabled nunchuk reports
+# Mon Nov 08 11:44:39 2010 (David Lu) davidlu@wustl.edu
+#  Added nunchuk calibration
 ################################################################################
 
 # ROS-Related Imports
@@ -100,15 +102,17 @@ class WIIMote(object):
   _wiiCallbackStack = None   # Stack for directing Wii driver callbacks
 
   _startTime = None          # Used for state sampling
-  _accList = None          # Collecting accelerator readings for zeroing and others
+  _accList = None            # Collecting accelerator readings for zeroing and others
   _gyroList = None
   _readingsCnt = None        # For counting how many readings were taken
-  _accTotal = None          # Summed up acc readings in one AccReading instance
+  _accTotal = None           # Summed up acc readings in one AccReading instance
   _gyroTotal = None          # Summed up gyro readings in one AccReading instance
   
 
-  _accNormal = None         # Readings of accelerometer at rest
+  _accNormal = None          # Readings of accelerometer at rest
   _gyroNormal = None         # Readings of gyro at rest
+
+  _nunchukJoyOrig = None     # Initial Reading of the nunchuk's joystick
   
   _LEDMasksOn = [LED1_ON, LED2_ON, LED3_ON, LED4_ON] # OR to turn on
   _LEDMasksOff = [0 | LED2_ON | LED3_ON | LED4_ON, # AND to turn off
@@ -206,10 +210,14 @@ class WIIMote(object):
     # Initialize Gyro zeroing to do nothing:
     self.setGyroCalibration([0,0,0])
 
+    # Set nunchuk calibration to factory defaults:
+    (factoryZero, factoryOne) = self.getNunchukFactoryCalibrationSettings()
+    self.setNunchukAccelerometerCalibration(factoryZero, factoryOne)
+
     time.sleep(0.2)
     self._wiiCallbackStack.push(self._steadyStateCallback)
 
-    rospy.loginfo("Wimotion activated.")
+    rospy.loginfo("Wiimote activated.")
 
 
   #----------------------------------------
@@ -246,7 +254,7 @@ class WIIMote(object):
         return
 
     thisState = wiistate.WIIState(state, theTime, self.getRumble(), self._wm.state['buttons'])
-    
+
     # Pull out the accelerometer x,y,z, accumulate in a list:
     self._accList.append(thisState.accRaw)
     
@@ -259,6 +267,11 @@ class WIIMote(object):
     except TypeError:
         pass
     self._readingsCnt += 1
+
+    if thisState.nunchukPresent and self._nunchukJoyOrig is None:
+        self._nunchukJoyOrig = thisState.nunchukStickRaw
+        wiistate.WIIState.setNunchukJoystickCalibration(self._nunchukJoyOrig)
+
     return
 
   #----------------------------------------
@@ -409,7 +422,7 @@ class WIIMote(object):
     self.latestCalibrationSuccessful = True;
     return True;
 
-   #----------------------------------------
+  #----------------------------------------
   # getWiimoteState
   #------------------
 
@@ -627,11 +640,25 @@ class WIIMote(object):
     """
 
     # Parameter is the Wiimote extension from which
-    # the calibration is to be retrieved. The Nanchuk
-    # adds one accelerometer. We don't have that.
+    # the calibration is to be retrieved. 
 
     factoryCalNums = self._wm.get_acc_cal(cwiid.EXT_NONE);
 
+    return (factoryCalNums[0], factoryCalNums[1])
+
+  #----------------------------------------
+  # getNunchukFactoryCalibrationSettings
+  #------------------
+
+  def getNunchukFactoryCalibrationSettings(self):
+    """Obtain calibration data from nunchuk accelerometer.
+
+    Retrieve factory-installed calibration data for
+    the Nunchuk's accelerometer. Returns a two-tuple
+    with the calibration numbers for zero and one:
+
+    """
+    factoryCalNums = self._wm.get_acc_cal(cwiid.EXT_NUNCHUK);
     return (factoryCalNums[0], factoryCalNums[1])
     
   #----------------------------------------
@@ -658,6 +685,13 @@ class WIIMote(object):
 
   def setGyroCalibration(self, gyroTriplet):
       wiistate.WIIState.setGyroCalibration(gyroTriplet)
+
+  #----------------------------------------
+  # setNunchukAccelerometerCalibration
+  #----------
+  
+  def setNunchukAccelerometerCalibration(self, zeroReadingList, oneReadingList):
+      wiistate.WIIState.setNunchukAccelerometerCalibration(np.array(zeroReadingList), np.array(oneReadingList))
     
   #----------------------------------------
   # motionPlusPresent
@@ -673,6 +707,23 @@ class WIIMote(object):
       """
       if (self.wiiMoteState is not None):
           return self.wiiMoteState.motionPlusPresent
+      else:
+          return False
+
+  #----------------------------------------
+  # nunchukPresent
+  #------------------
+
+  def nunchukPresent(self):
+      """Return True/False to indicate whether a Nunchuk is detected.
+      
+      Note: The return value is accurate only after at least one 
+      Wiimote state has been read. This means that either 
+      _steadyStateCallback or _calibrationCallback must have
+      run at least once.
+      """
+      if (self.wiiMoteState is not None):
+          return self.wiiMoteState.nunchukPresent
       else:
           return False
     

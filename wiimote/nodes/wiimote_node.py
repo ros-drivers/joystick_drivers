@@ -19,20 +19,23 @@
 # Revisions:
 #
 # Thu Mar 18 10:56:09 2010 (David Lu) davidlu@wustl.edu
-#  Enabled nunchuck message publishing
+#  Enabled nunchuk message publishing
+# Mon Nov 08 11:46:58 2010 (David Lu) davidlu@wustl.edu
+#  Added calibrated nunchuk information, changed /joy to /wiijoy
+#  Only publish on /wiimote/nunchuk if attached
 ################################################################################
 #!/usr/bin/env python
 
 """The wiimote_node broadcasts four topics, and listens to messages that control
 the Wiimote stick's rumble (vibration) and LEDs. Transmitted topics (@100Hz):
 
-   o joy/joy           Messages contain the accelerometer and gyro axis data, and all button states.
+   o wiijoy            Messages contain the accelerometer and gyro axis data, and all button states.
    o imu/data          Messages contain the accelerometer and gyro axis data, and covariance matrices
-   o wiimote/state     the /joy and /imu messages, and raw), the button states, the LED states,
+   o wiimote/state     the wiijoy and /imu messages, the button states, the LED states,
                        rumble (i.e. vibrator) state, IR light sensor readings, time since last zeroed, 
                        and battery state. See State.msg
    o imu/is_calibrated Latched message
-   o nunchuck          Joy messages using the nunchuck as a joystick
+   o nunchuk           Joy messages using the nunchuk as a joystick
                  
 The node listens to the following messages:
 
@@ -183,11 +186,18 @@ class WiimoteDataSender(threading.Thread):
         return self.canonicalizeWiistate()
         
     def canonicalizeWiistate(self):
-        """Scale accelerator and gyro readings to be m/sec^2, and radians/sec, respectively."""
+        """Scale accelerator, nunchuk accelerator, and gyro readings to be m/sec^2, m/sec^2 and radians/sec, respectively."""
         
         try: 
-    	    # Convert acceleration, which is in g's into m/sec^@:
+    	    # Convert acceleration, which is in g's into m/sec^2:
     	    canonicalAccel = self.wiistate.acc.scale(EARTH_GRAVITY)
+
+            # If nunchuk is connected, then 
+            # convert nunchuk acceleration into m/sec^2
+            if self.wiistate.nunchukPresent:
+                canonicalNunchukAccel = self.wiistate.nunchukAcc.scale(EARTH_GRAVITY)
+            else:
+                canonicalNunchukAccel = None
     	        
     	    # If the gyro is connected, then 
     	    # Convert gyro reading to radians/sec (see wiimoteConstants.py
@@ -197,7 +207,7 @@ class WiimoteDataSender(threading.Thread):
     	    else:
     	         canonicalAngleRate = None
     	    
-    	    return [canonicalAccel, canonicalAngleRate]
+    	    return [canonicalAccel, canonicalNunchukAccel, canonicalAngleRate]
         except AttributeError:
             # An attribute error here occurs when user shuts
             # off the Wiimote before stopping the wiimote_node:
@@ -240,7 +250,7 @@ class IMUSender(WiimoteDataSender):
         self.threadName = "IMU topic Publisher"
         try:
             while not rospy.is_shutdown():
-                (canonicalAccel, canonicalAngleRate) = self.obtainWiimoteData()
+                (canonicalAccel, canonicalNunchukAccel, canonicalAngleRate) = self.obtainWiimoteData()
                 
                 msg = Imu(header=None,
                           orientation=None,                                         # will default to [0.,0.,0.,0],
@@ -298,7 +308,7 @@ class JoySender(WiimoteDataSender):
         WiimoteDataSender.__init__(self, wiiMote, freq)
 
         
-        self.pub = rospy.Publisher('joy', Joy)        
+        self.pub = rospy.Publisher('wiijoy', Joy)        
         
     def run(self):
         """Loop that obtains the latest wiimote state, publishes the joystick data, and sleeps.
@@ -306,11 +316,11 @@ class JoySender(WiimoteDataSender):
         The Joy.msg message types calls for just two fields: float32[] axes, and int32[] buttons.
         """
         
-        rospy.loginfo("Wiimote joystick publisher starting (topic /joy).")
+        rospy.loginfo("Wiimote joystick publisher starting (topic wiijoy).")
         self.threadName = "Joy topic Publisher"
         try:
             while not rospy.is_shutdown():
-                (canonicalAccel, canonicalAngleRate) = self.obtainWiimoteData()
+                (canonicalAccel, canonicalNunchukAccel, canonicalAngleRate) = self.obtainWiimoteData()
                 
                 msg = Joy(# the Joy msg does not have a header :-( header=None,
                           axes=[canonicalAccel[X], canonicalAccel[Y], canonicalAccel[Z]],
@@ -357,10 +367,10 @@ class JoySender(WiimoteDataSender):
 
 class NunSender(WiimoteDataSender):
     
-    """Broadcasting Nunchuck accelerator and joystick readings as Joy(stick) messages to Topic joy"""
+    """Broadcasting nunchuk accelerator and joystick readings as Joy(stick) messages to Topic joy"""
     
     def __init__(self, wiiMote, freq=100):
-        """Initializes the Nunchuck Joy(stick) publisher.
+        """Initializes the nunchuk Joy(stick) publisher.
     
         Parameters:
             wiiMote: a bluetooth-connected, calibrated WIIMote instance
@@ -371,40 +381,34 @@ class NunSender(WiimoteDataSender):
         WiimoteDataSender.__init__(self, wiiMote, freq)
 
         
-        self.pub = rospy.Publisher('/wiimote/nunchuk', Joy)        
+        self.pub = None       
         
     def run(self):
-        """Loop that obtains the latest nunchuck state, publishes the joystick data, and sleeps.
+        """Loop that obtains the latest nunchuk state, publishes the joystick data, and sleeps.
         
         The Joy.msg message types calls for just two fields: float32[] axes, and int32[] buttons.
         """
         
-        rospy.loginfo("Wiimote Nunchuk joystick publisher starting (topic /wiimote/nunchuk).")
-        self.threadName = "Nunchuck Joy topic Publisher"
+        self.threadName = "nunchuk Joy topic Publisher"
         try:
             while not rospy.is_shutdown():
-                self.obtainWiimoteData()
+                (canonicalAccel, scaledAcc, canonicalAngleRate) = self.obtainWiimoteData()
                 if not self.wiistate.nunchukPresent:
                     continue
-                scaledAcc = self.wiistate.nunchukAcc
-                (joyx, joyy) = self.wiistate.nunchukStick
-                # scale the joystick to [-1, 1]
-                joyx = -(joyx-127)/100.
-                joyy = (joyy-127)/100.
-                # create a deadzone in the middle
-                if abs(joyx) < .05:
-                    joyx = 0
-                if abs(joyy) < .05:
-                    joyy = 0
+                if self.pub is None:
+                    self.pub = rospy.Publisher('/wiimote/nunchuk', Joy)
+                    rospy.loginfo("Wiimote Nunchuk joystick publisher starting (topic nunchuk).")
                 
+                (joyx, joyy) = self.wiistate.nunchukStick
+                                
                 msg = Joy(# the Joy msg does not have a header :-( header=None,
                           axes=[joyx, joyy,
                                 scaledAcc[X], scaledAcc[Y], scaledAcc[Z]],
                           buttons=None)
 
                 theButtons = [False,False]
-                theButtons[State.MSG_BTN_C]     = self.wiistate.nunchukButtons[BTN_C]
                 theButtons[State.MSG_BTN_Z]     = self.wiistate.nunchukButtons[BTN_Z]
+                theButtons[State.MSG_BTN_C]     = self.wiistate.nunchukButtons[BTN_C]
 
                 msg.buttons = theButtons
                 
@@ -417,8 +421,8 @@ class NunSender(WiimoteDataSender):
                 
                 self.pub.publish(msg)
                 
-                rospy.logdebug("Nunchuck state:")
-                rospy.logdebug("    Nunchuck buttons: " + str(theButtons) + "\n    Nuchuck axes: " + str(msg.axes) + "\n")
+                rospy.logdebug("nunchuk state:")
+                rospy.logdebug("    nunchuk buttons: " + str(theButtons) + "\n    Nuchuck axes: " + str(msg.axes) + "\n")
                 rospy.sleep(self.sleepDuration)
         except rospy.ROSInterruptException:
             rospy.loginfo("Shutdown request. Shutting down Nun sender.")
@@ -456,7 +460,7 @@ class WiiSender(WiimoteDataSender):
         self.threadName = "Wiimote topic Publisher"
         try:
             while not rospy.is_shutdown():
-                (canonicalAccel, canonicalAngleRate) = self.obtainWiimoteData()
+                (canonicalAccel, canonicalNunchukAccel, canonicalAngleRate) = self.obtainWiimoteData()
                 
                 zeroingTimeSecs = int(self.wiiMote.lastZeroingTime)
                 zeroingTimeNSecs = int((self.wiiMote.lastZeroingTime - zeroingTimeSecs) * 10**9)
@@ -467,7 +471,12 @@ class WiiSender(WiimoteDataSender):
                             linear_acceleration_zeroed=None,
                             linear_acceleration_raw=None,
                             linear_acceleration_covariance=self.linear_acceleration_covariance,
+                            nunchuk_acceleration_zeroed=None,
+                            nunchuk_acceleration_raw=None,
+                            nunchuk_joystick_zeroed=None,
+                            nunchuk_joystick_raw=None,
                             buttons=[False,False,False,False,False,False,False,False,False,False],
+                            nunchuk_buttons=[False,False],
                             rumble=False,
                             LEDs=None,
                             ir_tracking = None,
@@ -499,6 +508,22 @@ class WiiSender(WiimoteDataSender):
                 msg.linear_acceleration_raw.x = self.wiistate.accRaw[X]
                 msg.linear_acceleration_raw.y = self.wiistate.accRaw[Y]
                 msg.linear_acceleration_raw.z = self.wiistate.accRaw[Z]
+
+                if self.wiistate.nunchukPresent:
+                    msg.nunchuk_acceleration_zeroed.x = canonicalNunchukAccel[X]
+                    msg.nunchuk_acceleration_zeroed.y = canonicalNunchukAccel[Y]
+                    msg.nunchuk_acceleration_zeroed.z = canonicalNunchukAccel[Z]
+                    
+                    msg.nunchuk_acceleration_raw.x = self.wiistate.nunchukAccRaw[X]
+                    msg.nunchuk_acceleration_raw.y = self.wiistate.nunchukAccRaw[Y]
+                    msg.nunchuk_acceleration_raw.z = self.wiistate.nunchukAccRaw[Z]
+
+                    msg.nunchuk_joystick_zeroed = self.wiistate.nunchukStick
+                    msg.nunchuk_joystick_raw    = self.wiistate.nunchukStickRaw
+                    moreButtons = []
+                    moreButtons.append(self.wiistate.nunchukButtons[BTN_Z])
+                    moreButtons.append(self.wiistate.nunchukButtons[BTN_C])
+                    msg.nunchuk_buttons = moreButtons
                 
                 theButtons = []
                 theButtons.append(self.wiistate.buttons[BTN_1])
@@ -521,7 +546,7 @@ class WiiSender(WiimoteDataSender):
                         msg.LEDs[indx] = False
                 
                 msg.buttons = theButtons
-    
+
                 msg.raw_battery = self.wiiMote.getBattery()
                 msg.percent_battery = msg.raw_battery * 100./self.wiiMote.BATTERY_MAX
     

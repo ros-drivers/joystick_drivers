@@ -16,7 +16,7 @@
 # Revisions:
 #
 # Thu Mar 18 10:56:09 2010 (David Lu) davidlu@wustl.edu
-#  Added nunchuck options
+#  Added nunchuk options
 ################################################################################
 
 _DEBUGLEVEL = 1
@@ -64,7 +64,7 @@ BTN_DOWN  = 0x0400                  # cwiid.CWIID_BTN_DOWN
 BTN_UP    = 0x0800                  # cwiid.CWIID_BTN_UP
 BTN_HOME  = 0x0080                  # cwiid.CWIID_BTN_HOME
 
-# Nunchuck Buttons
+# nunchuk Buttons
 BTN_C     = 0x0002
 BTN_Z     = 0x0001
 

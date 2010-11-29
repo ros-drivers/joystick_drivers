@@ -17,7 +17,9 @@
 # Revisions:
 #
 # Thu Mar 18 10:56:09 2010 (David Lu) davidlu@wustl.edu
-#  Added nunchuck state variables
+#  Added nunchuk state variables
+# Mon Nov 08 11:43:23 2010 (David Lu) davidlu@wustl.edu
+#  Added calibration for nunchuk
 ################################################################################
 
 from wiimoteConstants import *
@@ -55,6 +57,13 @@ class WIIState(object):
                                    IR1, IR2, IR3, IR4
                            Values are 1/0
         o motionPlusPresent True if a gyro Motion+ is plugged into the Wiimote. Else False
+
+        o nunchukPresent   True if nunchuk is plugged in. Else False
+        o nunchukAccRaw    A WIIReading instance with acceleromoter measurement from the nunchuk (raw values)
+        o nunchukAcc       The same, but zeroed using factory calibration
+        o nunchukStickRaw  A tuple with the two axes of the joystick on the nunchuk, raw readings
+        o nunchukStick     A tuple with the two axes of the joystick on the nunchuk, zeroed to be [-1, 1]
+        o nunchukButtons   A dictionary for which nunchuk buttons are down. Keys are BTN_C and BTN_Z
   
       Public methods:
         o setAccelerometerCalibration   Bias setting for accelerometer. This triplet is used to
@@ -65,6 +74,8 @@ class WIIState(object):
   
   _accCalibrationZero = None
   _gyroZeroReading = None
+  _nunchukZeroReading = None
+  _nunchukJoystickZero = None
 
   #----------------------------------------
   # __init__
@@ -89,8 +100,10 @@ class WIIState(object):
                       BTN_UP: False, BTN_DOWN: False, BTN_LEFT: False,
                       BTN_RIGHT: False, BTN_HOME: False}
     self.nunchukPresent = False
+    self.nunchukAccRaw = None
     self.nunchukAcc = None
     self.nunchukStick = None
+    self.nunchukStickRaw = None
     self.nunchukButtons = {BTN_C: False, BTN_Z: False}
 
     # Handle buttons on the WII
@@ -120,7 +133,6 @@ class WIIState(object):
       msgType = msgComp[0]
 
       if msgType == WII_MSG_TYPE_ACC:
-
         # Second list member is accelerator triplet of numbers:
         accStatus = msgComp[1]
         self.accRaw = WIIReading(accStatus, self.time)
@@ -135,7 +147,6 @@ class WIIState(object):
         continue
 
       elif msgType == WII_MSG_TYPE_IR:
-
         # Second list member is a list of 4 dictionaries,
         # one for each of the Wii IR sources:
 
@@ -149,7 +160,6 @@ class WIIState(object):
         continue
 
       elif msgType == WII_MSG_TYPE_MOTIONPLUS:
-
         # Second list member is a dictionary with the single
         # key 'angle_rate', which yields as its value a gyro 
         # readings triplet of numbers:
@@ -173,8 +183,34 @@ class WIIState(object):
         nunChuk = msgComp[1];
         if nunChuk is not None:
             self.nunchukPresent = True
-            self.nunchukAcc = WIIReading(nunChuk['acc'], self.time)
-            self.nunchukStick = nunChuk['stick']
+            self.nunchukAccRaw = WIIReading(nunChuk['acc'], self.time)
+        
+            # If this class knows about accelerometer calibration
+            # data, correct the raw reading:
+            if self._nunchukZeroReading is not None:
+                self.nunchukAcc = WIIReading((self.nunchukAccRaw - self._nunchukZeroReading) / (self._nunchukOneReading - self._nunchukZeroReading), self.time)
+            else:
+                self.nunchukAcc = WIIReading(self.nunchukAccRaw, self.time)
+
+
+            self.nunchukStickRaw = nunChuk['stick']
+            
+            # scale the joystick to roughly [-1, 1] 
+            if (self._nunchukJoystickZero is None):
+                calibration = [127, 127]
+            else:
+                calibration = self._nunchukJoystickZero
+
+            [joyx, joyy] = self.nunchukStickRaw
+            joyx = -(joyx-calibration[0])/100.
+            joyy = (joyy-calibration[1])/100.
+            # create a deadzone in the middle
+            if abs(joyx) < .05:
+                joyx = 0
+            if abs(joyy) < .05:
+                joyy = 0
+            self.nunchukStick = [joyx,joyy]
+
             nunButtons = nunChuk['buttons']
             self.nunchukButtons[BTN_C]  = (nunButtons & BTN_C) > 0
             self.nunchukButtons[BTN_Z]  = (nunButtons & BTN_Z) > 0
@@ -219,6 +255,36 @@ class WIIState(object):
   def getGyroCalibration(cls):
       """Return current gyro zeroing offset as a list of x/y/z. """
       return cls._gyroZeroReading.tuple()
+
+  #----------------------------------------
+  # setNunchukAccelerometerCalibration
+  #----------
+  
+  @classmethod
+  def setNunchukAccelerometerCalibration(cls, zeroReading, oneReading):
+      """Set the current nunchuk accelerometer zeroing calibration."""
+      cls._nunchukZeroReading = WIIReading(zeroReading)
+      cls._nunchukOneReading = WIIReading(oneReading)
+
+  #----------------------------------------
+  # setNunchukJoystickCalibration
+  #----------
+  
+  @classmethod
+  def setNunchukJoystickCalibration(cls, readings):
+      """Set the origin for the nunchuk joystick"""
+      cls._nunchukJoystickZero = readings    
+
+  #----------------------------------------
+  # getNunchukAccelerometerCalibration
+  #----------
+  
+  @classmethod
+  def getNunchukAccelerometerCalibration(cls):
+      """Return current nunchuk accelerometer zeroing offset as two lists of x/y/z: the 
+      zero-reading, and the one-reading."""
+      return (cls._nunchukZeroReading.tuple(), cls._nunchukOneReading.tuple())
+
 
   #----------------------------------------
   # __str___

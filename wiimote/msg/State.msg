@@ -52,6 +52,18 @@ geometry_msgs/Vector3 linear_acceleration_zeroed
 geometry_msgs/Vector3 linear_acceleration_raw
 float64[9] linear_acceleration_covariance
 
+#------------------------------
+# Nunchuk Accelerometer reading
+#------------------------------
+geometry_msgs/Vector3 nunchuk_acceleration_zeroed
+geometry_msgs/Vector3 nunchuk_acceleration_raw
+
+#-----------------
+# Nunchuk Joystick
+#-----------------
+float32[2] nunchuk_joystick_zeroed
+float32[2] nunchuk_joystick_raw
+
 #----------------------
 # Wiimote buttons
 #-----------------------------
@@ -59,6 +71,7 @@ float64[9] linear_acceleration_covariance
 # to array position are defined above.
 #
 bool[11] buttons
+bool[2] nunchuk_buttons
 
 #----------------------
 # Wiimote LED states:
