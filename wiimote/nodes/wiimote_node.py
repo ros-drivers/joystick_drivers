@@ -7,7 +7,7 @@
 #               and allows Wiimote rumble/LED setting.
 # Author:       Andreas Paepcke
 # Created:      Thu Sep 10 10:31:44 2009
-# Modified:     Thu Apr 15 13:44:17 2010 (Andreas Paepcke) paepcke@anw.willowgarage.com
+# Modified:     Thu Dec  2 11:17:24 2010 (Andreas Paepcke) paepcke@bhb.willowgarage.com
 # Language:     Python
 # Package:      N/A
 # Status:       Experimental (Do Not Distribute)
@@ -622,7 +622,14 @@ class WiimoteListeners(threading.Thread):
         self.is_calibratedPublisher = rospy.Publisher('/imu/is_calibrated', Bool, latch=True)
         # We'll always just reuse this msg object:        
         self.is_CalibratedResponseMsg = Bool();
-          
+
+        # Initialize the latched is_calibrated state. We use
+	# the result of the initial zeroing, when the services
+	# were first started and the the user was asked to
+	# push the two buttons for pairing:
+
+        self.is_CalibratedResponseMsg.data = self.wiiMote.latestCalibrationSuccessful;
+        self.is_calibratedPublisher.publish(self.is_CalibratedResponseMsg)
         
     def run(self):
         
