@@ -6,7 +6,7 @@
 # Description:  Top Level Wii Remote Control
 # Author:       Andreas Paepcke
 # Created:      Thu Aug 13 09:00:27 2009
-# Modified:     Thu Aug 20 09:04:35 2009 (Andreas Paepcke) paepcke@anw.willowgarage.com
+# Modified:     Fri Jan 14 10:48:48 2011 (Andreas Paepcke) paepcke@bhb.willowgarage.com
 # Language:     Python
 # Package:      N/A
 # Status:       Experimental (Do Not Distribute)
@@ -16,10 +16,17 @@
 #
 # Revisions:
 #
+# Fri Jan 14 10:48:11 2011 (Andreas Paepcke) paepcke@bhb.willowgarage.com
+#  Added warning to ignore error messages when neither Nunchuk nor WiimotePlus
+#  are present.
+# Thu Jan 13 17:29:06 2011 (Andreas Paepcke) paepcke@bhb.willowgarage.com
+#  Added shutdown exception guard in getRumble()
 # Thu Sep 10 10:27:38 2009 (Andreas Paepcke) paepcke@anw.willowgarage.com
 #  Added option to lock access to wiiMoteState instance variable.
 # Thu Mar 18 10:56:09 2010 (David Lu) davidlu@wustl.edu
 #  Enabled nunchuk reports
+# Fri Oct 29 08:58:21 2010 (Miguel Angel Julian Aguilar, QBO Project) miguel.angel@thecorpora.com
+#  Enabled classic controller reports
 # Mon Nov 08 11:44:39 2010 (David Lu) davidlu@wustl.edu
 #  Added nunchuk calibration
 ################################################################################
@@ -201,7 +208,7 @@ class WIIMote(object):
     self._wiiCallbackStack = _WiiCallbackStack(self._wm)
 
     # Enable reports from the WII:
-    self._wm.rpt_mode = cwiid.RPT_ACC | cwiid.RPT_MOTIONPLUS | cwiid.RPT_BTN | cwiid.RPT_IR | cwiid.RPT_NUNCHUK
+    self._wm.rpt_mode = cwiid.RPT_ACC | cwiid.RPT_MOTIONPLUS | cwiid.RPT_BTN | cwiid.RPT_IR | cwiid.RPT_NUNCHUK | cwiid.RPT_CLASSIC
     
     # Set accelerometer calibration to factory defaults:
     (factoryZero, factoryOne) = self.getAccFactoryCalibrationSettings()
@@ -210,9 +217,17 @@ class WIIMote(object):
     # Initialize Gyro zeroing to do nothing:
     self.setGyroCalibration([0,0,0])
 
-    # Set nunchuk calibration to factory defaults:
-    (factoryZero, factoryOne) = self.getNunchukFactoryCalibrationSettings()
-    self.setNunchukAccelerometerCalibration(factoryZero, factoryOne)
+    # Set nunchuk calibration to factory defaults.
+    # Unfortunately, if neither WiimotePlus nor nunchuk are attached
+    # we get two error msgs to the screen from the lowest cwiid levels.
+    # TODO: suppress those two error messages ('Wiimote read error' and
+    #       'Read error (nunchuk cal)'
+    rospy.loginfo("Checking presence of Nunchuk attachment ...ignore two possibly following error msgs.")
+    try:
+      (factoryZero, factoryOne) = self.getNunchukFactoryCalibrationSettings()
+      self.setNunchukAccelerometerCalibration(factoryZero, factoryOne)
+    except:
+      pass
 
     time.sleep(0.2)
     self._wiiCallbackStack.push(self._steadyStateCallback)
@@ -234,7 +249,13 @@ class WIIMote(object):
         # by the instantiator of this instance:
         if self.wiiStateLock is not None:
             self.wiiStateLock.acquire()
-        self.wiiMoteState = wiistate.WIIState(state, theTime, self.getRumble(), self._wm.state['buttons']);
+	try:
+	  self.wiiMoteState = wiistate.WIIState(state, theTime, self.getRumble(), self._wm.state['buttons']);
+	except ValueError:
+	  # A 'Wiimote is closed' error can occur as a race condition
+	  # as threads close down after a Cnt-C. Catch those and
+	  # ignore:
+	  pass
         if self.wiiStateLock is not None:
             self.wiiStateLock.release()
         self._startTime = now
@@ -531,8 +552,12 @@ class WIIMote(object):
   #------------------
 
   def getRumble(self):
-    return self._wm.state['rumble']
-
+    # Protect against reading exception from reading
+    # from an already closed device during shutdown:
+    try:
+      return self._wm.state['rumble']
+    except ValueError:
+      pass
 
   #----------------------------------------
   # setLEDs

@@ -5,7 +5,7 @@
 # Description:  Object representation of Wiimote's state
 # Author:       Andreas Paepcke
 # Created:      Thu Aug 13 11:01:34 2009 (Andreas Paepcke) paepcke@anw.willowgarage.com
-# Modified:     Thu Mar 18 10:54:59 2010 (David Lu) davidlu@wustl.edu
+# Modified:     Thu Jan 13 13:50:15 2011 (Andreas Paepcke) paepcke@bhb.willowgarage.com
 # Language:     Python
 # Package:      N/A
 # Status:       Experimental (Do Not Distribute)
@@ -18,6 +18,8 @@
 #
 # Thu Mar 18 10:56:09 2010 (David Lu) davidlu@wustl.edu
 #  Added nunchuk state variables
+# Fri Oct 29 08:58:21 2010 (Miguel Angel Julian Aguilar, QBO Project) miguel.angel@thecorpora.com
+#  Added classic controller state variables
 # Mon Nov 08 11:43:23 2010 (David Lu) davidlu@wustl.edu
 #  Added calibration for nunchuk
 ################################################################################
@@ -105,6 +107,18 @@ class WIIState(object):
     self.nunchukStick = None
     self.nunchukStickRaw = None
     self.nunchukButtons = {BTN_C: False, BTN_Z: False}
+
+    self.classicPresent = False
+    self.classicStickLeft = None
+    self.classicStickRight = None
+    self.classicButtons = {CLASSIC_BTN_A: False, CLASSIC_BTN_B: False,
+                           CLASSIC_BTN_L: False, CLASSIC_BTN_R: False,
+                           CLASSIC_BTN_X: False, CLASSIC_BTN_Y: False,
+                           CLASSIC_BTN_ZL: False, CLASSIC_BTN_ZR: False,
+                           CLASSIC_BTN_PLUS: False, CLASSIC_BTN_MINUS: False,
+                           CLASSIC_BTN_UP: False, CLASSIC_BTN_DOWN: False,
+                           CLASSIC_BTN_LEFT: False, CLASSIC_BTN_RIGHT: False,
+                           CLASSIC_BTN_HOME: False}
 
     # Handle buttons on the WII
     # A zero means no button is down.
@@ -214,6 +228,29 @@ class WIIState(object):
             nunButtons = nunChuk['buttons']
             self.nunchukButtons[BTN_C]  = (nunButtons & BTN_C) > 0
             self.nunchukButtons[BTN_Z]  = (nunButtons & BTN_Z) > 0
+        continue
+      elif msgType == WII_MSG_TYPE_CLASSIC:
+        clasSic = msgComp[1];
+        if clasSic is not None:
+            self.classicPresent = True
+            self.classicStickLeft = clasSic['l_stick']
+            self.classicStickRight = clasSic['r_stick']
+            clasButtons = clasSic['buttons']
+            self.classicButtons[CLASSIC_BTN_A]  = (clasButtons & CLASSIC_BTN_A) > 0
+            self.classicButtons[CLASSIC_BTN_B]  = (clasButtons & CLASSIC_BTN_B) > 0
+            self.classicButtons[CLASSIC_BTN_DOWN]  = (clasButtons & CLASSIC_BTN_DOWN) > 0
+            self.classicButtons[CLASSIC_BTN_HOME]  = (clasButtons & CLASSIC_BTN_HOME) > 0
+            self.classicButtons[CLASSIC_BTN_L]  = (clasButtons & CLASSIC_BTN_L) > 0
+            self.classicButtons[CLASSIC_BTN_LEFT]  = (clasButtons & CLASSIC_BTN_LEFT) > 0
+            self.classicButtons[CLASSIC_BTN_MINUS]  = (clasButtons & CLASSIC_BTN_MINUS) > 0
+            self.classicButtons[CLASSIC_BTN_PLUS]  = (clasButtons & CLASSIC_BTN_PLUS) > 0
+            self.classicButtons[CLASSIC_BTN_R]  = (clasButtons & CLASSIC_BTN_R) > 0
+            self.classicButtons[CLASSIC_BTN_RIGHT]  = (clasButtons & CLASSIC_BTN_RIGHT) > 0
+            self.classicButtons[CLASSIC_BTN_UP]  = (clasButtons & CLASSIC_BTN_UP) > 0
+            self.classicButtons[CLASSIC_BTN_X]  = (clasButtons & CLASSIC_BTN_X) > 0
+            self.classicButtons[CLASSIC_BTN_Y]  = (clasButtons & CLASSIC_BTN_Y) > 0
+            self.classicButtons[CLASSIC_BTN_ZL]  = (clasButtons & CLASSIC_BTN_ZL) > 0
+            self.classicButtons[CLASSIC_BTN_ZR]  = (clasButtons & CLASSIC_BTN_ZR) > 0
         continue
        
 

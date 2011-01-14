@@ -5,7 +5,7 @@
 # Description:  Constants for Wii Arm Control
 # Author:       Andreas Paepcke
 # Created:      Thu Aug 13 11:44:04 2009 (Andreas Paepcke) paepcke@anw.willowgarage.com
-# Modified:     Thu Mar 18 10:56:09 2010 (David Lu) davidlu@wustl.edu
+# Modified:     Thu Jan 13 13:44:31 2011 (Andreas Paepcke) paepcke@bhb.willowgarage.com
 # Language:     Python
 # Package:      N/A
 # Status:       Experimental (Do Not Distribute)
@@ -17,6 +17,8 @@
 #
 # Thu Mar 18 10:56:09 2010 (David Lu) davidlu@wustl.edu
 #  Added nunchuk options
+# Fri Oct 29 08:58:21 2010 (Miguel Angel Julian Aguilar, QBO Project) miguel.angel@thecorpora.com
+#  Added classic controller options
 ################################################################################
 
 _DEBUGLEVEL = 1
@@ -67,6 +69,23 @@ BTN_HOME  = 0x0080                  # cwiid.CWIID_BTN_HOME
 # nunchuk Buttons
 BTN_C     = 0x0002
 BTN_Z     = 0x0001
+
+# Classic Controller Buttons
+CLASSIC_BTN_UP          = 0x0001
+CLASSIC_BTN_LEFT        = 0x0002
+CLASSIC_BTN_ZR          = 0x0004
+CLASSIC_BTN_X           = 0x0008
+CLASSIC_BTN_A           = 0x0010
+CLASSIC_BTN_Y           = 0x0020
+CLASSIC_BTN_B           = 0x0040
+CLASSIC_BTN_ZL          = 0x0080
+CLASSIC_BTN_R           = 0x0200
+CLASSIC_BTN_PLUS        = 0x0400
+CLASSIC_BTN_HOME        = 0x0800
+CLASSIC_BTN_MINUS       = 0x1000
+CLASSIC_BTN_L           = 0x2000
+CLASSIC_BTN_DOWN        = 0x4000
+CLASSIC_BTN_RIGHT       = 0x8000
 
 X   = 0
 Y   = 1
@@ -149,7 +168,7 @@ WII_MSG_TYPE_BTN         = 1
 WII_MSG_TYPE_ACC         = 2
 WII_MSG_TYPE_IR          = 3
 WII_MSG_TYPE_NUNCHUK     = 4
-# WII_MSG_TYPE_CLASSIC     = 5
+WII_MSG_TYPE_CLASSIC     = 5
 # WII_MSG_TYPE_BALANCE     = 6
 WII_MSG_TYPE_MOTIONPLUS  = 7 # Gyro
 WII_MSG_TYPE_ERROR       = 8

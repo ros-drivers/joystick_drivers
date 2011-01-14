@@ -23,8 +23,7 @@ morsePause 	= 0.1
 morseDa    	= 0.6
 morseLongPause  = 1.0
     
-INTER_PATTERN_SLEEP_DURATION = 2.0
-
+INTER_PATTERN_SLEEP_DURATION = 3.0
 
 def printMsg(msg):
   pattern = msg.rumble.pulse_pattern
@@ -56,6 +55,8 @@ def talker():
     
     sendTwoMorse(pub)
     rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
+
+    #rospy.sleep(FINAL_SLEEP_DURATION)
 
 
 def sendBlank(pub):

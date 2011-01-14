@@ -7,7 +7,7 @@
 #               and allows Wiimote rumble/LED setting.
 # Author:       Andreas Paepcke
 # Created:      Thu Sep 10 10:31:44 2009
-# Modified:     Thu Dec  2 11:17:24 2010 (Andreas Paepcke) paepcke@bhb.willowgarage.com
+# Modified:     Fri Jan 14 10:51:11 2011 (Andreas Paepcke) paepcke@bhb.willowgarage.com
 # Language:     Python
 # Package:      N/A
 # Status:       Experimental (Do Not Distribute)
@@ -20,6 +20,9 @@
 #
 # Thu Mar 18 10:56:09 2010 (David Lu) davidlu@wustl.edu
 #  Enabled nunchuk message publishing
+# Fri Oct 29 08:58:21 2010 (Miguel Angel Julian Aguilar, QBO Project)
+#    miguel.angel@thecorpora.com
+#    Enabled classic controller message publishing
 # Mon Nov 08 11:46:58 2010 (David Lu) davidlu@wustl.edu
 #  Added calibrated nunchuk information, changed /joy to /wiijoy
 #  Only publish on /wiimote/nunchuk if attached
@@ -36,6 +39,7 @@ the Wiimote stick's rumble (vibration) and LEDs. Transmitted topics (@100Hz):
                        and battery state. See State.msg
    o imu/is_calibrated Latched message
    o nunchuk           Joy messages using the nunchuk as a joystick
+   o classic           Joy messages using the nunchuck as a joystic
                  
 The node listens to the following messages:
 
@@ -73,6 +77,7 @@ No command line parameters.
 import sys
 import threading
 import traceback
+import time
 
 # -------- ROS-Related Modules:
 import roslib; roslib.load_manifest('wiimote')
@@ -115,13 +120,14 @@ class WiimoteNode():
             JoySender(wiimoteDevice, freq=100).start()
             WiiSender(wiimoteDevice, freq=100).start()
             NunSender(wiimoteDevice, freq=100).start()
+	    ClasSender(wiimoteDevice, freq=100).start()
             WiimoteListeners(wiimoteDevice).start()
             
             rospy.spin()
         
         except:    
             rospy.loginfo("Error in startup")
-            System.err.println (sys.exc_info()[0])
+	    rospy.loginfo(sys.exc_info()[0])
         finally:
             try:
                 wiimoteDevice.setRumble(False)
@@ -282,7 +288,11 @@ class IMUSender(WiimoteDataSender):
                 msg.header.stamp.secs = timeSecs
                 msg.header.stamp.nsecs = timeNSecs
                 
-                self.pub.publish(msg)
+		try:
+		  self.pub.publish(msg)
+		except rospy.ROSException:
+		  rospy.loginfo("Topic imu/data closed. Shutting down Imu sender.")
+		  exit(0)
                 
                 rospy.logdebug("IMU state:")
                 rospy.logdebug("    IMU accel: " + str(canonicalAccel) + "\n    IMU angular rate: " + str(canonicalAngleRate))
@@ -356,8 +366,12 @@ class JoySender(WiimoteDataSender):
                 # msg.header.stamp.secs = timeSecs
                 # msg.header.stamp.nsecs = timeNSecs
                 
-                self.pub.publish(msg)
-                
+		try:
+		  self.pub.publish(msg)
+		except rospy.ROSException:
+		  rospy.loginfo("Topic wiijoy closed. Shutting down Joy sender.")
+		  exit(0)
+
                 rospy.logdebug("Joystick state:")
                 rospy.logdebug("    Joy buttons: " + str(theButtons) + "\n    Joy accel: " + str(canonicalAccel) + "\n    Joy angular rate: " + str(canonicalAngleRate))
                 rospy.sleep(self.sleepDuration)
@@ -381,8 +395,11 @@ class NunSender(WiimoteDataSender):
         WiimoteDataSender.__init__(self, wiiMote, freq)
 
         
-        self.pub = None       
         
+        # Set 'pub' to none here, and check for none-ness in the
+	# loop below so as not to start this publisher unnecessarily.
+        self.pub = None
+	
     def run(self):
         """Loop that obtains the latest nunchuk state, publishes the joystick data, and sleeps.
         
@@ -419,7 +436,11 @@ class NunSender(WiimoteDataSender):
                 # msg.header.stamp.secs = timeSecs
                 # msg.header.stamp.nsecs = timeNSecs
                 
-                self.pub.publish(msg)
+		try:
+		  self.pub.publish(msg)
+		except rospy.ROSException:
+		  rospy.loginfo("Topic /wiimote/nunchuk closed. Shutting down Nun sender.")
+		  exit(0)
                 
                 rospy.logdebug("nunchuk state:")
                 rospy.logdebug("    nunchuk buttons: " + str(theButtons) + "\n    Nuchuck axes: " + str(msg.axes) + "\n")
@@ -427,6 +448,103 @@ class NunSender(WiimoteDataSender):
         except rospy.ROSInterruptException:
             rospy.loginfo("Shutdown request. Shutting down Nun sender.")
             exit(0)
+
+class ClasSender(WiimoteDataSender):
+    
+    """Broadcasting Classic Controller joystick readings as Joy(stick) messages to Topic joy"""
+    
+    def __init__(self, wiiMote, freq=100):
+        """Initializes the Classic Controller Joy(stick) publisher.
+    
+        Parameters:
+            wiiMote: a bluetooth-connected, calibrated WIIMote instance
+            freq:    the message sending frequency in messages/sec. Max is 100, because
+                     the Wiimote only samples the sensors at 100Hz.
+        """
+        
+        WiimoteDataSender.__init__(self, wiiMote, freq)
+
+        # Set 'pub' to none here, and check for none-ness in the
+	# loop below so as not to start this publisher unnecessarily.
+        self.pub = None
+        
+    def run(self):
+        """Loop that obtains the latest classic controller state, publishes the joystick data, and sleeps.
+        
+        The Joy.msg message types calls for just two fields: float32[] axes, and int32[] buttons.
+        """
+
+	self.threadName = "Classic Controller Joy topic Publisher"
+        try:
+            while not rospy.is_shutdown():
+                self.obtainWiimoteData()
+		
+                if not self.wiistate.classicPresent:
+                    continue
+		if self.pub is None:
+		    rospy.Publisher('/wiimote/classic', Joy)
+		    rospy.loginfo("Wiimote Classic Controller joystick publisher starting (topic /wiimote/classic).")
+	  
+                (l_joyx, l_joyy) = self.wiistate.classicStickLeft
+                (r_joyx, r_joyy) = self.wiistate.classicStickRight
+                # scale the joystick to [-1, 1]
+                l_joyx = -(l_joyx-33)/27.
+                l_joyy = (l_joyy-33)/27.
+                r_joyx = -(r_joyx-15)/13.
+                r_joyy = (r_joyy-15)/13.
+                # create a deadzone in the middle
+                if abs(l_joyx) < .05:
+                    l_joyx = 0
+                if abs(l_joyy) < .05:
+                    l_joyy = 0
+                if abs(r_joyx) < .05:
+                    r_joyx = 0
+                if abs(r_joyy) < .05:
+                    r_joyy = 0
+                
+                msg = Joy(# the Joy msg does not have a header :-( header=None,
+                          axes=[l_joyx, l_joyy,r_joyx, r_joyy],
+                          buttons=None)
+
+                theButtons = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+                theButtons[State.MSG_CLASSIC_BTN_X]     = self.wiistate.classicButtons[CLASSIC_BTN_X]
+                theButtons[State.MSG_CLASSIC_BTN_Y]     = self.wiistate.classicButtons[CLASSIC_BTN_Y]
+                theButtons[State.MSG_CLASSIC_BTN_A]     = self.wiistate.classicButtons[CLASSIC_BTN_A]
+                theButtons[State.MSG_CLASSIC_BTN_B]     = self.wiistate.classicButtons[CLASSIC_BTN_B]
+                theButtons[State.MSG_CLASSIC_BTN_PLUS]     = self.wiistate.classicButtons[CLASSIC_BTN_PLUS]
+                theButtons[State.MSG_CLASSIC_BTN_MINUS]     = self.wiistate.classicButtons[CLASSIC_BTN_MINUS]
+                theButtons[State.MSG_CLASSIC_BTN_LEFT]     = self.wiistate.classicButtons[CLASSIC_BTN_LEFT]
+                theButtons[State.MSG_CLASSIC_BTN_RIGHT]     = self.wiistate.classicButtons[CLASSIC_BTN_RIGHT]
+                theButtons[State.MSG_CLASSIC_BTN_UP]     = self.wiistate.classicButtons[CLASSIC_BTN_UP]
+                theButtons[State.MSG_CLASSIC_BTN_DOWN]     = self.wiistate.classicButtons[CLASSIC_BTN_DOWN]
+                theButtons[State.MSG_CLASSIC_BTN_HOME]     = self.wiistate.classicButtons[CLASSIC_BTN_HOME]
+                theButtons[State.MSG_CLASSIC_BTN_L]     = self.wiistate.classicButtons[CLASSIC_BTN_L]
+                theButtons[State.MSG_CLASSIC_BTN_R]     = self.wiistate.classicButtons[CLASSIC_BTN_R]
+                theButtons[State.MSG_CLASSIC_BTN_ZL]     = self.wiistate.classicButtons[CLASSIC_BTN_ZL]
+                theButtons[State.MSG_CLASSIC_BTN_ZR]     = self.wiistate.classicButtons[CLASSIC_BTN_ZR]
+
+                msg.buttons = theButtons
+                
+                measureTime = self.wiistate.time
+                timeSecs = int(measureTime)
+                timeNSecs = int(abs(timeSecs - measureTime) * 10**9)
+                # the Joy msg does not have a header :-(
+                # msg.header.stamp.secs = timeSecs
+                # msg.header.stamp.nsecs = timeNSecs
+                
+		try:
+		  self.pub.publish(msg)
+		except rospy.ROSException:
+		  rospy.loginfo("Topic /wiimote/classic closed. Shutting down Clas sender.")
+		  exit(0)
+
+                rospy.logdebug("Classic Controller state:")
+                rospy.logdebug("    Classic Controller buttons: " + str(theButtons) + "\n    Classic Controller axes: " + str(msg.axes) + "\n")
+                rospy.sleep(self.sleepDuration)
+        except rospy.ROSInterruptException:
+            rospy.loginfo("Shutdown request. Shutting down Clas sender.")
+            exit(0)
+	    
 
 class WiiSender(WiimoteDataSender):
     """Broadcasting complete Wiimote messages to Topic wiimote"""
@@ -580,7 +698,11 @@ class WiiSender(WiimoteDataSender):
                 msg.header.stamp.secs = timeSecs
                 msg.header.stamp.nsecs = timeNSecs
                 
-                self.pub.publish(msg)
+		try:
+		  self.pub.publish(msg)
+		except rospy.ROSException:
+		  rospy.loginfo("Topic /wiimote/state closed. Shutting down Wiimote sender.")
+		  exit(0)
                 
                 rospy.logdebug("Wiimote state:")
                 rospy.logdebug("    Accel: " + str(canonicalAccel) + "\n    Angular rate: " + str(canonicalAngleRate))
@@ -1073,7 +1195,6 @@ if __name__ == '__main__':
     except:
         excType, excValue, excTraceback = sys.exc_info()[:3]
         traceback.print_exception(excType, excValue, excTraceback)
-
     finally:
         if (wiimoteNode is not None):
             wiimoteNode.shutdown()

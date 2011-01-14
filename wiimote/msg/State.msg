@@ -23,6 +23,21 @@ int8 MSG_BTN_DOWN  = 9
 int8 MSG_BTN_HOME  = 10
 int8 MSG_BTN_Z     = 0
 int8 MSG_BTN_C     = 1
+int8 MSG_CLASSIC_BTN_X       = 0
+int8 MSG_CLASSIC_BTN_Y       = 1
+int8 MSG_CLASSIC_BTN_A       = 2
+int8 MSG_CLASSIC_BTN_B       = 3
+int8 MSG_CLASSIC_BTN_PLUS    = 4
+int8 MSG_CLASSIC_BTN_MINUS   = 5
+int8 MSG_CLASSIC_BTN_LEFT    = 6
+int8 MSG_CLASSIC_BTN_RIGHT   = 7
+int8 MSG_CLASSIC_BTN_UP      = 8
+int8 MSG_CLASSIC_BTN_DOWN    = 9
+int8 MSG_CLASSIC_BTN_HOME    = 10
+int8 MSG_CLASSIC_BTN_L       = 11
+int8 MSG_CLASSIC_BTN_R       = 12
+int8 MSG_CLASSIC_BTN_ZL      = 13
+int8 MSG_CLASSIC_BTN_ZR      = 14
 
 #-----------------------------
 # Header
