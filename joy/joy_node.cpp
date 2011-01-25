@@ -220,7 +220,7 @@ public:
           {
           case JS_EVENT_BUTTON:
           case JS_EVENT_BUTTON | JS_EVENT_INIT:
-            if(event.number >= joy_msg.get_buttons_size())
+            if(event.number >= joy_msg.buttons.size())
             {
               int old_size = joy_msg.buttons.size();
               joy_msg.buttons.resize(event.number+1);
@@ -237,7 +237,7 @@ public:
             break;
           case JS_EVENT_AXIS:
           case JS_EVENT_AXIS | JS_EVENT_INIT:
-            if(event.number >= joy_msg.get_axes_size())
+            if(event.number >= joy_msg.axes.size())
             {
               int old_size = joy_msg.axes.size();
               joy_msg.axes.resize(event.number+1);
