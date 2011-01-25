@@ -25,9 +25,6 @@ a timed pattern.
   <depend package="joy"/>
   <depend package="roslib"/>
   <depend package="cwiid"/>
-  <export>
-    <cpp cflags="-I${prefix}/msg/cpp"/>
-  </export>
   <platform os="ubuntu" version="9.04"/>
   <platform os="ubuntu" version="9.10"/>
   <platform os="ubuntu" version="10.04"/>
