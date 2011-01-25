@@ -318,7 +318,7 @@ class JoySender(WiimoteDataSender):
         WiimoteDataSender.__init__(self, wiiMote, freq)
 
         
-        self.pub = rospy.Publisher('wiijoy', Joy)        
+        self.pub = rospy.Publisher('joy', Joy)        
         
     def run(self):
         """Loop that obtains the latest wiimote state, publishes the joystick data, and sleeps.
