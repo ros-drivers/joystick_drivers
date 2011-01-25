@@ -14,7 +14,7 @@ a timed pattern.
   </description>
   <author>Andreas Paepcke</author>
   <license>GPL</license>
-  <review status="experimental" notes=""/>
+  <review status="Doc Reviewed" notes=""/>
   <url>http://pr.willowgarage.com/wiki/wiimote</url>
   <rosdep name="python-numpy" />
   <depend package="geometry_msgs" />
