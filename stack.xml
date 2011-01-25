@@ -5,7 +5,7 @@ for joysticks that are not well supported by a common Linux distribution.
   </description>
   <author>Maintained by Melonee Wise</author>
   <license>BSD,GPL,ZLib (spacenav)</license>  
-  <review status="Doc reviewed except wiimote and joystick_remapper" notes="reviewed 10-1-2009"/>
+  <review status="Doc reviewed" notes="reviewed 01-25-2011"/>
   <url>http://ros.org/wiki/joystick_drivers</url>
   <depend stack="common_msgs" /> <!-- sensor_msgs, geometry_msgs -->
   <depend stack="diagnostics" /> <!-- diagnostic_updater -->
