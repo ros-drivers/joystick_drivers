@@ -4,7 +4,7 @@
   </description>
   <author>Stuart Glaser, Blaise Gassend</author>
   <license>BSD</license>
-  <review status="Doc reviwed" notes="reviewed 10-1-2009"/>
+  <review status="Doc Reviewed" notes="reviewed 10-1-2009"/>
   <depend package="roscpp" />
   <depend package="spacenav" />
   <depend package="joy" />
