@@ -1,7 +1,8 @@
 joystick:
   ubuntu: joystick
   debian: joystick
-  arch: kernel-headers
+  arch: |
+    if ! pacman -Q joyutils; then yaourt -S joyutils; fi
   fedora: joystick
   rhel: joystick
   gentoo: games-util/joystick
