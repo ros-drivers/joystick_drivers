@@ -9,6 +9,7 @@ for joysticks that are not well supported by a common Linux distribution.
   <url>http://ros.org/wiki/joystick_drivers</url>
   <depend stack="common_msgs" /> <!-- sensor_msgs, geometry_msgs -->
   <depend stack="diagnostics" /> <!-- diagnostic_updater -->
-  <depend stack="ros" /> <!-- std_srvs, roslib, std_msgs, roscpp, rospy -->
+  <depend stack="ros" /> <!-- roslib -->
+  <depend stack="ros_comm" /> <!-- std_srvs, std_msgs, roscpp, rospy -->
 
 </stack>
