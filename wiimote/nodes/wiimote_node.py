@@ -1176,9 +1176,9 @@ if __name__ == '__main__':
         wiimoteNode.runWiimoteNode()
         
     except rospy.ROSInterruptException:
-        rospy.rospy.loginfo("ROS Shutdown Request.")
+        rospy.loginfo("ROS Shutdown Request.")
     except KeyboardInterrupt, e:
-        rospy.rospy.loginfo("Received keyboard interrupt.")
+        rospy.loginfo("Received keyboard interrupt.")
     except WiimoteNotFoundError, e:
         rospy.logfatal(str(e))
     except WiimoteEnableError, e:
@@ -1198,5 +1198,5 @@ if __name__ == '__main__':
     finally:
         if (wiimoteNode is not None):
             wiimoteNode.shutdown()
-        rospy.rospy.loginfo("Exiting Wiimote node.")
+        rospy.loginfo("Exiting Wiimote node.")
         sys.exit(0)
