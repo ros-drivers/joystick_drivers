@@ -362,9 +362,9 @@ class JoySender(WiimoteDataSender):
                 measureTime = self.wiistate.time
                 timeSecs = int(measureTime)
                 timeNSecs = int(abs(timeSecs - measureTime) * 10**9)
-                # the Joy msg does not have a header :-(
-                # msg.header.stamp.secs = timeSecs
-                # msg.header.stamp.nsecs = timeNSecs
+                # Add the timestamp
+                msg.header.stamp.secs = timeSecs
+                msg.header.stamp.nsecs = timeNSecs
                 
 		try:
 		  self.pub.publish(msg)

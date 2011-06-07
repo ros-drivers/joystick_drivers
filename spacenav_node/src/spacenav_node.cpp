@@ -77,7 +77,7 @@ int main(int argc, char **argv)
     // If the queue is empty 30 times in a row output zeros.
     // Output changes each time a button event happens, or when a motion
     // event happens and the queue is empty.
-
+    joystick_msg.header.stamp = ros::Time().now();
     switch (spnav_poll_event(&sev))
     {
       case 0:
