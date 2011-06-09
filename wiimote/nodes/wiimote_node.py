@@ -294,8 +294,8 @@ class IMUSender(WiimoteDataSender):
 		  rospy.loginfo("Topic imu/data closed. Shutting down Imu sender.")
 		  exit(0)
                 
-                rospy.logdebug("IMU state:")
-                rospy.logdebug("    IMU accel: " + str(canonicalAccel) + "\n    IMU angular rate: " + str(canonicalAngleRate))
+                #rospy.logdebug("IMU state:")
+                #rospy.logdebug("    IMU accel: " + str(canonicalAccel) + "\n    IMU angular rate: " + str(canonicalAngleRate))
                 rospy.sleep(self.sleepDuration)
         except rospy.ROSInterruptException:
             rospy.loginfo("Shutdown request. Shutting down Imu sender.")
@@ -332,7 +332,7 @@ class JoySender(WiimoteDataSender):
             while not rospy.is_shutdown():
                 (canonicalAccel, canonicalNunchukAccel, canonicalAngleRate) = self.obtainWiimoteData()
                 
-                msg = Joy(# the Joy msg does not have a header :-( header=None,
+                msg = Joy(header=None,
                           axes=[canonicalAccel[X], canonicalAccel[Y], canonicalAccel[Z]],
                           buttons=None)
                 
@@ -372,8 +372,8 @@ class JoySender(WiimoteDataSender):
 		  rospy.loginfo("Topic wiijoy closed. Shutting down Joy sender.")
 		  exit(0)
 
-                rospy.logdebug("Joystick state:")
-                rospy.logdebug("    Joy buttons: " + str(theButtons) + "\n    Joy accel: " + str(canonicalAccel) + "\n    Joy angular rate: " + str(canonicalAngleRate))
+                #rospy.logdebug("Joystick state:")
+                #rospy.logdebug("    Joy buttons: " + str(theButtons) + "\n    Joy accel: " + str(canonicalAccel) + "\n    Joy angular rate: " + str(canonicalAngleRate))
                 rospy.sleep(self.sleepDuration)
         except rospy.ROSInterruptException:
             rospy.loginfo("Shutdown request. Shutting down Joy sender.")
@@ -409,6 +409,7 @@ class NunSender(WiimoteDataSender):
         self.threadName = "nunchuk Joy topic Publisher"
         try:
             while not rospy.is_shutdown():
+                rospy.sleep(self.sleepDuration)
                 (canonicalAccel, scaledAcc, canonicalAngleRate) = self.obtainWiimoteData()
                 if not self.wiistate.nunchukPresent:
                     continue
@@ -418,7 +419,7 @@ class NunSender(WiimoteDataSender):
                 
                 (joyx, joyy) = self.wiistate.nunchukStick
                                 
-                msg = Joy(# the Joy msg does not have a header :-( header=None,
+                msg = Joy(header=None,
                           axes=[joyx, joyy,
                                 scaledAcc[X], scaledAcc[Y], scaledAcc[Z]],
                           buttons=None)
@@ -432,9 +433,8 @@ class NunSender(WiimoteDataSender):
                 measureTime = self.wiistate.time
                 timeSecs = int(measureTime)
                 timeNSecs = int(abs(timeSecs - measureTime) * 10**9)
-                # the Joy msg does not have a header :-(
-                # msg.header.stamp.secs = timeSecs
-                # msg.header.stamp.nsecs = timeNSecs
+                msg.header.stamp.secs = timeSecs
+                msg.header.stamp.nsecs = timeNSecs
                 
 		try:
 		  self.pub.publish(msg)
@@ -442,9 +442,9 @@ class NunSender(WiimoteDataSender):
 		  rospy.loginfo("Topic /wiimote/nunchuk closed. Shutting down Nun sender.")
 		  exit(0)
                 
-                rospy.logdebug("nunchuk state:")
-                rospy.logdebug("    nunchuk buttons: " + str(theButtons) + "\n    Nuchuck axes: " + str(msg.axes) + "\n")
-                rospy.sleep(self.sleepDuration)
+                #rospy.logdebug("nunchuk state:")
+                #rospy.logdebug("    nunchuk buttons: " + str(theButtons) + "\n    Nuchuck axes: " + str(msg.axes) + "\n")
+
         except rospy.ROSInterruptException:
             rospy.loginfo("Shutdown request. Shutting down Nun sender.")
             exit(0)
@@ -477,6 +477,7 @@ class ClasSender(WiimoteDataSender):
 	self.threadName = "Classic Controller Joy topic Publisher"
         try:
             while not rospy.is_shutdown():
+                rospy.sleep(self.sleepDuration)
                 self.obtainWiimoteData()
 		
                 if not self.wiistate.classicPresent:
@@ -502,7 +503,7 @@ class ClasSender(WiimoteDataSender):
                 if abs(r_joyy) < .05:
                     r_joyy = 0
                 
-                msg = Joy(# the Joy msg does not have a header :-( header=None,
+                msg = Joy(header=None,
                           axes=[l_joyx, l_joyy,r_joyx, r_joyy],
                           buttons=None)
 
@@ -528,9 +529,8 @@ class ClasSender(WiimoteDataSender):
                 measureTime = self.wiistate.time
                 timeSecs = int(measureTime)
                 timeNSecs = int(abs(timeSecs - measureTime) * 10**9)
-                # the Joy msg does not have a header :-(
-                # msg.header.stamp.secs = timeSecs
-                # msg.header.stamp.nsecs = timeNSecs
+                msg.header.stamp.secs = timeSecs
+                msg.header.stamp.nsecs = timeNSecs
                 
 		try:
 		  self.pub.publish(msg)
@@ -538,9 +538,9 @@ class ClasSender(WiimoteDataSender):
 		  rospy.loginfo("Topic /wiimote/classic closed. Shutting down Clas sender.")
 		  exit(0)
 
-                rospy.logdebug("Classic Controller state:")
-                rospy.logdebug("    Classic Controller buttons: " + str(theButtons) + "\n    Classic Controller axes: " + str(msg.axes) + "\n")
-                rospy.sleep(self.sleepDuration)
+                #rospy.logdebug("Classic Controller state:")
+                #rospy.logdebug("    Classic Controller buttons: " + str(theButtons) + "\n    Classic Controller axes: " + str(msg.axes) + "\n")
+
         except rospy.ROSInterruptException:
             rospy.loginfo("Shutdown request. Shutting down Clas sender.")
             exit(0)
@@ -578,6 +578,7 @@ class WiiSender(WiimoteDataSender):
         self.threadName = "Wiimote topic Publisher"
         try:
             while not rospy.is_shutdown():
+                rospy.sleep(self.sleepDuration)
                 (canonicalAccel, canonicalNunchukAccel, canonicalAngleRate) = self.obtainWiimoteData()
                 
                 zeroingTimeSecs = int(self.wiiMote.lastZeroingTime)
@@ -642,7 +643,7 @@ class WiiSender(WiimoteDataSender):
                     moreButtons.append(self.wiistate.nunchukButtons[BTN_Z])
                     moreButtons.append(self.wiistate.nunchukButtons[BTN_C])
                     msg.nunchuk_buttons = moreButtons
-                
+
                 theButtons = []
                 theButtons.append(self.wiistate.buttons[BTN_1])
                 theButtons.append(self.wiistate.buttons[BTN_2])
@@ -662,7 +663,7 @@ class WiiSender(WiimoteDataSender):
                         msg.LEDs[indx] = True
                     else:
                         msg.LEDs[indx] = False
-                
+
                 msg.buttons = theButtons
 
                 msg.raw_battery = self.wiiMote.getBattery()
@@ -691,7 +692,7 @@ class WiiSender(WiimoteDataSender):
                             msg.ir_tracking.append(lightInfo)
                     else:
                         msg.ir_tracking.append(IrSourceInfo(State.INVALID_FLOAT, State.INVALID_FLOAT, State.INVALID))
-                
+
                 measureTime = self.wiistate.time
                 timeSecs = int(measureTime)
                 timeNSecs = int(abs(timeSecs - measureTime) * 10**9)
@@ -703,13 +704,13 @@ class WiiSender(WiimoteDataSender):
 		except rospy.ROSException:
 		  rospy.loginfo("Topic /wiimote/state closed. Shutting down Wiimote sender.")
 		  exit(0)
-                
-                rospy.logdebug("Wiimote state:")
-                rospy.logdebug("    Accel: " + str(canonicalAccel) + "\n    Angular rate: " + str(canonicalAngleRate))
-                rospy.logdebug("    Rumble: " + str(msg.rumble) + "\n    Battery: [" + str(msg.raw_battery) + "," + str(msg.percent_battery))
-                rospy.logdebug("    IR positions: " + str(msg.ir_tracking))
+
+                #rospy.logdebug("Wiimote state:")
+                #rospy.logdebug("    Accel: " + str(canonicalAccel) + "\n    Angular rate: " + str(canonicalAngleRate))
+                #rospy.logdebug("    Rumble: " + str(msg.rumble) + "\n    Battery: [" + str(msg.raw_battery) + "," + str(msg.percent_battery))
+                #rospy.logdebug("    IR positions: " + str(msg.ir_tracking))
                                 
-                rospy.sleep(self.sleepDuration)
+
         except rospy.ROSInterruptException:
             rospy.loginfo("Shutdown request. Shutting down Wiimote sender.")
             exit(0)
@@ -758,7 +759,7 @@ class WiimoteListeners(threading.Thread):
       def rumbleSwitchCallback(msg):
         """Callback for turning rumble on/off, and to initiate pulse rumble."""
         
-        rospy.logdebug("From: " + rospy.get_caller_id() + ". Rumble request \n" + str(msg))
+        #rospy.logdebug("From: " + rospy.get_caller_id() + ". Rumble request \n" + str(msg))
         
         # If a rumble pulser thread is running, stop it:
         if self.pulserThread is not None:
@@ -797,7 +798,7 @@ class WiimoteListeners(threading.Thread):
       def ledControlCallback(msg):
         """Callback for incoming LEDCOntrol requests."""
         
-        rospy.logdebug(rospy.get_caller_id() + "LED Control request " + str(msg))
+        #rospy.logdebug(rospy.get_caller_id() + "LED Control request " + str(msg))
         
         # Each LED has a TimedSwitch associated with it. Unpack
         # the data structure (an array of TimedSwitch) for passage
@@ -917,7 +918,7 @@ class SwitchPulser(threading.Thread):
         
     def run(self):
 
-        rospy.logdebug("In pulser thread. patternArray: " + str(self.patternArray) + ". Len: " + str(len(self.patternArray)))
+        #rospy.logdebug("In pulser thread. patternArray: " + str(self.patternArray) + ". Len: " + str(len(self.patternArray)))
             
         # First state is always ON:
         self.turnIndicatorOn(self.outputIndicator)
@@ -941,7 +942,7 @@ class SwitchPulser(threading.Thread):
                     
                 # All patterns done?
                 if nextDuration == float('inf'):
-                    rospy.logdebug("End of pattern.")
+                    #rospy.logdebug("End of pattern.")
                     exit(0)
                 
                 rospy.sleep(nextDuration)
