@@ -10,8 +10,6 @@
   <license>BSD</license>
 
   <review status="Doc reviewed" notes="reviewed 10-1-2009"/>
-  <depend package="roscpp"/>
-  <depend package="joy"/>
   <url>http://www.ros.org/wiki/ps3joy</url>
   <rosdep name="libusb"/>
   <rosdep name="joystick"/>
