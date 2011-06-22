@@ -36,7 +36,7 @@
 #include <fcntl.h>
 #include <diagnostic_updater/diagnostic_updater.h>
 #include "ros/ros.h"
-#include "sensor_msgs/Joy.h"
+#include <sensor_msgs/Joy.h>
 
 
 ///\brief Opens, reads from and publishes joystick events
