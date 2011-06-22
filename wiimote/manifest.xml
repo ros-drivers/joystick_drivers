@@ -22,7 +22,6 @@ a timed pattern.
   <depend package="std_msgs" />  
   <depend package="std_srvs" />
   <depend package="rospy"/>
-  <depend package="joy"/>
   <depend package="roslib"/>
   <depend package="cwiid"/>
   <platform os="ubuntu" version="9.04"/>
