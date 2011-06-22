@@ -5,11 +5,12 @@ float32[] axes
 int32[] buttons
 """
 
-	new_type = "joy/Joy"
+	new_type = "sensor_msgs/Joy"
 	new_full_text = """
-Header header
-float32[] axes
-int32[] buttons
+# Reports the state of a joysticks axes and buttons.
+Header header           # timestamp in the header is the time the data is received from the joystick
+float32[] axes          # the axes measurements from a joystick
+int32[] buttons         # the buttons measurements from a joystick 
 
 ================================================================================
 MSG: std_msgs/Header
@@ -33,7 +34,7 @@ string frame_id
 	order = 0
 	migrated_types = []
 
-	valid = False
+	valid = True
 
 	def update(self, old_msg, new_msg):
 		#No matching field name in old message

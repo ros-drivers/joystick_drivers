@@ -36,7 +36,7 @@
 #include <fcntl.h>
 #include <diagnostic_updater/diagnostic_updater.h>
 #include "ros/ros.h"
-#include "joy/Joy.h"
+#include "sensor_msgs/Joy.h"
 
 
 ///\brief Opens, reads from and publishes joystick events
@@ -91,7 +91,7 @@ public:
 
     // Parameters
     ros::NodeHandle nh_param("~");
-    pub_ = nh_.advertise<joy::Joy>("joy", 1);
+    pub_ = nh_.advertise<sensor_msgs::Joy>("joy", 1);
     nh_param.param<std::string>("dev", joy_dev_, "/dev/input/js0");
     nh_param.param<double>("deadzone", deadzone_, 0.05);
     nh_param.param<double>("autorepeat_rate", autorepeat_rate_, 0);
@@ -186,7 +186,7 @@ public:
       bool publication_pending = false;
       tv.tv_sec = 1;
       tv.tv_usec = 0;
-      joy::Joy joy_msg; // Here because we want to reset it on device close.
+      sensor_msgs::Joy joy_msg; // Here because we want to reset it on device close.
       while (nh_.ok()) 
       {
         ros::spinOnce();

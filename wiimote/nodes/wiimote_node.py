@@ -87,7 +87,7 @@ from sensor_msgs.msg import Imu
 from std_srvs.srv import Empty
 from std_srvs.srv import EmptyResponse
 from std_msgs.msg import Bool
-from joy.msg import Joy
+from sensor_msgs.msg import Joy
 from wiimote.msg import IrSourceInfo
 from wiimote.msg import State
 from wiimote.msg import TimedSwitch

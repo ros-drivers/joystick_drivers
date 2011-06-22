@@ -36,7 +36,7 @@
 #include "spnav.h"
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Twist.h"
-#include "joy/Joy.h"
+#include "sensor_msgs/Joy.h"
 
 #define FULL_SCALE (512.0)
 //Used to scale joystick output to be in [-1, 1].  Estimated from data, and not necessarily correct.
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
   ros::Publisher offset_pub = node_handle.advertise<geometry_msgs::Vector3>("spacenav/offset", 2);
   ros::Publisher rot_offset_pub = node_handle.advertise<geometry_msgs::Vector3>("spacenav/rot_offset", 2);
   ros::Publisher twist_pub = node_handle.advertise<geometry_msgs::Twist>("spacenav/twist", 2);
-  ros::Publisher joy_pub = node_handle.advertise<joy::Joy>("spacenav/joy", 2);
+  ros::Publisher joy_pub = node_handle.advertise<sensor_msgs::Joy>("spacenav/joy", 2);
 
   if (spnav_open() == -1)
   {
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  joy::Joy joystick_msg;
+  sensor_msgs::Joy joystick_msg;
   joystick_msg.axes.resize(6);
   joystick_msg.buttons.resize(2);
   
