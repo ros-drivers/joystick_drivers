@@ -12,3 +12,5 @@ if(HAVE_LINUX_JOYSTICK_H)
 else(HAVE_LINUX_JOYSTICK_H)
   message("Warning: no <linux/joystick.h>; won't build joy node")
 endif(HAVE_LINUX_JOYSTICK_H)
+
+rosbuild_add_pyunit(test/test_joy_msg_migration.py)
