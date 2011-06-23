@@ -11,10 +11,14 @@
 
   <review status="Doc reviewed" notes="reviewed 10-1-2009"/>
   <url>http://www.ros.org/wiki/ps3joy</url>
+  <depend package="diagnostic_msgs"/>
+  <depend package="rospy"/>
+
   <rosdep name="libusb"/>
   <rosdep name="joystick"/>
   <rosdep name="bluez"/>
   <rosdep name="python-bluez"/>
+
   <platform os="ubuntu" version="9.04"/>
   <platform os="ubuntu" version="9.10"/>
   <platform os="ubuntu" version="10.04"/>
