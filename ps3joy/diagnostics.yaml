@@ -6,5 +6,7 @@ analyzers:
     type: diagnostic_aggregator/GenericAnalyzer
     path: 'PS3 State'
     timeout: 5.0
-    startswith: ['Battery', 'Charging State', 'Connection']
+    startswith: ['Battery', 'Charging State', 'Connection', 'ps3_joy']
+    remove_prefix: 'ps3_joy'
+
 
