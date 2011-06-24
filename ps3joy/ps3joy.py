@@ -312,11 +312,11 @@ class Diagnostics():
         diag.header.stamp = curr_time
         #battery info
         stat = DiagnosticStatus(name="Battery", level=DiagnosticStatus.OK, message="OK")
-        if state[1]<3:
-            stat.level = DiagnosticStatus.WARN
-            stat.message = "Joystick Battery Low: Please Recharge."
         try:
             stat.message = self.battery_state[state[1]]
+            if state[1]<3:
+                stat.level = DiagnosticStatus.WARN
+                stat.message = "Please Recharge Battery (%s)."%self.battery_state[state[1]]
         except KeyError as ex:
             stat.message = "Invalid Battery State %s"%ex
             rospy.logwarn("Invalid Battery State %s"%ex)
