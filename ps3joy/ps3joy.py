@@ -44,8 +44,8 @@ import time
 import sys
 import traceback
 import subprocess
-
-
+from array import array
+import ps3joy.msg
 
 L2CAP_PSM_HIDP_CTRL = 17
 L2CAP_PSM_HIDP_INTR = 19
@@ -56,6 +56,7 @@ class uinput:
     EV_ABS = 3
     BUS_USB = 3
     ABS_MAX = 0x3f
+
 
 class uinputjoy:
     def open_uinput(self):
@@ -172,6 +173,11 @@ class decoder:
         self.outlen = len(buttons) + len(axes)
         self.inactivity_timeout = inactivity_timeout
         self.diagnostics = Diagnostics()
+        self.led  = 2
+        self.rumble_low = 0
+        self.rumble_high = 255
+        rospy.Subscriber("~set_led",ps3joy.msg.SetLED,self.set_led)
+        rospy.Subscriber("~set_rumble",ps3joy.msg.SetRumble,self.set_rumble)
     step_active = 1
     step_idle = 2
     step_error = 3
@@ -244,6 +250,31 @@ class decoder:
     def fullstop(self):
         self.joy.update([0] * 17 + self.axmid)
 
+
+    def set_led(self,msg):
+        self.new_msg = True
+        self.led = msg.led1*pow(2,1) + msg.led2*pow(2,2) + msg.led3*pow(2,3) + msg.led4*pow(2,4) 
+
+    def set_rumble(self,msg):
+        self.new_msg = True
+        self.rumble_high = msg.rumble_high
+        self.rumble_low = msg.rumble_low
+
+    
+    def send_cmd(self, ctrl):
+        command = [0x52,
+                   0x01,
+                   0x00, 0xfe, self.rumble_high, 0xfe, self.rumble_low,        # rumble values
+                   0x00, 0x00, 0x00, 0x00, self.led,
+                   0xff, 0x27, 0x10, 0x00, 0x32,        # LED 4
+                   0xff, 0x27, 0x10, 0x00, 0x32,        # LED 3
+                   0xff, 0x27, 0x10, 0x00, 0x32,        # LED 2
+                   0xff, 0x27, 0x10, 0x00, 0x32,        # LED 1
+                   0x00, 0x00, 0x00, 0x00, 0x00
+                   ]
+        ctrl.send(array('B', command).tostring())
+        self.new_msg = False
+
     def run(self, intr, ctrl):
         activated = False
         try:
@@ -258,9 +289,15 @@ class decoder:
                 else: # Got a frame.
                     #print "Got a frame at ", curtime, 1 / (curtime - lastvalidtime)
                     if not activated:
+                        self.send_cmd(ctrl)
+                        time.sleep(0.5)
+                        self.rumble_high = 0
+                        self.send_cmd(ctrl)
                         print "Connection activated"
                         activated = True
                     try:
+                        if(self.new_msg):
+                            self.send_cmd(ctrl)
                         rawdata = intr.recv(128)
                     except BluetoothError, s:
                         print "Got Bluetooth error %s. Disconnecting."%s
@@ -291,6 +328,7 @@ class Diagnostics():
                                 2:"Charging",
                                 3:"Not Charging"}
         self.connection     =  {18:"USB Connection",
+                                20:"Rumbling",
                                 22:"Bluetooth Connection"}
         self.battery_state  =  {0:"No Charge",
                                 1:"20% Charge",
@@ -458,6 +496,7 @@ def is_arg_with_param(arg, prefix):
 
 if __name__ == "__main__":
     rospy.init_node('ps3joy', disable_signals=True)
+
     errorcode = 0
     try:
         inactivity_timeout = float(1e3000)
