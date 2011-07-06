@@ -251,7 +251,6 @@ class decoder:
 
 
     def set_feedback(self,msg):
-        self.new_msg = True
         for feedback in msg.array:
             if feedback.type == sensor_msgs.msg.JoyFeedback.TYPE_LED and feedback.id < 4:
                 self.led_values[feedback.id] = int(round(feedback.intensity))
@@ -260,6 +259,7 @@ class decoder:
             else:
                 rospy.logwarn("Feedback %s of type %s does not exist for this joystick.",feedback.id, feedback.type)
         self.led_cmd = self.led_values[0]*pow(2,1) + self.led_values[1]*pow(2,2) + self.led_values[2]*pow(2,3) + self.led_values[3]*pow(2,4) 
+        self.new_msg = True
     
     def send_cmd(self, ctrl):
         command = [0x52,
