@@ -12,6 +12,7 @@
   <review status="Doc reviewed" notes="reviewed 10-1-2009"/>
   <url>http://www.ros.org/wiki/ps3joy</url>
   <depend package="diagnostic_msgs"/>
+  <depend package="sensor_msgs"/>
   <depend package="rospy"/>
 
   <rosdep name="libusb"/>

@@ -45,7 +45,7 @@ import sys
 import traceback
 import subprocess
 from array import array
-import ps3joy.msg
+import sensor_msgs.msg
 
 L2CAP_PSM_HIDP_CTRL = 17
 L2CAP_PSM_HIDP_INTR = 19
@@ -173,11 +173,10 @@ class decoder:
         self.outlen = len(buttons) + len(axes)
         self.inactivity_timeout = inactivity_timeout
         self.diagnostics = Diagnostics()
-        self.led  = 2
-        self.rumble_low = 0
-        self.rumble_high = 255
-        rospy.Subscriber("~set_led",ps3joy.msg.SetLED,self.set_led)
-        rospy.Subscriber("~set_rumble",ps3joy.msg.SetRumble,self.set_rumble)
+        self.led_values = [1,0,0,0]
+        self.rumble_cmd = [0, 255]
+        self.led_cmd  = 2
+        rospy.Subscriber("joy/set_feedback",sensor_msgs.msg.JoyFeedbackArray,self.set_feedback)
     step_active = 1
     step_idle = 2
     step_error = 3
@@ -251,21 +250,22 @@ class decoder:
         self.joy.update([0] * 17 + self.axmid)
 
 
-    def set_led(self,msg):
+    def set_feedback(self,msg):
         self.new_msg = True
-        self.led = msg.led1*pow(2,1) + msg.led2*pow(2,2) + msg.led3*pow(2,3) + msg.led4*pow(2,4) 
-
-    def set_rumble(self,msg):
-        self.new_msg = True
-        self.rumble_high = msg.rumble_high
-        self.rumble_low = msg.rumble_low
-
+        for feedback in msg.array:
+            if feedback.type == sensor_msgs.msg.JoyFeedback.TYPE_LED and feedback.id < 4:
+                self.led_values[feedback.id] = int(round(feedback.intensity))
+            elif feedback.type == sensor_msgs.msg.JoyFeedback.TYPE_RUMBLE and feedback.id < 2:
+                self.rumble_cmd[feedback.id] = int(feedback.intensity*255)                
+            else:
+                rospy.logwarn("Feedback %s of type %s does not exist for this joystick.",feedback.id, feedback.type)
+        self.led_cmd = self.led_values[0]*pow(2,1) + self.led_values[1]*pow(2,2) + self.led_values[2]*pow(2,3) + self.led_values[3]*pow(2,4) 
     
     def send_cmd(self, ctrl):
         command = [0x52,
                    0x01,
-                   0x00, 0xfe, self.rumble_high, 0xfe, self.rumble_low,        # rumble values
-                   0x00, 0x00, 0x00, 0x00, self.led,
+                   0x00, 0xfe, self.rumble_cmd[1], 0xfe, self.rumble_cmd[0],        # rumble values
+                   0x00, 0x00, 0x00, 0x00, self.led_cmd,
                    0xff, 0x27, 0x10, 0x00, 0x32,        # LED 4
                    0xff, 0x27, 0x10, 0x00, 0x32,        # LED 3
                    0xff, 0x27, 0x10, 0x00, 0x32,        # LED 2
@@ -291,7 +291,7 @@ class decoder:
                     if not activated:
                         self.send_cmd(ctrl)
                         time.sleep(0.5)
-                        self.rumble_high = 0
+                        self.rumble_cmd[1] = 0
                         self.send_cmd(ctrl)
                         print "Connection activated"
                         activated = True
