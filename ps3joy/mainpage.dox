@@ -2,7 +2,7 @@
 \mainpage
 \htmlinclude manifest.html
 
-This package does not have a code API. Please refer to its wiki page for
+This package does not have a code API. Please refer to its wiki page for the ROS API and 
 documentation: 
 http://www.ros.org/wiki/ps3joy
 
