@@ -143,7 +143,7 @@ class BadJoystickException(Exception):
         Exception.__init__(self, "Unsupported joystick.")
 
 class decoder:
-    def __init__(self, inactivity_timeout = float(1e3000)):
+    def __init__(self, deamon, inactivity_timeout = float(1e3000)):
         #buttons=[uinput.BTN_SELECT, uinput.BTN_THUMBL, uinput.BTN_THUMBR, uinput.BTN_START,
         #         uinput.BTN_FORWARD, uinput.BTN_RIGHT, uinput.BTN_BACK, uinput.BTN_LEFT,
         #         uinput.BTN_TL, uinput.BTN_TR, uinput.BTN_TL2, uinput.BTN_TR2,
@@ -172,14 +172,23 @@ class decoder:
         self.fullstop() # Probably useless because of uinput startup bug
         self.outlen = len(buttons) + len(axes)
         self.inactivity_timeout = inactivity_timeout
+        self.deamon = deamon
+        self.init_ros()
+    step_active = 1
+    step_idle = 2
+    step_error = 3
+
+    def init_ros(self):
+        try:
+            rospy.init_node('ps3joy',anonymous=True, disable_signals=True)        
+        except:
+            print "rosnode init failed"
+        rospy.Subscriber("joy/set_feedback",sensor_msgs.msg.JoyFeedbackArray,self.set_feedback)
         self.diagnostics = Diagnostics()
         self.led_values = [1,0,0,0]
         self.rumble_cmd = [0, 255]
         self.led_cmd  = 2
-        rospy.Subscriber("joy/set_feedback",sensor_msgs.msg.JoyFeedbackArray,self.set_feedback)
-    step_active = 1
-    step_idle = 2
-    step_error = 3
+        self.core_down = False
 
     #********************************************************************************
     #Raw Data Format
@@ -305,6 +314,27 @@ class decoder:
                     if len(rawdata) == 0: # Orderly shutdown of socket
                         print "Joystick shut down the connection, battery may be discharged."
                         return
+                    try:
+                        rospy.get_param_names()
+                    except:
+                        print "The roscore or node shutdown, ps3joy shutting down."
+                        return
+                        #for when we can restart a rosnode
+#                        if self.deamon:
+#                            self.core_down= True
+#                        else:
+#                            print "The roscore shutdown, ps3joy shutting down. Run with --deamon if you want ps3joy to respawn"
+#                            return
+#                    if self.core_down == True:
+#                        try:
+#                            rosgraph.masterapi.is_online()
+#                            self.init_ros()
+#                            self.core_down = False
+#                            print "succeeded bringing node up"
+#                        except:
+#                            print "failed to bring node up"
+#                            pass
+
                     stepout = self.step(rawdata)
                     if stepout != self.step_error:
                         lastvalidtime = curtime
@@ -457,6 +487,7 @@ class connection_manager:
                         if idev == cdev:
                             self.decoder.run(intr, ctrl)
                             print "Connection terminated."
+                            quit(0)
                         else:
                             print >> sys.stderr, "Simultaneous connection from two different devices. Ignoring both."
                     finally:
@@ -477,11 +508,14 @@ class connection_manager:
 inactivity_timout_string = "--inactivity-timeout"
 no_disable_bluetoothd_string = "--no-disable-bluetoothd"
 redirect_output_string = "--redirect-output"
+#deamon_string = "--deamon"
 
 def usage(errcode):
+#    print "usage: ps3joy.py ["+inactivity_timout_string+"=<n>] ["+no_disable_bluetoothd_string+"] ["+redirect_output_string+"]=<f> ["+deamon_string+"]=<d>"
     print "usage: ps3joy.py ["+inactivity_timout_string+"=<n>] ["+no_disable_bluetoothd_string+"] ["+redirect_output_string+"]=<f>"
     print "<n>: inactivity timeout in seconds (saves battery life)."
     print "<f>: file name to redirect output to."
+#    print "<d>: runs in deamon mode respawning node when roscore goes down."
     print "Unless "+no_disable_bluetoothd_string+" is specified, bluetoothd will be stopped."
     raise Quit(errcode)
 
@@ -495,12 +529,11 @@ def is_arg_with_param(arg, prefix):
     return True
 
 if __name__ == "__main__":
-    rospy.init_node('ps3joy', disable_signals=True)
-
     errorcode = 0
     try:
         inactivity_timeout = float(1e3000)
         disable_bluetoothd = True
+        deamon = False
         for arg in sys.argv[1:]: # Be very tolerant in case we are roslaunched.
             if arg == "--help":
                 usage(0)
@@ -527,6 +560,8 @@ if __name__ == "__main__":
                     print "Error opening file to redirect output:", str_value
                     raise Quit(1)
                 sys.stderr = sys.stdout
+#            elif arg == deamon_string:
+#                deamon = True
             else:
                 print "Ignoring parameter: '%s'"%arg
         if os.getuid() != 0:
@@ -543,7 +578,7 @@ if __name__ == "__main__":
                 print "No inactivity timeout was set. (Run with --help for details.)"
             else:
                 print "Inactivity timeout set to %.0f seconds."%inactivity_timeout
-            cm = connection_manager(decoder(inactivity_timeout = inactivity_timeout))
+            cm = connection_manager(decoder(deamon, inactivity_timeout = inactivity_timeout))
             cm.listen_bluetooth()
         finally:
             if disable_bluetoothd:
