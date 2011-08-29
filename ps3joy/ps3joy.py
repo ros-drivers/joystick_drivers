@@ -46,6 +46,7 @@ import traceback
 import subprocess
 from array import array
 import sensor_msgs.msg
+import rosgraph.masterapi
 
 L2CAP_PSM_HIDP_CTRL = 17
 L2CAP_PSM_HIDP_INTR = 19
@@ -314,9 +315,7 @@ class decoder:
                     if len(rawdata) == 0: # Orderly shutdown of socket
                         print "Joystick shut down the connection, battery may be discharged."
                         return
-                    try:
-                        rospy.get_param_names()
-                    except:
+                    if not rosgraph.masterapi.is_online():
                         print "The roscore or node shutdown, ps3joy shutting down."
                         return
                         #for when we can restart a rosnode
