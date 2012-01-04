@@ -20,6 +20,13 @@ python-bluez:
   fedora: pybluez
   rhel: python-bluez
   gentoo: dev-python/pybluez
+cwiid:
+  ubuntu: python-cwiid
+  debian: python-cwiid
+  arch: cwiid
+  fedora: cwiid
+  rhel: cwiid
+  gentoo: app-misc/cwiid
 bluez:
   ubuntu: bluez
   debian: bluez

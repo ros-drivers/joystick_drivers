@@ -17,13 +17,14 @@ a timed pattern.
   <review status="Doc reviewed" notes=""/>
   <url>http://pr.willowgarage.com/wiki/wiimote</url>
   <rosdep name="python-numpy" />
+  <rosdep name="cwiid" />
   <depend package="geometry_msgs" />
   <depend package="sensor_msgs" />
   <depend package="std_msgs" />  
   <depend package="std_srvs" />
   <depend package="rospy"/>
   <depend package="roslib"/>
-  <depend package="cwiid"/>
+  <!--depend package="cwiid"/-->
   <platform os="ubuntu" version="9.04"/>
   <platform os="ubuntu" version="9.10"/>
   <platform os="ubuntu" version="10.04"/>
