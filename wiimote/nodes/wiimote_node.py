@@ -1,3 +1,4 @@
+
 #!/usr/bin/python
 ################################################################################
 #
@@ -483,7 +484,7 @@ class ClasSender(WiimoteDataSender):
                 if not self.wiistate.classicPresent:
                     continue
 		if self.pub is None:
-		    rospy.Publisher('/wiimote/classic', Joy)
+		    self.pub = rospy.Publisher('/wiimote/classic', Joy)
 		    rospy.loginfo("Wiimote Classic Controller joystick publisher starting (topic /wiimote/classic).")
 	  
                 (l_joyx, l_joyy) = self.wiistate.classicStickLeft
