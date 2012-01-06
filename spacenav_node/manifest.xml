@@ -6,13 +6,15 @@
   <license>BSD</license>
   <review status="Doc reviewed" notes="reviewed 10-1-2009"/>
   <depend package="roscpp" />
-  <depend package="spacenav" />
   <depend package="geometry_msgs" />
   <depend package="sensor_msgs"/>
+  <depend package="spacenav"/>
 
   <url>http://ros.org/wiki/spacenav_node</url>
   <export>
   </export>
+  <!--rosdep name="spacenavd" /-->
+  <!--rosdep name="libspnav-dev" /-->
   <platform os="ubuntu" version="9.04"/>
   <platform os="ubuntu" version="9.10"/>
   <platform os="ubuntu" version="10.04"/>
