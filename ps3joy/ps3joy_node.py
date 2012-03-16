@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #***********************************************************
 #* Software License Agreement (BSD License)
 #*
@@ -32,15 +32,21 @@
 #*  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #*  POSSIBILITY OF SUCH DAMAGE.
 #***********************************************************
+import roslib; roslib.load_manifest('ps3joy')
+import rospy
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 
 from bluetooth import *
 import select
 import fcntl
 import os
 import time
-import sys                    
+import sys
 import traceback
 import subprocess
+from array import array
+import sensor_msgs.msg
+import rosgraph.masterapi
 
 L2CAP_PSM_HIDP_CTRL = 17
 L2CAP_PSM_HIDP_INTR = 19
@@ -51,6 +57,7 @@ class uinput:
     EV_ABS = 3
     BUS_USB = 3
     ABS_MAX = 0x3f
+
 
 class uinputjoy:
     def open_uinput(self):
@@ -81,7 +88,7 @@ class uinputjoy:
         #info = uinput.uinput_user_dev()
         #info.name = "Sony Playstation SixAxis/DS3"
         #info.id = id
-        
+
         UI_SET_EVBIT   = 0x40045564
         UI_SET_KEYBIT  = 0x40045565
         UI_SET_RELBIT  = 0x40045566
@@ -106,20 +113,20 @@ class uinputjoy:
             uinput.BUS_USB, 0x054C, 0x0268, 0, 0, *(absmax + absmin + absfuzz + absflat)))
 
         fcntl.ioctl(self.file, UI_SET_EVBIT, uinput.EV_KEY)
-        
+
         for b in buttons:
             fcntl.ioctl(self.file, UI_SET_KEYBIT, b)
-        
+
         for a in axes:
             fcntl.ioctl(self.file, UI_SET_EVBIT, uinput.EV_ABS)
             fcntl.ioctl(self.file, UI_SET_ABSBIT, a)
-        
+
         fcntl.ioctl(self.file, UI_DEV_CREATE)
 
         self.value = [None] * (len(buttons) + len(axes))
         self.type = [uinput.EV_KEY] * len(buttons) + [uinput.EV_ABS] * len(axes)
         self.code = buttons + axes
-    
+
     def update(self, value):
         input_event = "LLHHi"
         t = time.time()
@@ -137,9 +144,9 @@ class BadJoystickException(Exception):
         Exception.__init__(self, "Unsupported joystick.")
 
 class decoder:
-    def __init__(self, inactivity_timeout = float(1e3000)):
-        #buttons=[uinput.BTN_SELECT, uinput.BTN_THUMBL, uinput.BTN_THUMBR, uinput.BTN_START, 
-        #         uinput.BTN_FORWARD, uinput.BTN_RIGHT, uinput.BTN_BACK, uinput.BTN_LEFT, 
+    def __init__(self, deamon, inactivity_timeout = float(1e3000)):
+        #buttons=[uinput.BTN_SELECT, uinput.BTN_THUMBL, uinput.BTN_THUMBR, uinput.BTN_START,
+        #         uinput.BTN_FORWARD, uinput.BTN_RIGHT, uinput.BTN_BACK, uinput.BTN_LEFT,
         #         uinput.BTN_TL, uinput.BTN_TR, uinput.BTN_TL2, uinput.BTN_TR2,
         #         uinput.BTN_X, uinput.BTN_A, uinput.BTN_B, uinput.BTN_Y,
         #         uinput.BTN_MODE]
@@ -164,18 +171,68 @@ class decoder:
         self.joy = uinputjoy(buttons, axes, axmin, axmax, axfuzz, axflat)
         self.axmid = [sum(pair)/2 for pair in zip(axmin, axmax)]
         self.fullstop() # Probably useless because of uinput startup bug
-        self.outlen = len(buttons) + len(axes)           
+        self.outlen = len(buttons) + len(axes)
         self.inactivity_timeout = inactivity_timeout
-
+        self.deamon = deamon
+        self.init_ros()
     step_active = 1
     step_idle = 2
     step_error = 3
 
+    def init_ros(self):
+        try:
+            rospy.init_node('ps3joy',anonymous=True, disable_signals=True)        
+        except:
+            print "rosnode init failed"
+        rospy.Subscriber("joy/set_feedback",sensor_msgs.msg.JoyFeedbackArray,self.set_feedback)
+        self.diagnostics = Diagnostics()
+        self.led_values = [1,0,0,0]
+        self.rumble_cmd = [0, 255]
+        self.led_cmd  = 2
+        self.core_down = False
+
+    #********************************************************************************
+    #Raw Data Format
+    #unsigned char ReportType;         //Report Type 01
+    #unsigned char Reserved1;          // Unknown
+    #unsigned int  ButtonState;        // Main buttons
+    #unsigned char PSButtonState;      // PS button
+    #unsigned char Reserved2;          // Unknown
+    #unsigned char LeftStickX;         // left Joystick X axis 0 - 255, 128 is mid
+    #unsigned char LeftStickY;         // left Joystick Y axis 0 - 255, 128 is mid
+    #unsigned char RightStickX;        // right Joystick X axis 0 - 255, 128 is mid
+    #unsigned char RightStickY;        // right Joystick Y axis 0 - 255, 128 is mid
+    #unsigned char Reserved3[4];       // Unknown
+    #unsigned char PressureUp;         // digital Pad Up button Pressure 0 - 255
+    #unsigned char PressureRight;      // digital Pad Right button Pressure 0 - 255
+    #unsigned char PressureDown;       // digital Pad Down button Pressure 0 - 255
+    #unsigned char PressureLeft;       // digital Pad Left button Pressure 0 - 255
+    #unsigned char PressureL2;         // digital Pad L2 button Pressure 0 - 255
+    #unsigned char PressureR2;         // digital Pad R2 button Pressure 0 - 255
+    #unsigned char PressureL1;         // digital Pad L1 button Pressure 0 - 255
+    #unsigned char PressureR1;         // digital Pad R1 button Pressure 0 - 255
+    #unsigned char PressureTriangle;   // digital Pad Triangle button Pressure 0 - 255
+    #unsigned char PressureCircle;     // digital Pad Circle button Pressure 0 - 255
+    #unsigned char PressureCross;      // digital Pad Cross button Pressure 0 - 255
+    #unsigned char PressureSquare;     // digital Pad Square button Pressure 0 - 255
+    #unsigned char Reserved4[3];       // Unknown
+    #unsigned char Charge;             // charging status ? 02 = charge, 03 = normal
+    #unsigned char Power;              // Battery status
+    #unsigned char Connection;         // Connection Type
+    #unsigned char Reserved5[9];       // Unknown
+    #unsigned int AccelerometerX;      // X axis accelerometer Big Endian 0 - 1023
+    #unsigned int Accelero             // Y axis accelerometer Big Endian 0 - 1023
+    #unsigned int AccelerometerZ;      // Z axis accelerometer Big Endian 0 - 1023
+    #unsigned int GyrometerX;          // Z axis Gyro Big Endian 0 - 1023
+    #*********************************************************************************
     def step(self, rawdata): # Returns true if the packet was legal
         if len(rawdata) == 50:
-            joy_coding = "!1B2x3B1x4B4x12B15x4H"
-            data = list(struct.unpack(joy_coding, rawdata))
+            joy_coding = "!1B2x3B1x4B4x12B3x1B1B1B9x4H"
+            all_data = list(struct.unpack(joy_coding, rawdata)) #removing power data
+            state_data = all_data[20:23]
+            data = all_data[0:20]+all_data[23:]
             prefix = data.pop(0)
+            self.diagnostics.publish(state_data)
             if prefix != 161:
                 print >> sys.stderr, "Unexpected prefix (%i). Is this a PS3 Dual Shock or Six Axis?"%prefix
                 return self.step_error
@@ -186,7 +243,7 @@ class decoder:
                     out.append(int((curbyte & (1 << k)) != 0))
             out = out + data
             self.joy.update(out)
-            axis_motion = [abs(out[17:][i] - self.axmid[i]) > 20 for i in range(0,len(out)-17-4)]  
+            axis_motion = [abs(out[17:][i] - self.axmid[i]) > 20 for i in range(0,len(out)-17-4)]
                                                                        # 17 buttons, 4 inertial sensors
             if any(out[0:17]) or any(axis_motion):
                 return self.step_active
@@ -202,6 +259,32 @@ class decoder:
     def fullstop(self):
         self.joy.update([0] * 17 + self.axmid)
 
+
+    def set_feedback(self,msg):
+        for feedback in msg.array:
+            if feedback.type == sensor_msgs.msg.JoyFeedback.TYPE_LED and feedback.id < 4:
+                self.led_values[feedback.id] = int(round(feedback.intensity))
+            elif feedback.type == sensor_msgs.msg.JoyFeedback.TYPE_RUMBLE and feedback.id < 2:
+                self.rumble_cmd[feedback.id] = int(feedback.intensity*255)                
+            else:
+                rospy.logwarn("Feedback %s of type %s does not exist for this joystick.",feedback.id, feedback.type)
+        self.led_cmd = self.led_values[0]*pow(2,1) + self.led_values[1]*pow(2,2) + self.led_values[2]*pow(2,3) + self.led_values[3]*pow(2,4) 
+        self.new_msg = True
+    
+    def send_cmd(self, ctrl):
+        command = [0x52,
+                   0x01,
+                   0x00, 0xfe, self.rumble_cmd[1], 0xfe, self.rumble_cmd[0],        # rumble values
+                   0x00, 0x00, 0x00, 0x00, self.led_cmd,
+                   0xff, 0x27, 0x10, 0x00, 0x32,        # LED 4
+                   0xff, 0x27, 0x10, 0x00, 0x32,        # LED 3
+                   0xff, 0x27, 0x10, 0x00, 0x32,        # LED 2
+                   0xff, 0x27, 0x10, 0x00, 0x32,        # LED 1
+                   0x00, 0x00, 0x00, 0x00, 0x00
+                   ]
+        ctrl.send(array('B', command).tostring())
+        self.new_msg = False
+
     def run(self, intr, ctrl):
         activated = False
         try:
@@ -216,9 +299,15 @@ class decoder:
                 else: # Got a frame.
                     #print "Got a frame at ", curtime, 1 / (curtime - lastvalidtime)
                     if not activated:
+                        self.send_cmd(ctrl)
+                        time.sleep(0.5)
+                        self.rumble_cmd[1] = 0
+                        self.send_cmd(ctrl)
                         print "Connection activated"
                         activated = True
                     try:
+                        if(self.new_msg):
+                            self.send_cmd(ctrl)
                         rawdata = intr.recv(128)
                     except BluetoothError, s:
                         print "Got Bluetooth error %s. Disconnecting."%s
@@ -226,6 +315,25 @@ class decoder:
                     if len(rawdata) == 0: # Orderly shutdown of socket
                         print "Joystick shut down the connection, battery may be discharged."
                         return
+                    if not rosgraph.masterapi.is_online():
+                        print "The roscore or node shutdown, ps3joy shutting down."
+                        return
+                        #for when we can restart a rosnode
+#                        if self.deamon:
+#                            self.core_down= True
+#                        else:
+#                            print "The roscore shutdown, ps3joy shutting down. Run with --deamon if you want ps3joy to respawn"
+#                            return
+#                    if self.core_down == True:
+#                        try:
+#                            rosgraph.masterapi.is_online()
+#                            self.init_ros()
+#                            self.core_down = False
+#                            print "succeeded bringing node up"
+#                        except:
+#                            print "failed to bring node up"
+#                            pass
+
                     stepout = self.step(rawdata)
                     if stepout != self.step_error:
                         lastvalidtime = curtime
@@ -243,6 +351,62 @@ class decoder:
         finally:
             self.fullstop()
 
+class Diagnostics():
+    def __init__(self):
+        self.charging_state =  {0:"Charging",
+                                2:"Charging",
+                                3:"Not Charging"}
+        self.connection     =  {18:"USB Connection",
+                                20:"Rumbling",
+                                22:"Bluetooth Connection"}
+        self.battery_state  =  {0:"No Charge",
+                                1:"20% Charge",
+                                2:"40% Charge",
+                                3:"60% Charge",
+                                4:"80% Charge",
+                                5:"100% Charge",
+                                238:"Charging"}
+        self.diag_pub = rospy.Publisher('/diagnostics', DiagnosticArray)
+        self.last_diagnostics_time = rospy.get_rostime()
+
+    def publish(self, state):
+        curr_time = rospy.get_rostime()
+        # limit to 1hz
+        if (curr_time - self.last_diagnostics_time).to_sec() < 1.0:
+            return
+        self.last_diagnostics_time = curr_time
+        diag = DiagnosticArray()
+        diag.header.stamp = curr_time
+        #battery info
+        stat = DiagnosticStatus(name="Battery", level=DiagnosticStatus.OK, message="OK")
+        try:
+            stat.message = self.battery_state[state[1]]
+            if state[1]<3:
+                stat.level = DiagnosticStatus.WARN
+                stat.message = "Please Recharge Battery (%s)."%self.battery_state[state[1]]
+        except KeyError as ex:
+            stat.message = "Invalid Battery State %s"%ex
+            rospy.logwarn("Invalid Battery State %s"%ex)
+        diag.status.append(stat)
+        #battery info
+        stat = DiagnosticStatus(name="Connection", level=DiagnosticStatus.OK, message="OK")
+        try:
+            stat.message = self.connection[state[2]]
+        except KeyError as ex:
+            stat.message = "Invalid Connection State %s"%ex
+            rospy.logwarn("Invalid Connection State %s"%ex)
+        diag.status.append(stat)
+        #battery info
+        stat = DiagnosticStatus(name="Charging State", level=DiagnosticStatus.OK, message="OK")
+        try:
+            stat.message = self.charging_state[state[0]]
+        except KeyError as ex:
+            stat.message = "Invalid Charging State %s"%ex
+            rospy.logwarn("Invalid Charging State %s"%ex)
+        diag.status.append(stat)
+        #publish
+        self.diag_pub.publish(diag)
+
 class Quit(Exception):
     def __init__(self, errorcode):
         Exception.__init__(self)
@@ -255,7 +419,7 @@ def check_hci_status():
     if out.find('UP') == -1:
         os.system("hciconfig hci0 up > /dev/null 2>&1")
     if out.find('PSCAN') == -1:
-        os.system("hciconfig hci0 pscan > /dev/null 2>&1")   
+        os.system("hciconfig hci0 pscan > /dev/null 2>&1")
 
 class connection_manager:
     def __init__(self, decoder):
@@ -281,7 +445,7 @@ class connection_manager:
                     print >> sys.stderr, "Error binding to socket, will retry every 5 seconds. Do you have another ps3joy.py running? This error occurs on some distributions (such as Ubuntu Karmic). Please read http://www.ros.org/wiki/ps3joy/Troubleshooting for solutions."
                 first_loop = False
                 time.sleep(0.5)
-                continue 
+                continue
             sock.listen(1)
             return sock
 
@@ -294,7 +458,7 @@ class connection_manager:
         intr_sock = self.prepare_bluetooth_socket(L2CAP_PSM_HIDP_INTR)
         ctrl_sock = self.prepare_bluetooth_socket(L2CAP_PSM_HIDP_CTRL)
         self.listen(intr_sock, ctrl_sock)
-    
+
     def listen(self, intr_sock, ctrl_sock):
         self.n = 0
         while not self.shutdown:
@@ -311,7 +475,7 @@ class connection_manager:
                             check_hci_status()
                         else:
                             raise
-                    
+
                 try:
                     try:
                         (ctrl, (cdev, cport)) = ctrl_sock.accept();
@@ -322,31 +486,35 @@ class connection_manager:
                         if idev == cdev:
                             self.decoder.run(intr, ctrl)
                             print "Connection terminated."
+                            quit(0)
                         else:
                             print >> sys.stderr, "Simultaneous connection from two different devices. Ignoring both."
                     finally:
                         ctrl.close()
                 finally:
-                    intr.close()        
+                    intr.close()
             except BadJoystickException:
                 pass
             except KeyboardInterrupt:
-                print "CTRL+C detected. Exiting."
+                print "\nCTRL+C detected. Exiting."
+                rospy.signal_shutdown("\nCTRL+C detected. Exiting.")
                 quit(0)
             except Exception, e:
                 traceback.print_exc()
                 print >> sys.stderr, "Caught exception: %s"%str(e)
                 time.sleep(1)
-            print
-                    
+
 inactivity_timout_string = "--inactivity-timeout"
 no_disable_bluetoothd_string = "--no-disable-bluetoothd"
 redirect_output_string = "--redirect-output"
-                    
+#deamon_string = "--deamon"
+
 def usage(errcode):
+#    print "usage: ps3joy.py ["+inactivity_timout_string+"=<n>] ["+no_disable_bluetoothd_string+"] ["+redirect_output_string+"]=<f> ["+deamon_string+"]=<d>"
     print "usage: ps3joy.py ["+inactivity_timout_string+"=<n>] ["+no_disable_bluetoothd_string+"] ["+redirect_output_string+"]=<f>"
     print "<n>: inactivity timeout in seconds (saves battery life)."
     print "<f>: file name to redirect output to."
+#    print "<d>: runs in deamon mode respawning node when roscore goes down."
     print "Unless "+no_disable_bluetoothd_string+" is specified, bluetoothd will be stopped."
     raise Quit(errcode)
 
@@ -364,6 +532,7 @@ if __name__ == "__main__":
     try:
         inactivity_timeout = float(1e3000)
         disable_bluetoothd = True
+        deamon = False
         for arg in sys.argv[1:]: # Be very tolerant in case we are roslaunched.
             if arg == "--help":
                 usage(0)
@@ -385,11 +554,13 @@ if __name__ == "__main__":
                 str_value = arg[len(redirect_output_string)+1:]
                 try:
                     print "Redirecting output to:", str_value
-                    sys.stdout = open(str_value, "a", 1)        
+                    sys.stdout = open(str_value, "a", 1)
                 except IOError, e:
                     print "Error opening file to redirect output:", str_value
                     raise Quit(1)
                 sys.stderr = sys.stdout
+#            elif arg == deamon_string:
+#                deamon = True
             else:
                 print "Ignoring parameter: '%s'"%arg
         if os.getuid() != 0:
@@ -406,7 +577,7 @@ if __name__ == "__main__":
                 print "No inactivity timeout was set. (Run with --help for details.)"
             else:
                 print "Inactivity timeout set to %.0f seconds."%inactivity_timeout
-            cm = connection_manager(decoder(inactivity_timeout = inactivity_timeout))
+            cm = connection_manager(decoder(deamon, inactivity_timeout = inactivity_timeout))
             cm.listen_bluetooth()
         finally:
             if disable_bluetoothd:
@@ -414,6 +585,7 @@ if __name__ == "__main__":
     except Quit, e:
         errorcode = e.errorcode
     except KeyboardInterrupt:
-        print "CTRL+C detected. Exiting."
+        print "\nCTRL+C detected. Exiting."
+        rospy.signal_shutdown("\nCTRL+C detected. Exiting.")
     exit(errorcode)
 
