@@ -33,6 +33,7 @@
 
 #include <stdio.h>
 #include "ros/node_handle.h"
+#include "ros/param.h"
 #include "spnav.h"
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Twist.h"
@@ -58,6 +59,23 @@ int main(int argc, char **argv)
     return 1;
   }
 
+  // Parameters
+  // The number of polls needed to be done before the device is considered "static"
+  int static_count_threshold = 30;
+  ros::param::get("~/static_count_threshold",static_count_threshold);
+
+  // If true, the node will zero the output when the device is "static"
+  bool zero_when_static = true;
+  ros::param::get("~/zero_when_static",zero_when_static);
+
+  // If the device is considered "static" and each trans, rot component is
+  // below the deadband, it will output zeros in either rotation, translation,
+  // or both
+  double static_trans_deadband = 50,
+         static_rot_deadband = 50;
+  ros::param::get("~/static_trans_deadband",static_trans_deadband);
+  ros::param::get("~/static_rot_deadband",static_rot_deadband);
+
   sensor_msgs::Joy joystick_msg;
   joystick_msg.axes.resize(6);
   joystick_msg.buttons.resize(2);
@@ -82,10 +100,25 @@ int main(int argc, char **argv)
     {
       case 0:
         queue_empty = true;
-        if (++no_motion_count > 30)
+        if (++no_motion_count > static_count_threshold)
         {
-          offset_msg.x = offset_msg.y = offset_msg.z = 0;
-          rot_offset_msg.x = rot_offset_msg.y = rot_offset_msg.z = 0;
+          if ( zero_when_static || 
+              ( fabs(offset_msg.x) < static_trans_deadband &&
+                fabs(offset_msg.y) < static_trans_deadband &&
+                fabs(offset_msg.z) < static_trans_deadband)
+             )
+          {
+            offset_msg.x = offset_msg.y = offset_msg.z = 0;
+          }
+
+          if ( zero_when_static || 
+              ( fabs(rot_offset_msg.x) < static_rot_deadband &&
+                fabs(rot_offset_msg.y) < static_rot_deadband &&
+                fabs(rot_offset_msg.z) < static_rot_deadband )
+             )
+          {
+            rot_offset_msg.x = rot_offset_msg.y = rot_offset_msg.z = 0;
+          }
 
           no_motion_count = 0;
           motion_stale = true;
