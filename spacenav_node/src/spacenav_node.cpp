@@ -134,8 +134,6 @@ int main(int argc, char **argv)
         rot_offset_msg.y = -sev.motion.rx;
         rot_offset_msg.z = sev.motion.ry;
 
-        //printf("%lf  %lf  %lf\n", rot_offset_msg.x, rot_offset_msg.y, rot_offset_msg.z);
-
         motion_stale = true;
         break;
         
@@ -177,9 +175,12 @@ int main(int argc, char **argv)
       joy_pub.publish(joystick_msg);
     }
 
-    if (queue_empty)
+    if (queue_empty) {
       usleep(1000);
+    }
   }
+
+  spnav_close();
 
   return 0;
 }
