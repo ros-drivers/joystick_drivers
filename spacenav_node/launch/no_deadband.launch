@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="spacenav_node" type="spacenav_node" name="spacenav_node" output="screen">
+    <param name="zero_when_static" value="false"/>
+    <param name="static_trans_deadband" value="0"/>
+    <param name="static_rot_deadband" value="0"/>
+  </node>
+</launch>

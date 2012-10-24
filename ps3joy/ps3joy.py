@@ -137,7 +137,7 @@ class BadJoystickException(Exception):
         Exception.__init__(self, "Unsupported joystick.")
 
 class decoder:
-    def __init__(self, inactivity_timeout = float(1e3000)):
+    def __init__(self, inactivity_timeout = float(1e3000), continuous_motion_output = False):
         #buttons=[uinput.BTN_SELECT, uinput.BTN_THUMBL, uinput.BTN_THUMBR, uinput.BTN_START, 
         #         uinput.BTN_FORWARD, uinput.BTN_RIGHT, uinput.BTN_BACK, uinput.BTN_LEFT, 
         #         uinput.BTN_TL, uinput.BTN_TR, uinput.BTN_TL2, uinput.BTN_TR2,
@@ -159,6 +159,9 @@ class decoder:
             axmax[i] = 1023
             axfuzz[i] = 4
             axflat[i] = 4
+            if continuous_motion_output:
+              axfuzz[i] = 0
+              axflat[i] = 0
         for i in range(4,len(axmin)-4): # Buttons should be zero when not pressed
             axmin[i] = -axmax[i]
         self.joy = uinputjoy(buttons, axes, axmin, axmax, axfuzz, axflat)
@@ -342,9 +345,10 @@ class connection_manager:
 inactivity_timout_string = "--inactivity-timeout"
 no_disable_bluetoothd_string = "--no-disable-bluetoothd"
 redirect_output_string = "--redirect-output"
+continuous_motion_output_string = "--continuous-output"
                     
 def usage(errcode):
-    print "usage: ps3joy.py ["+inactivity_timout_string+"=<n>] ["+no_disable_bluetoothd_string+"] ["+redirect_output_string+"]=<f>"
+    print "usage: ps3joy.py ["+inactivity_timout_string+"=<n>] ["+no_disable_bluetoothd_string+"] ["+redirect_output_string+"] ["+continuous_motion_output_string+"]=<f>"
     print "<n>: inactivity timeout in seconds (saves battery life)."
     print "<f>: file name to redirect output to."
     print "Unless "+no_disable_bluetoothd_string+" is specified, bluetoothd will be stopped."
@@ -364,6 +368,7 @@ if __name__ == "__main__":
     try:
         inactivity_timeout = float(1e3000)
         disable_bluetoothd = True
+        continuous_output = False
         for arg in sys.argv[1:]: # Be very tolerant in case we are roslaunched.
             if arg == "--help":
                 usage(0)
@@ -381,6 +386,8 @@ if __name__ == "__main__":
                     usage(1)
             elif arg == no_disable_bluetoothd_string:
                 disable_bluetoothd = False
+            elif arg == continuous_motion_output_string:
+                continuous_output = True
             elif is_arg_with_param(arg, redirect_output_string):
                 str_value = arg[len(redirect_output_string)+1:]
                 try:
@@ -406,7 +413,7 @@ if __name__ == "__main__":
                 print "No inactivity timeout was set. (Run with --help for details.)"
             else:
                 print "Inactivity timeout set to %.0f seconds."%inactivity_timeout
-            cm = connection_manager(decoder(inactivity_timeout = inactivity_timeout))
+            cm = connection_manager(decoder(inactivity_timeout = inactivity_timeout, continuous_motion_output = continuous_output))
             cm.listen_bluetooth()
         finally:
             if disable_bluetoothd:
@@ -416,4 +423,3 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print "CTRL+C detected. Exiting."
     exit(errorcode)
-
