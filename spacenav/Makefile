@@ -5,8 +5,8 @@ SVN_DIR = spacenav_svn
 #SVN_REVISION = -r 91
 #include $(shell rospack find mk)/svn_checkout.mk
 
-TAR = spacenav_svn_r91.tgz
-URL = http://pr.willowgarage.com/downloads/$(TAR)
+TAR = spacenav_svn_r148.tar.gz
+URL = https://bitbucket.org/ros_joystick_drivers/joystick_drivers/downloads/$(TAR)
 
 $(SVN_DIR):
 	wget $(URL)
