@@ -26,11 +26,19 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>rosgraph</build_depend>
+  <build_depend>libusb-dev</build_depend>
+  <build_depend>joystick</build_depend>
+  <build_depend>bluez</build_depend>
+  <build_depend>python-bluez</build_depend>
 
   <run_depend>diagnostic_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>rosgraph</run_depend>
+  <run_depend>libusb-dev</run_depend>
+  <run_depend>joystick</run_depend>
+  <run_depend>bluez</run_depend>
+  <run_depend>python-bluez</run_depend>
 
   <test_depend>diagnostic_msgs</test_depend>
   <test_depend>sensor_msgs</test_depend>
@@ -39,11 +47,5 @@
 
   <export>
     <architecture_independent/>
-    <rosbuild>
-      <rosdep name="libusb-dev"/>
-      <rosdep name="joystick"/>
-      <rosdep name="bluez"/>
-      <rosdep name="python-bluez"/>
-    </rosbuild>
   </export>
 </package>

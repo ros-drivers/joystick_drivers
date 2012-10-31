@@ -4,12 +4,12 @@ project(joy)
 
 # Load catkin and all dependencies required for this package
 set(CATKIN_DEPS roscpp diagnostic_updater sensor_msgs)
+set(ROSDEP_DEPS joystick)
 find_package(catkin REQUIRED ${CATKIN_DEPS})
-catkin_package(DEPENDS ${CATKIN_DEPS}
+catkin_package(
+  DEPENDS ${CATKIN_DEPS} ${ROSDEP_DEPS}
   #INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME})
-
-##genmsg()
 
 # Look for <linux/joystick.h>
 include(CheckIncludeFiles)

@@ -4,8 +4,9 @@ project(ps3joy)
 
 # Load catkin and all dependencies required for this package
 set(CATKIN_DEPS diagnostic_msgs sensor_msgs rospy rosgraph)
+set(ROSDEP_DEPS libusb-dev joystick bluez python-bluez)
 find_package(catkin REQUIRED ${CATKIN_DEPS})
-catkin_package(DEPENDS ${CATKIN_DEPS}
+catkin_package(DEPENDS ${CATKIN_DEPS} ${ROSDEP_DEPS}
   #INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME})
 
