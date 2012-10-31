@@ -18,8 +18,8 @@
   <author>Blaise Gassend</author>
 
   <url type="website">http://www.ros.org/wiki/joy</url>
-  <url type="development">https://github.com/ros/joystick_drivers</url>
-  <url type="bugtracker">https://github.com/ros/joystick_drivers/issues</url>
+  <url type="development">https://github.com/ros-drivers/joystick_drivers</url>
+  <url type="bugtracker">https://github.com/ros-drivers/joystick_drivers/issues</url>
 
   <build_depend>roscpp</build_depend>
   <build_depend>diagnostic_updater</build_depend>
