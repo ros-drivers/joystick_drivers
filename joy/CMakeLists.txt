@@ -9,10 +9,6 @@ catkin_package(DEPENDS ${CATKIN_DEPS}
   #INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME})
 
-# include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
-
-# old rosbuild stuff
-##include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake) 
 ##genmsg()
 
 # Look for <linux/joystick.h>

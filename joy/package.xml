@@ -42,9 +42,6 @@
 
     <rosbuild>
       <rosdep name="joystick"/>
-      <platform os="ubuntu" version="9.04"/>
-      <platform os="ubuntu" version="9.10"/>
-      <platform os="ubuntu" version="10.04"/>
     </rosbuild>
   </export>
 </package>
