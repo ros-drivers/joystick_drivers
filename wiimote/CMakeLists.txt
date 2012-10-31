@@ -11,6 +11,8 @@ catkin_package(
   #INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME})
 
+catkin_python_setup()
+
 add_message_files(
   DIRECTORY msg
   FILES

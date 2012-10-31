@@ -74,7 +74,7 @@ import traceback
 import time
 
 # -------- ROS-Related Modules:
-import roslib; roslib.load_manifest('wiimote')
+#import roslib; roslib.load_manifest('wiimote') # old fuerte code
 import rospy
 from geometry_msgs.msg import Vector3
 from sensor_msgs.msg import Imu
