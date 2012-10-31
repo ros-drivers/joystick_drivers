@@ -1,6 +1,8 @@
 <package>
   <name>joy</name>
   <version>1.8.5</version>
+  <license>BSD</license>
+
   <description>
     ROS driver for a generic Linux joystick.
     The joy package contains joy_node, a node that interfaces a
@@ -8,18 +10,16 @@
     message, which contains the current state of each one of the
     joystick's buttons and axes.
   </description>
-  <maintainer>Jonathan Bohren</maintainer>
 
-  <license>BSD</license>
-
-  <url type="website">http://www.ros.org/wiki/joy</url>
-  <url type="devel">https://github.com/ros/joystick_drivers</url>
-  <url type="bugtracker">https://github.com/ros/joystick_drivers/issues</url>
-
+  <maintainer email="jbo@jhu.edu">Jonathan Bohren</maintainer>
   <author>Morgan Quigley</author>
   <author>Brian Gerkey</author>
   <author>Kevin Watts</author>
   <author>Blaise Gassend</author>
+
+  <url type="website">http://www.ros.org/wiki/joy</url>
+  <url type="development">https://github.com/ros/joystick_drivers</url>
+  <url type="bugtracker">https://github.com/ros/joystick_drivers/issues</url>
 
   <build_depend>roscpp</build_depend>
   <build_depend>diagnostic_updater</build_depend>
