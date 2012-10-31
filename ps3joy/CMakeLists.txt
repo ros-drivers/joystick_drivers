@@ -11,4 +11,4 @@ catkin_package(DEPENDS ${CATKIN_DEPS}
 
 include_directories(${catkin_INCLUDE_DIRS})
 add_executable(sixpair sixpair.c)
-target_link_libraries(sixpair -lusb ${catkin_LIBRARIES))
+target_link_libraries(sixpair -lusb ${catkin_LIBRARIES})
