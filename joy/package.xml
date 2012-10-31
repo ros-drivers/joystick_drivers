@@ -1,0 +1,50 @@
+<package>
+  <name>joy</name>
+  <version>1.8.5</version>
+  <description>
+    ROS driver for a generic Linux joystick.
+    The joy package contains joy_node, a node that interfaces a
+    generic Linux joystick to ROS. This node publishes a "Joy"
+    message, which contains the current state of each one of the
+    joystick's buttons and axes.
+  </description>
+  <maintainer>Jonathan Bohren</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://www.ros.org/wiki/joy</url>
+  <url type="devel">https://github.com/ros/joystick_drivers</url>
+  <url type="bugtracker">https://github.com/ros/joystick_drivers/issues</url>
+
+  <author>Morgan Quigley</author>
+  <author>Brian Gerkey</author>
+  <author>Kevin Watts</author>
+  <author>Blaise Gassend</author>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>diagnostic_updater</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>rosbag</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>diagnostic_updater</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>rosbag</run_depend>
+
+  <test_depend>roscpp</test_depend>
+  <test_depend>diagnostic_updater</test_depend>
+  <test_depend>sensor_msgs</test_depend>
+  <test_depend>rosbag</test_depend>
+
+  <export>
+    <rosbag migration_rule_file="migration_rules/Joy.bmr"/>
+    <architecture_independent/>
+
+    <rosbuild>
+      <rosdep name="joystick"/>
+      <platform os="ubuntu" version="9.04"/>
+      <platform os="ubuntu" version="9.10"/>
+      <platform os="ubuntu" version="10.04"/>
+    </rosbuild>
+  </export>
+</package>
