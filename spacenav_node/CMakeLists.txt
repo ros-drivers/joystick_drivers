@@ -11,5 +11,6 @@ catkin_package(
   #INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME})
 
+include_directories(${catkin_INCLUDE_DIRS})
 add_executable(spacenav_node src/spacenav_node.cpp)
-target_link_libraries (spacenav_node spnav X11)
+target_link_libraries (spacenav_node spnav X11 ${catkin_LIBRARIES})
