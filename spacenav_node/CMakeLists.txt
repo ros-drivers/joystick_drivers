@@ -4,7 +4,7 @@ project(spacenav_node)
 
 # Load catkin and all dependencies required for this package
 set(CATKIN_DEPS roscpp geometry_msgs sensor_msgs)
-set(ROSDEP_DEPS libspacenav-dev spacenavd)
+set(ROSDEP_DEPS libspnav-dev spacenavd)
 find_package(catkin REQUIRED ${CATKIN_DEPS})
 catkin_package(
   DEPENDS ${CATKIN_DEPS} ${ROSDEP_DEPS}
