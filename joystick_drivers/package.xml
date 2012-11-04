@@ -1,0 +1,22 @@
+<package>
+  <name>joystick_drivers</name>
+  <version>1.9.0</version>
+  <license>GPL</license>
+  <license>BSD</license>
+  <license>ZLib</license>
+
+  <description>
+    This metapackage contains packages for interfacing common
+    joysticks and human input devices with ROS.
+  </description>
+
+  <url type="website">http://www.ros.org/wiki/joystick_drivers</url>
+  <url type="development">https://github.com/ros-drivers/joystick_drivers</url>
+  <url type="bugtracker">https://github.com/ros-drivers/joystick_drivers/issues</url>
+
+  <maintainer email="jbo@jhu.edu">Jonathan Bohren</maintainer>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
