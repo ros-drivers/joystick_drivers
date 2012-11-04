@@ -6,13 +6,10 @@ project(wiimote)
 set(CATKIN_DEPS geometry_msgs sensor_msgs std_msgs std_srvs rospy roslib genmsg)
 set(ROSDEP_DEPS python-numpy python-cwiid)
 find_package(catkin REQUIRED ${CATKIN_DEPS})
-catkin_package(
-  DEPENDS ${CATKIN_DEPS} ${ROSDEP_DEPS}
-  #INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME})
 
 catkin_python_setup()
 
+# generate the messages
 add_message_files(
   DIRECTORY msg
   FILES
@@ -21,3 +18,9 @@ add_message_files(
   TimedSwitch.msg)
 
 generate_messages(DEPENDENCIES geometry_msgs std_msgs sensor_msgs)
+
+# define the package
+catkin_package(
+  DEPENDS ${CATKIN_DEPS}               
+  #INCLUDE_DIRS include 
+  LIBRARIES ${PROJECT_NAME})

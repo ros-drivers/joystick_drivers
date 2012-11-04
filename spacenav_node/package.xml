@@ -18,11 +18,13 @@
   <build_depend>geometry_msgs</build_depend> 
   <build_depend>sensor_msgs</build_depend> 
   <build_depend>libspnav-dev</build_depend> 
-  
+  <build_depend>libx11-dev</build_depend>
+
   <run_depend>roscpp</run_depend> 
   <run_depend>geometry_msgs</run_depend> 
   <run_depend>sensor_msgs</run_depend> 
   <run_depend>libspnav-dev</run_depend> 
+  <run_depend>libx11-dev</run_depend> 
   <run_depend>spacenavd</run_depend> 
 
   <test_depend>roscpp</test_depend> 
