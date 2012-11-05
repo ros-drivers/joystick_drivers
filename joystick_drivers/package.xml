@@ -1,12 +1,10 @@
 <package>
   <name>joystick_drivers</name>
   <version>1.9.2</version>
-  <license>GPL</license>
   <license>BSD</license>
-  <license>ZLib</license>
 
   <description>
-    This metapackage contains packages for interfacing common
+    This metapackage depends on packages for interfacing common
     joysticks and human input devices with ROS.
   </description>
 
