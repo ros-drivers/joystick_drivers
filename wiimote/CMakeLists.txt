@@ -20,7 +20,4 @@ add_message_files(
 generate_messages(DEPENDENCIES geometry_msgs std_msgs sensor_msgs)
 
 # define the package
-catkin_package(
-  DEPENDS ${CATKIN_DEPS}               
-  #INCLUDE_DIRS include 
-  LIBRARIES ${PROJECT_NAME})
+catkin_package(DEPENDS ${CATKIN_DEPS})

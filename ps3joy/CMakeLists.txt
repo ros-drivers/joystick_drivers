@@ -6,9 +6,7 @@ project(ps3joy)
 set(CATKIN_DEPS diagnostic_msgs sensor_msgs rospy rosgraph)
 set(ROSDEP_DEPS libusb-dev joystick bluez python-bluez)
 find_package(catkin REQUIRED ${CATKIN_DEPS})
-catkin_package(DEPENDS ${CATKIN_DEPS} ${ROSDEP_DEPS}
-  #INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME})
+catkin_package(DEPENDS ${CATKIN_DEPS} ${ROSDEP_DEPS})
 
 include_directories(${catkin_INCLUDE_DIRS})
 add_executable(sixpair sixpair.c)
