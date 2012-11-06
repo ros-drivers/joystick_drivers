@@ -9,5 +9,20 @@ find_package(catkin REQUIRED ${CATKIN_DEPS})
 catkin_package(DEPENDS ${CATKIN_DEPS} ${ROSDEP_DEPS})
 
 include_directories(${catkin_INCLUDE_DIRS})
-add_executable(sixpair sixpair.c)
+add_executable(sixpair src/sixpair.c)
 target_link_libraries(sixpair -lusb ${catkin_LIBRARIES})
+
+# Install targets
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  )
+
+install(DIRECTORY launch 
+  DESTINATION ${catkin_package_share_destination}
+  )
+
+install(FILES diagnostics.yaml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  )

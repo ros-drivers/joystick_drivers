@@ -14,10 +14,20 @@ check_include_files(linux/joystick.h HAVE_LINUX_JOYSTICK_H)
 
 if(HAVE_LINUX_JOYSTICK_H)
   include_directories(msg/cpp ${catkin_INCLUDE_DIRS})
-  add_executable(joy_node joy_node.cpp)
+  add_executable(joy_node src/joy_node.cpp)
   target_link_libraries(joy_node ${catkin_LIBRARIES})
 else(HAVE_LINUX_JOYSTICK_H)
   message("Warning: no <linux/joystick.h>; won't build joy node")
 endif(HAVE_LINUX_JOYSTICK_H)
 
 #catkin_add_nosetests(test/test_joy_msg_migration.py)
+
+# Install targets
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY migration_rules
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  )

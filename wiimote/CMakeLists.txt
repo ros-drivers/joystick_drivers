@@ -21,3 +21,8 @@ generate_messages(DEPENDENCIES geometry_msgs std_msgs sensor_msgs)
 
 # define the package
 catkin_package(DEPENDS ${CATKIN_DEPS})
+
+# Install targets
+install(FILES feedbackTester.py  wiimote_node.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  )
