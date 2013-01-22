@@ -44,15 +44,6 @@
   <run_depend>python-numpy</run_depend>
   <run_depend>python-cwiid</run_depend>
 
-  <test_depend>geometry_msgs</test_depend>
-  <test_depend>sensor_msgs</test_depend>
-  <test_depend>std_msgs</test_depend>
-  <test_depend>std_srvs</test_depend>
-  <test_depend>rospy</test_depend>
-  <test_depend>roslib</test_depend>
-  <test_depend>python-numpy</test_depend>
-  <test_depend>python-cwiid</test_depend>
-
   <export>
     <architecture_independent/>
   </export>

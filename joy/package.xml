@@ -24,18 +24,13 @@
   <build_depend>roscpp</build_depend>
   <build_depend>diagnostic_updater</build_depend>
   <build_depend>sensor_msgs</build_depend>
-  <build_depend>rosbag</build_depend>
   <build_depend>joystick</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>diagnostic_updater</run_depend>
   <run_depend>sensor_msgs</run_depend>
-  <run_depend>rosbag</run_depend>
   <run_depend>joystick</run_depend>
 
-  <test_depend>roscpp</test_depend>
-  <test_depend>diagnostic_updater</test_depend>
-  <test_depend>sensor_msgs</test_depend>
   <test_depend>rosbag</test_depend>
 
   <export>

@@ -40,11 +40,6 @@
   <run_depend>bluez</run_depend>
   <run_depend>python-bluez</run_depend>
 
-  <test_depend>diagnostic_msgs</test_depend>
-  <test_depend>sensor_msgs</test_depend>
-  <test_depend>rospy</test_depend>
-  <test_depend>rosgraph</test_depend>
-
   <export>
     <architecture_independent/>
   </export>
