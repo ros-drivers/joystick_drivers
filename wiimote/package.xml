@@ -1,6 +1,6 @@
 <package>
   <name>wiimote</name>
-  <version>1.9.4</version>
+  <version>1.9.6</version>
   <license>GPL</license>
   <description>
     The wiimote package allows ROS nodes to communicate with a Nintendo Wiimote
@@ -22,6 +22,8 @@
   <author>Andreas Paepcke</author>
   <author>Melonee Wise</author>
 
+  <buildtool_depend>catkin</buildtool_depend>
+  
   <build_depend>genmsg</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
