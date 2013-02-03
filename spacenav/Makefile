@@ -1,16 +1,16 @@
 all: installed
 
 SVN_DIR = spacenav_svn
-#SVN_URL = https://spacenav.svn.sourceforge.net/svnroot/spacenav/trunk
-#SVN_REVISION = -r 91
-#include $(shell rospack find mk)/svn_checkout.mk
+SVN_URL = https://spacenav.svn.sourceforge.net/svnroot/spacenav/trunk
+SVN_REVISION = -r 148
+include $(shell rospack find mk)/svn_checkout.mk
 
-TAR = spacenav_svn_r148.tar.gz
-URL = https://github.com/downloads/ros-drivers/joystick_drivers/$(TAR)
+#TAR = spacenav_svn_r148.tar.gz
+#URL = https://github.com/downloads/ros-drivers/joystick_drivers/$(TAR)
 
-$(SVN_DIR):
-	wget $(URL)
-	tar xvzf $(TAR) 
+#$(SVN_DIR):
+#	wget $(URL)
+#	tar xvzf $(TAR) 
 
 installed: $(SVN_DIR) 
 	cd $(SVN_DIR)/spacenavd && ./configure --prefix=$(CURDIR)/spacenavd
