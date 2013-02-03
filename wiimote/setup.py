@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
-from catkin_pkg.package import parse_package_for_distutils
+from catkin_pkg.python_setup import generate_distutils_setup
 
-d = parse_package_for_distutils()
-d['packages'] = ['wiimote']
-d['package_dir'] = {'': 'src'}
-d['install_requires'] = []
+d = generate_distutils_setup(
+    'packages' = ['wiimote'],
+    'package_dir' = {'': 'src'})
 
 setup(**d)
