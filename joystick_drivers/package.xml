@@ -14,6 +14,8 @@
 
   <maintainer email="jbo@jhu.edu">Jonathan Bohren</maintainer>
 
+  <buildtool_depend>catkin</buildtool_depend>
+
   <run_depend>joy</run_depend>
   <run_depend>ps3joy</run_depend>  
   <run_depend>spacenav_node</run_depend>  
