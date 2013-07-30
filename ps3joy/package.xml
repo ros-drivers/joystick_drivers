@@ -19,8 +19,8 @@
   <author>Melonee Wise</author>
 
   <url type="website">http://www.ros.org/wiki/ps3joy</url>
-  <url type="development">https://github.com/ros/joystick_drivers</url>
-  <url type="bugtracker">https://github.com/ros/joystick_drivers/issues</url>
+  <url type="development">https://github.com/ros-drivers/joystick_drivers</url>
+  <url type="bugtracker">https://github.com/ros-drivers/joystick_drivers/issues</url>
 
   <buildtool_depend>catkin</buildtool_depend>
   
