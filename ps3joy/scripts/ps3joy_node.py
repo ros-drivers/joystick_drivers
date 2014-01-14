@@ -353,13 +353,16 @@ class decoder:
 
 class Diagnostics():
     def __init__(self):
-        self.charging_state =  {0:"Charging",
+        self.STATE_TEXTS_CHARGING = {
+                                0:"Charging",
                                 2:"Charging",
                                 3:"Not Charging"}
-        self.connection     =  {18:"USB Connection",
+        self.STATE_TEXTS_CONNECTION = {
+                                18:"USB Connection",
                                 20:"Rumbling",
                                 22:"Bluetooth Connection"}
-        self.battery_state  =  {0:"No Charge",
+        self.STATE_TEXTS_BATTERY = {
+                                0:"No Charge",
                                 1:"20% Charge",
                                 2:"40% Charge",
                                 3:"60% Charge",
@@ -370,41 +373,53 @@ class Diagnostics():
         self.last_diagnostics_time = rospy.get_rostime()
 
     def publish(self, state):
+        STATE_INDEX_CHARGING = 0
+        STATE_INDEX_BATTERY = 1
+        STATE_INDEX_CONNECTION = 2
+
+        ## timed gate: limit to 1 Hz
         curr_time = rospy.get_rostime()
-        # limit to 1hz
         if (curr_time - self.last_diagnostics_time).to_sec() < 1.0:
             return
         self.last_diagnostics_time = curr_time
+
+        ## compose diagnostics message
         diag = DiagnosticArray()
         diag.header.stamp = curr_time
-        #battery info
-        stat = DiagnosticStatus(name="Battery", level=DiagnosticStatus.OK, message="OK")
+        # battery info
+        stat = DiagnosticStatus(name='ps3joy'": Battery", level=DiagnosticStatus.OK, message="OK")
         try:
-            stat.message = self.battery_state[state[1]]
-            if state[1]<3:
+            battery_state_code = state[STATE_INDEX_BATTERY]
+            stat.message = self.STATE_TEXTS_BATTERY[battery_state_code]
+            if battery_state_code < 3:
                 stat.level = DiagnosticStatus.WARN
-                stat.message = "Please Recharge Battery (%s)."%self.battery_state[state[1]]
+                if battery_state_code < 1:
+                    stat.level = DiagnosticStatus.ERROR
+                stat.message = "Please Recharge Battery (%s)." % self.STATE_TEXTS_BATTERY[battery_state_code]
         except KeyError as ex:
             stat.message = "Invalid Battery State %s"%ex
             rospy.logwarn("Invalid Battery State %s"%ex)
+            stat.level = DiagnosticStatus.ERROR
         diag.status.append(stat)
-        #battery info
-        stat = DiagnosticStatus(name="Connection", level=DiagnosticStatus.OK, message="OK")
+        # connection info
+        stat = DiagnosticStatus(name='ps3joy'": Connection Type", level=DiagnosticStatus.OK, message="OK")
         try:
-            stat.message = self.connection[state[2]]
+            stat.message = self.STATE_TEXTS_CONNECTION[state[STATE_INDEX_CONNECTION]]
         except KeyError as ex:
             stat.message = "Invalid Connection State %s"%ex
             rospy.logwarn("Invalid Connection State %s"%ex)
+            stat.level = DiagnosticStatus.ERROR
         diag.status.append(stat)
-        #battery info
-        stat = DiagnosticStatus(name="Charging State", level=DiagnosticStatus.OK, message="OK")
+        # charging info
+        stat = DiagnosticStatus(name='ps3joy'": Charging State", level=DiagnosticStatus.OK, message="OK")
         try:
-            stat.message = self.charging_state[state[0]]
+            stat.message = self.STATE_TEXTS_CHARGING[state[STATE_INDEX_CHARGING]]
         except KeyError as ex:
             stat.message = "Invalid Charging State %s"%ex
             rospy.logwarn("Invalid Charging State %s"%ex)
+            stat.level = DiagnosticStatus.ERROR
         diag.status.append(stat)
-        #publish
+        # publish message
         self.diag_pub.publish(diag)
 
 class Quit(Exception):
