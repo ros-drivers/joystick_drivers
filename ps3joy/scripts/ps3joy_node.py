@@ -181,7 +181,7 @@ class decoder:
 
     def init_ros(self):
         try:
-            rospy.init_node('ps3joy',anonymous=True, disable_signals=True)        
+            rospy.init_node('ps3joy', anonymous=False, disable_signals=True)
         except:
             print "rosnode init failed"
         rospy.Subscriber("joy/set_feedback",sensor_msgs.msg.JoyFeedbackArray,self.set_feedback)
@@ -290,7 +290,7 @@ class decoder:
         try:
             self.fullstop()
             lastactivitytime = lastvalidtime = time.time()
-            while True:
+            while not rospy.is_shutdown():
                 (rd, wr, err) = select.select([intr], [], [], 0.1)
                 curtime = time.time()
                 if len(rd) + len(wr) + len(err) == 0: # Timeout
@@ -424,7 +424,6 @@ def check_hci_status():
 class connection_manager:
     def __init__(self, decoder):
         self.decoder = decoder
-        self.shutdown = False
 
     def prepare_bluetooth_socket(self, port):
         sock = BluetoothSocket(L2CAP)
@@ -461,7 +460,7 @@ class connection_manager:
 
     def listen(self, intr_sock, ctrl_sock):
         self.n = 0
-        while not self.shutdown:
+        while not rospy.is_shutdown():
             print "Waiting for connection. Disconnect your PS3 joystick from USB and press the pairing button."
             try:
                 intr_sock.settimeout(5)
