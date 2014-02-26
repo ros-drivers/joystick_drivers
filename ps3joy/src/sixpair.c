@@ -33,7 +33,8 @@
 #include <usb.h>
 
 #define VENDOR 0x054c
-#define PRODUCT 0x0268
+#define PRODUCT_SIXAXIS 0x0268
+#define PRODUCT_NAVIGATION 0x042f
 
 #define USB_DIR_IN 0x80
 #define USB_DIR_OUT 0
@@ -128,7 +129,8 @@ int main(int argc, char *argv[]) {
 		alt < itf->altsetting + itf->num_altsetting;
 		++alt ) {
 	    if ( dev->descriptor.idVendor == VENDOR &&
-		 dev->descriptor.idProduct == PRODUCT &&
+		 (dev->descriptor.idProduct == PRODUCT_SIXAXIS ||
+		  dev->descriptor.idProduct == PRODUCT_NAVIGATION) &&
 		 alt->bInterfaceClass == 3 ) {
 	      process_device(argc, argv, dev, cfg, itfnum);
 	      ++found;
