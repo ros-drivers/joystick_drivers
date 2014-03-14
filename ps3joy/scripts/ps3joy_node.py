@@ -500,7 +500,6 @@ class connection_manager:
                         if idev == cdev:
                             self.decoder.run(intr, ctrl)
                             print "Connection terminated."
-                            quit(0)
                         else:
                             print >> sys.stderr, "Simultaneous connection from two different devices. Ignoring both."
                     finally:
