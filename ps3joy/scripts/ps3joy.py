@@ -366,6 +366,15 @@ def is_arg_with_param(arg, prefix):
 if __name__ == "__main__":
     errorcode = 0
     try:
+        # Get Root Privileges
+        euid = os.geteuid()
+        if euid != 0:
+            args = ['sudo', sys.executable] + sys.argv + [os.environ]
+            os.execlpe('sudo', *args)
+        if euid != 0:
+            raise SystemExit("Root Privlages Required.")
+  
+  
         inactivity_timeout = float(1e3000)
         disable_bluetoothd = True
         continuous_output = False
