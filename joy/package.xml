@@ -37,6 +37,5 @@
 
   <export>
     <rosbag migration_rule_file="migration_rules/Joy.bmr"/>
-    <architecture_independent/>
   </export>
 </package>

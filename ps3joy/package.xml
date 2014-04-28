@@ -41,8 +41,4 @@
   <run_depend>joystick</run_depend>
   <run_depend>bluez</run_depend>
   <run_depend>python-bluez</run_depend>
-
-  <export>
-    <architecture_independent/>
-  </export>
 </package>

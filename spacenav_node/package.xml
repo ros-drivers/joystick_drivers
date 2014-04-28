@@ -28,8 +28,4 @@
   <run_depend>libspnav-dev</run_depend> 
   <run_depend>libx11-dev</run_depend> 
   <run_depend>spacenavd</run_depend> 
-
-  <export>
-    <architecture_independent/>
-  </export>
 </package>
