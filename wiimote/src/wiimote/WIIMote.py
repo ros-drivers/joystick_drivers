@@ -92,16 +92,15 @@ class WIIMote(object):
       
   
   """
-
+      
   # Public constants:
   
   BATTERY_MAX = cwiid.BATTERY_MAX  # 208 a.k.a. 0xD0
   
   # Public vars:
-
-  
+  _fixed_addr = False
+  _addr = ""
   # Private constants:
-
   
   # Private vars:
 
@@ -132,7 +131,7 @@ class WIIMote(object):
   # __init__
   #------------------
 
-  def __init__(self, theSampleRate=0, wiiStateLock=None, gatherCalibrationStats=False):
+  def __init__(self, addr="", theSampleRate=0, wiiStateLock=None, gatherCalibrationStats=False):
     """Instantiate a Wiimote driver instance, which controls one physical Wiimote device.
     
     Parameters:
@@ -142,6 +141,12 @@ class WIIMote(object):
             theSampleRate=  x: every x seconds   
     """
 
+    # Use fixed MAC address for wiimote if available
+    self._addr = addr
+    if ":" in self._addr :
+      self._fixed_addr = True
+
+    
     self.lastZeroingTime = 0.
     
     self.gatherCalibrationStats = gatherCalibrationStats
@@ -189,7 +194,10 @@ class WIIMote(object):
     promptUsr("Press buttons 1 and 2 together to pair (within 6 seconds).\n    (If no blinking lights, press power button for ~3 seconds.)")
 
     try:
-      self._wm = cwiid.Wiimote()
+      if self._fixed_addr :
+        self._wm = cwiid.Wiimote(self._addr)
+      else :
+        self._wm = cwiid.Wiimote()
     except RuntimeError:
       raise WiimoteNotFoundError("No Wiimote found to pair with.")
       exit()

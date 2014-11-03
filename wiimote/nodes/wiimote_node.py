@@ -105,7 +105,13 @@ class WiimoteNode():
         # and are handled there:
         
         rospy.init_node('wiimote', anonymous=True, log_level=rospy.ERROR) # log_level=rospy.DEBUG
-        wiimoteDevice = wiimote.WIIMote.WIIMote()
+        self.addr = rospy.get_param("~fixed_wiimote_address","")
+        
+        if ":" in self.addr :
+            wiimoteDevice = wiimote.WIIMote.WIIMote(self.addr)
+        else :
+            wiimoteDevice = wiimote.WIIMote.WIIMote()
+            
         wiimoteDevice.zeroDevice()
         
         try:
