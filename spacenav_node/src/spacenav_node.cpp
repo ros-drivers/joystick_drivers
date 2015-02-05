@@ -57,6 +57,20 @@ int main(int argc, char **argv)
   {
     full_scale = 512;
   }
+  // Scale factors for the different axes. End output will be within [-??_scale, ??_scale], provided
+  // full_scale normalizes to within [-1, 1].
+  double vx_scale;
+  double vy_scale;
+  double vz_scale;
+  double wx_scale;
+  double wy_scale;
+  double wz_scale;
+  private_nh.param<double>("vx_scale", vx_scale, 1);
+  private_nh.param<double>("vy_scale", vy_scale, 1);
+  private_nh.param<double>("vz_scale", vz_scale, 1);
+  private_nh.param<double>("wx_scale", wx_scale, 1);
+  private_nh.param<double>("wy_scale", wy_scale, 1);
+  private_nh.param<double>("wz_scale", wz_scale, 1);
 
   if (spnav_open() == -1)
   {
@@ -74,13 +88,13 @@ int main(int argc, char **argv)
   bool zero_when_static = true;
   ros::param::get("~/zero_when_static",zero_when_static);
 
-  // If the device is considered "static" and each trans, rot component is
-  // below the deadband, it will output zeros in either rotation, translation,
-  // or both
-  double static_trans_deadband = 50,
-         static_rot_deadband = 50;
-  ros::param::get("~/static_trans_deadband",static_trans_deadband);
-  ros::param::get("~/static_rot_deadband",static_rot_deadband);
+  // If the device is considered "static" and each trans, rot normed component
+  // is below the deadband, it will output zeros in either rotation,
+  // translation, or both.
+  double static_trans_deadband = 0.1; 
+  double static_rot_deadband = 0.1;
+  ros::param::get("~/static_trans_deadband", static_trans_deadband);
+  ros::param::get("~/static_rot_deadband", static_rot_deadband);
 
   sensor_msgs::Joy joystick_msg;
   joystick_msg.axes.resize(6);
@@ -89,9 +103,12 @@ int main(int argc, char **argv)
   spnav_event sev;
   int no_motion_count = 0;
   bool motion_stale = false;
-  geometry_msgs::Vector3 offset_msg;
-  geometry_msgs::Vector3 rot_offset_msg;
-  geometry_msgs::Twist twist_msg;
+  double normed_vx = 0;
+  double normed_vy = 0;
+  double normed_vz = 0;
+  double normed_wx = 0;
+  double normed_wy = 0;
+  double normed_wz = 0;
   while (node_handle.ok())
   {
     bool joy_stale = false;
@@ -109,21 +126,21 @@ int main(int argc, char **argv)
         if (++no_motion_count > static_count_threshold)
         {
           if ( zero_when_static || 
-              ( fabs(offset_msg.x) < static_trans_deadband &&
-                fabs(offset_msg.y) < static_trans_deadband &&
-                fabs(offset_msg.z) < static_trans_deadband)
+              ( fabs(normed_vx) < static_trans_deadband &&
+                fabs(normed_vy) < static_trans_deadband &&
+                fabs(normed_vz) < static_trans_deadband)
              )
           {
-            offset_msg.x = offset_msg.y = offset_msg.z = 0;
+            normed_vx = normed_vy = normed_vz = 0;
           }
 
           if ( zero_when_static || 
-              ( fabs(rot_offset_msg.x) < static_rot_deadband &&
-                fabs(rot_offset_msg.y) < static_rot_deadband &&
-                fabs(rot_offset_msg.z) < static_rot_deadband )
+              ( fabs(normed_wx) < static_rot_deadband &&
+                fabs(normed_wy) < static_rot_deadband &&
+                fabs(normed_wz) < static_rot_deadband )
              )
           {
-            rot_offset_msg.x = rot_offset_msg.y = rot_offset_msg.z = 0;
+            normed_wx = normed_wy = normed_wz = 0;
           }
 
           no_motion_count = 0;
@@ -132,13 +149,13 @@ int main(int argc, char **argv)
         break;
 
       case SPNAV_EVENT_MOTION:
-        offset_msg.x = sev.motion.z / full_scale;
-        offset_msg.y = -sev.motion.x / full_scale;
-        offset_msg.z = sev.motion.y / full_scale;
+        normed_vx = sev.motion.z / full_scale;
+        normed_vy = -sev.motion.x / full_scale;
+        normed_vz = sev.motion.y / full_scale;
 
-        rot_offset_msg.x = sev.motion.rz / full_scale;
-        rot_offset_msg.y = -sev.motion.rx / full_scale;
-        rot_offset_msg.z = sev.motion.ry / full_scale;
+        normed_wx = sev.motion.rz / full_scale;
+        normed_wy = -sev.motion.rx / full_scale;
+        normed_wz = sev.motion.ry / full_scale;
 
         motion_stale = true;
         break;
@@ -157,19 +174,30 @@ int main(int argc, char **argv)
   
     if (motion_stale && (queue_empty || joy_stale))
     {
+      // The offset and rot_offset are scaled.
+      geometry_msgs::Vector3 offset_msg;
+      offset_msg.x = normed_vx * vx_scale;
+      offset_msg.y = normed_vy * vy_scale;
+      offset_msg.z = normed_vz * vz_scale;
       offset_pub.publish(offset_msg);
+      geometry_msgs::Vector3 rot_offset_msg;
+      rot_offset_msg.x = normed_wx * wx_scale;
+      rot_offset_msg.y = normed_wy * wy_scale;
+      rot_offset_msg.z = normed_wz * wz_scale;
       rot_offset_pub.publish(rot_offset_msg);
 
+      geometry_msgs::Twist twist_msg;
       twist_msg.linear = offset_msg;
       twist_msg.angular = rot_offset_msg;
       twist_pub.publish(twist_msg);
 
-      joystick_msg.axes[0] = offset_msg.x;
-      joystick_msg.axes[1] = offset_msg.y;
-      joystick_msg.axes[2] = offset_msg.z;
-      joystick_msg.axes[3] = rot_offset_msg.x;
-      joystick_msg.axes[4] = rot_offset_msg.y;
-      joystick_msg.axes[5] = rot_offset_msg.z;
+      // The joystick.axes are normalized within [-1, 1].
+      joystick_msg.axes[0] = normed_vx;
+      joystick_msg.axes[1] = normed_vy;
+      joystick_msg.axes[2] = normed_vz;
+      joystick_msg.axes[3] = normed_wx;
+      joystick_msg.axes[4] = normed_wy;
+      joystick_msg.axes[5] = normed_wz;
 
       no_motion_count = 0;
       motion_stale = false;
