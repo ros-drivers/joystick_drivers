@@ -39,9 +39,6 @@
 #include "geometry_msgs/Twist.h"
 #include "sensor_msgs/Joy.h"
 
-#define FULL_SCALE (512.0)
-//Used to scale joystick output to be in [-1, 1].  Estimated from data, and not necessarily correct.
-
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "spacenav");
@@ -51,6 +48,15 @@ int main(int argc, char **argv)
   ros::Publisher rot_offset_pub = node_handle.advertise<geometry_msgs::Vector3>("spacenav/rot_offset", 2);
   ros::Publisher twist_pub = node_handle.advertise<geometry_msgs::Twist>("spacenav/twist", 2);
   ros::Publisher joy_pub = node_handle.advertise<sensor_msgs::Joy>("spacenav/joy", 2);
+
+  // Used to scale joystick output to be in [-1, 1]. Estimated from data, and not necessarily correct.
+  ros::NodeHandle private_nh("~");
+  double full_scale;
+  private_nh.param<double>("full_scale", full_scale, 512);
+  if (full_scale < 1e-10)
+  {
+    full_scale = 512;
+  }
 
   if (spnav_open() == -1)
   {
@@ -126,13 +132,13 @@ int main(int argc, char **argv)
         break;
 
       case SPNAV_EVENT_MOTION:
-        offset_msg.x = sev.motion.z;
-        offset_msg.y = -sev.motion.x;
-        offset_msg.z = sev.motion.y;
+        offset_msg.x = sev.motion.z / full_scale;
+        offset_msg.y = -sev.motion.x / full_scale;
+        offset_msg.z = sev.motion.y / full_scale;
 
-        rot_offset_msg.x = sev.motion.rz;
-        rot_offset_msg.y = -sev.motion.rx;
-        rot_offset_msg.z = sev.motion.ry;
+        rot_offset_msg.x = sev.motion.rz / full_scale;
+        rot_offset_msg.y = -sev.motion.rx / full_scale;
+        rot_offset_msg.z = sev.motion.ry / full_scale;
 
         motion_stale = true;
         break;
@@ -158,12 +164,12 @@ int main(int argc, char **argv)
       twist_msg.angular = rot_offset_msg;
       twist_pub.publish(twist_msg);
 
-      joystick_msg.axes[0] = offset_msg.x / FULL_SCALE;
-      joystick_msg.axes[1] = offset_msg.y / FULL_SCALE;
-      joystick_msg.axes[2] = offset_msg.z / FULL_SCALE;
-      joystick_msg.axes[3] = rot_offset_msg.x / FULL_SCALE;
-      joystick_msg.axes[4] = rot_offset_msg.y / FULL_SCALE;
-      joystick_msg.axes[5] = rot_offset_msg.z / FULL_SCALE;
+      joystick_msg.axes[0] = offset_msg.x;
+      joystick_msg.axes[1] = offset_msg.y;
+      joystick_msg.axes[2] = offset_msg.z;
+      joystick_msg.axes[3] = rot_offset_msg.x;
+      joystick_msg.axes[4] = rot_offset_msg.y;
+      joystick_msg.axes[5] = rot_offset_msg.z;
 
       no_motion_count = 0;
       motion_stale = false;
