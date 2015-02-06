@@ -32,12 +32,42 @@
  */
 
 #include <stdio.h>
+#include <vector>
 #include "ros/node_handle.h"
 #include "ros/param.h"
 #include "spnav.h"
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Twist.h"
 #include "sensor_msgs/Joy.h"
+
+/** Ensure that the vector parameter has three components.
+ *
+ * Used for linear_scale and angular_scale. If the parameter has one
+ * component, this value is copied as second and third components.
+ *
+ * @return True if the parameter was set correctly.
+ */
+bool ensureThreeComponents(std::vector<double>& param)
+{
+  if (param.size() == 0)
+  {
+    param.push_back(1);
+    param.push_back(1);
+    param.push_back(1);
+    return True;
+  }
+  if (param.size() == 3)
+  {
+    return True;
+  }
+  if (param.size() == 1)
+  {
+    param.push_back(param[0]);
+    param.push_back(param[0]);
+    return True;
+  }
+  return False;
+}
 
 int main(int argc, char **argv)
 {
@@ -57,20 +87,25 @@ int main(int argc, char **argv)
   {
     full_scale = 512;
   }
-  // Scale factors for the different axes. End output will be within [-??_scale, ??_scale], provided
+  // Scale factors for the different axes. End output will be within [-scale, +scale], provided
   // full_scale normalizes to within [-1, 1].
-  double vx_scale;
-  double vy_scale;
-  double vz_scale;
-  double wx_scale;
-  double wy_scale;
-  double wz_scale;
-  private_nh.param<double>("vx_scale", vx_scale, 1);
-  private_nh.param<double>("vy_scale", vy_scale, 1);
-  private_nh.param<double>("vz_scale", vz_scale, 1);
-  private_nh.param<double>("wx_scale", wx_scale, 1);
-  private_nh.param<double>("wy_scale", wy_scale, 1);
-  private_nh.param<double>("wz_scale", wz_scale, 1);
+  std::vector<double> linear_scale;
+  std::vector<double> angular_scale;
+  private_nh.param<std::vector<double> >("linear_scale", linear_scale, std::vector<double>(3, 1));
+  private_nh.param<std::vector<double> >("angular_scale", angular_scale, std::vector<double>(3, 1));
+
+  if (!ensureThreeComponents(linear_scale))
+  {
+    ROS_ERROR_STREAM("Parameter " << private_nh.getNamespace() << "/linear_scale must have either one or three components.");
+    exit(EXIT_FAILURE);
+  }
+  if (!ensureThreeComponents(angular_scale))
+  {
+    ROS_ERROR_STREAM("Parameter " << private_nh.getNamespace() << "/angular_scale must have either one or three components.");
+    exit(EXIT_FAILURE);
+  }
+  ROS_DEBUG("linear_scale: %.3f %.3f %.3f", linear_scale[0], linear_scale[1], linear_scale[2]);
+  ROS_DEBUG("angular_scale: %.3f %.3f %.3f", angular_scale[0], angular_scale[1], angular_scale[2]);
 
   if (spnav_open() == -1)
   {
@@ -176,14 +211,14 @@ int main(int argc, char **argv)
     {
       // The offset and rot_offset are scaled.
       geometry_msgs::Vector3 offset_msg;
-      offset_msg.x = normed_vx * vx_scale;
-      offset_msg.y = normed_vy * vy_scale;
-      offset_msg.z = normed_vz * vz_scale;
+      offset_msg.x = normed_vx * linear_scale[0];
+      offset_msg.y = normed_vy * linear_scale[1];
+      offset_msg.z = normed_vz * linear_scale[2];
       offset_pub.publish(offset_msg);
       geometry_msgs::Vector3 rot_offset_msg;
-      rot_offset_msg.x = normed_wx * wx_scale;
-      rot_offset_msg.y = normed_wy * wy_scale;
-      rot_offset_msg.z = normed_wz * wz_scale;
+      rot_offset_msg.x = normed_wx * angular_scale[0];
+      rot_offset_msg.y = normed_wy * angular_scale[1];
+      rot_offset_msg.z = normed_wz * angular_scale[2];
       rot_offset_pub.publish(rot_offset_msg);
 
       geometry_msgs::Twist twist_msg;
