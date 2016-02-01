@@ -1,0 +1,14 @@
+<launch>
+  <node
+    pkg="wiimote"
+    type="feedbackTester.py"
+    name="test_harness"
+  />
+  <node
+    pkg="wiimote"
+    type="wiimote_node.py"
+    name="wiimote_controller"
+    output="screen"
+    required="true"
+  />
+</launch>
