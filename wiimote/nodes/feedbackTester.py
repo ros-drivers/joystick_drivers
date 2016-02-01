@@ -12,7 +12,7 @@ from sensor_msgs.msg import JoyFeedback
 INTER_PATTERN_SLEEP_DURATION = 0.2
 
 def talker():    
-    pub = rospy.Publisher('/joy/set_feedback', JoyFeedbackArray)
+    pub = rospy.Publisher('/joy/set_feedback', JoyFeedbackArray, queue_size=1)
     rospy.init_node('ledControlTester', anonymous=True)
 
     led0 = JoyFeedback()
