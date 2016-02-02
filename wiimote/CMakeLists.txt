@@ -63,6 +63,12 @@ target_link_libraries(wiimote_node ${catkin_LIBRARIES} bluetooth cwiid)
 add_dependencies(wiimote_node wiimote_generate_messages_cpp)
 ## End of C++ Wiimote Node
 
+## C++ Teleop for Wiimote Node: Declare cpp executables
+add_executable(teleop_wiimote src/teleop_wiimote.cpp)
+target_link_libraries(teleop_wiimote ${catkin_LIBRARIES})
+add_dependencies(teleop_wiimote wiimote_generate_messages_cpp)
+## End C++ Teleop for Wiimote Node
+
 # Install launch files
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
