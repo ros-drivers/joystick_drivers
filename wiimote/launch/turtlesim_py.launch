@@ -1,0 +1,23 @@
+<launch>
+  <node
+    pkg="turtlesim"
+    name="turtlesim_node"
+    type="turtlesim_node"
+  >
+  </node>
+  <node
+    pkg="wiimote"
+    name="teleop_wiimote"
+    type="teleop_wiimote"
+  >
+  <remap
+    from="/cmd_vel"
+    to="/turtle1/cmd_vel"
+  />
+  </node>
+  <node
+    pkg="wiimote"
+    type="wiimote_node.py"
+    name="wiimote_controller"
+  />
+</launch>
