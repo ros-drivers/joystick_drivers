@@ -2,6 +2,9 @@
 Changelog for package joystick_drivers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.10.1 (2015-05-24)
 -------------------
 

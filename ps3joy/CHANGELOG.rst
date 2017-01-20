@@ -2,6 +2,9 @@
 Changelog for package ps3joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.10.1 (2015-05-24)
 -------------------
 * Remove stray architechture_independent flags
