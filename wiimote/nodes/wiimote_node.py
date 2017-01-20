@@ -228,7 +228,7 @@ class IMUSender(WiimoteDataSender):
         
         WiimoteDataSender.__init__(self, wiiMote, freq)
         
-        self.pub = rospy.Publisher('imu/data', Imu)        
+        self.pub = rospy.Publisher('imu/data', Imu, queue_size=1)
         
     def run(self):
         """Loop that obtains the latest wiimote state, publishes the IMU data, and sleeps.
@@ -311,7 +311,7 @@ class JoySender(WiimoteDataSender):
         WiimoteDataSender.__init__(self, wiiMote, freq)
 
         
-        self.pub = rospy.Publisher('joy', Joy)        
+        self.pub = rospy.Publisher('joy', Joy, queue_size=1)
         
     def run(self):
         """Loop that obtains the latest wiimote state, publishes the joystick data, and sleeps.
@@ -407,7 +407,7 @@ class NunSender(WiimoteDataSender):
                 if not self.wiistate.nunchukPresent:
                     continue
                 if self.pub is None:
-                    self.pub = rospy.Publisher('/wiimote/nunchuk', Joy)
+                    self.pub = rospy.Publisher('/wiimote/nunchuk', Joy, queue_size=1)
                     rospy.loginfo("Wiimote Nunchuk joystick publisher starting (topic nunchuk).")
                 
                 (joyx, joyy) = self.wiistate.nunchukStick
@@ -553,7 +553,7 @@ class WiiSender(WiimoteDataSender):
         
         WiimoteDataSender.__init__(self, wiiMote, freq)
         
-        self.pub = rospy.Publisher('/wiimote/state', State)
+        self.pub = rospy.Publisher('/wiimote/state', State, queue_size=1)
         
     def run(self):
         """Loop that obtains the latest wiimote state, publishes the data, and sleeps.
@@ -724,7 +724,7 @@ class WiimoteListeners(threading.Thread):
         # we do publish the is_calibrated() message
         # here, because this msg is so closely related
         # to the calibrate() service:
-        self.is_calibratedPublisher = rospy.Publisher('/imu/is_calibrated', Bool, latch=True)
+        self.is_calibratedPublisher = rospy.Publisher('/imu/is_calibrated', Bool, latch=True, queue_size=1)
         # We'll always just reuse this msg object:        
         self.is_CalibratedResponseMsg = Bool();
 
