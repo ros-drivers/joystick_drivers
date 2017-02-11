@@ -2,11 +2,19 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ps3joy)
 
+find_package(PkgConfig REQUIRED)
+pkg_search_module(LIBUSB REQUIRED libusb)
+if(LIBUSB_FOUND)
+  include_directories(SYSTEM ${LIBUSB_INCLUDE_DIRS})
+  link_directories(${LIBUSB_LIBRARY_DIRS})
+else()
+  message( FATAL_ERROR "Failed to find libusb" )
+endif(LIBUSB_FOUND)
+
 # Load catkin and all dependencies required for this package
 set(CATKIN_DEPS diagnostic_msgs sensor_msgs rospy rosgraph)
-set(ROSDEP_DEPS libusb-dev joystick bluez python-bluez)
-find_package(catkin REQUIRED ${CATKIN_DEPS})
-catkin_package(DEPENDS ${CATKIN_DEPS} ${ROSDEP_DEPS})
+find_package(catkin REQUIRED COMPONENTS ${CATKIN_DEPS})
+catkin_package(CATKIN_DEPENDS ${CATKIN_DEPS})
 
 include_directories(${catkin_INCLUDE_DIRS})
 add_executable(sixpair src/sixpair.c)

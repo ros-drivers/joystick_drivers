@@ -16,7 +16,6 @@ set(CMAKE_SHARED_LINKER_FLAGS "-z noexecstack -z relro -z now ${CMAKE_SHARED_LIN
 
 # Load catkin and all dependencies required for this package
 set(CATKIN_DEPS geometry_msgs sensor_msgs std_msgs std_srvs rospy roscpp roslib genmsg)
-set(ROSDEP_DEPS python-numpy python-cwiid)
 find_package(catkin REQUIRED ${CATKIN_DEPS} roslint)
 
 catkin_python_setup()
@@ -47,8 +46,7 @@ roslint_add_test()
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  DEPENDS ${CATKIN_DEPS}
-  bluetooth cwiid
+  CATKIN_DEPENDS ${CATKIN_DEPS}
 )
 
 ## Specify additional locations of header files
