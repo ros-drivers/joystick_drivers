@@ -2,8 +2,10 @@
 Changelog for package spacenav_node
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.11.0 (2017-01-19)
+1.11.0 (2017-02-10)
 -------------------
+* Update dependencies to remove warnings
+* Contributors: Mark D Horn
 
 1.10.1 (2015-05-24)
 -------------------

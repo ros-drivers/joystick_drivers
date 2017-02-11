@@ -2,10 +2,11 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.11.0 (2017-01-19)
+1.11.0 (2017-02-10)
 -------------------
 * fixed joy/Cmakelists for osx
-* Contributors: Marynel Vazquez
+* Update dependencies to remove warnings
+* Contributors: Marynel Vazquez, Mark D Horn
 
 1.10.1 (2015-05-24)
 -------------------
