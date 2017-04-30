@@ -255,7 +255,7 @@ public:
             else
                 val = 0;
             joy_msg.axes[event.number] = val * scale;
-            // Will wait a bit before sending to try to combine events. 				
+            // Will wait a bit before sending to try to combine events.
             publish_soon = true;
             break;
           default:
