@@ -44,6 +44,7 @@ class Joystick
 {
 private:
   ros::NodeHandle nh_;
+  bool default_trig_val_;
   bool open_;               
   std::string joy_dev_;
   double deadzone_;
@@ -74,6 +75,7 @@ private:
     stat.add("recent joystick event rate (Hz)", event_count_ / interval);
     stat.add("recent publication rate (Hz)", pub_count_ / interval);
     stat.add("subscribers", pub_.getNumSubscribers());
+    stat.add("default trig val", default_trig_val_);
     event_count_ = 0;
     pub_count_ = 0;
     lastDiagTime_ = now;
@@ -96,6 +98,7 @@ public:
     nh_param.param<double>("deadzone", deadzone_, 0.05);
     nh_param.param<double>("autorepeat_rate", autorepeat_rate_, 0);
     nh_param.param<double>("coalesce_interval", coalesce_interval_, 0.001);
+    nh_param.param<bool>("default_trig_val",default_trig_val_,false);
     
     // Checks on parameters
     if (autorepeat_rate_ > 1 / coalesce_interval_)
@@ -187,6 +190,7 @@ public:
       tv.tv_sec = 1;
       tv.tv_usec = 0;
       sensor_msgs::Joy joy_msg; // Here because we want to reset it on device close.
+      double val;
       while (nh_.ok()) 
       {
         ros::spinOnce();
@@ -237,6 +241,8 @@ public:
             break;
           case JS_EVENT_AXIS:
           case JS_EVENT_AXIS | JS_EVENT_INIT:
+	    if(default_trig_val_)            
+	      val = event.value;
             if(event.number >= joy_msg.axes.size())
             {
               int old_size = joy_msg.axes.size();
@@ -244,25 +250,40 @@ public:
               for(unsigned int i=old_size;i<joy_msg.axes.size();i++)
                 joy_msg.axes[i] = 0.0;
             }
-            if (!(event.type & JS_EVENT_INIT)) // Init event.value is wrong.
-            {
-              double val = event.value;
-              // Allows deadzone to be "smooth"
-              if (val > unscaled_deadzone)
-                val -= unscaled_deadzone;
-              else if (val < -unscaled_deadzone)
-                val += unscaled_deadzone;
-              else
-                val = 0;
-              joy_msg.axes[event.number] = val * scale;
-            }
-            // Will wait a bit before sending to try to combine events. 				
-            publish_soon = true;
-            break;
-          default:
-            ROS_WARN("joy_node: Unknown event type. Please file a ticket. time=%u, value=%d, type=%Xh, number=%d", event.time, event.value, event.type, event.number);
-            break;
-          }
+	    if(default_trig_val_){ 
+	      // Allows deadzone to be "smooth"
+	      if (val > unscaled_deadzone)
+		val -= unscaled_deadzone;
+	      else if (val < -unscaled_deadzone)
+		val += unscaled_deadzone;
+	      else
+		val = 0;
+	      joy_msg.axes[event.number] = val * scale;
+	      // Will wait a bit before sending to try to combine events. 				
+	      publish_soon = true;
+	      break;
+	    } 
+	    else 
+	    {
+	      if (!(event.type & JS_EVENT_INIT))
+	      {
+		val = event.value;
+		if(val > unscaled_deadzone)
+		  val -= unscaled_deadzone;
+		else if(val < -unscaled_deadzone)
+		  val += unscaled_deadzone;
+		else
+		  val=0;
+		joy_msg.axes[event.number]= val * scale;
+	      }
+
+	      publish_soon = true;
+	      break;
+	      default:
+	      ROS_WARN("joy_node: Unknown event type. Please file a ticket. time=%u, value=%d, type=%Xh, number=%d", event.time, event.value, event.type, event.number);
+	      break;
+	    }
+	  }
         }
         else if (tv_set) // Assume that the timer has expired.
           publish_now = true;
