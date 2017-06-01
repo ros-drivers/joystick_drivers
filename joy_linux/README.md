@@ -1,6 +1,6 @@
-# ROS Driver for Generic Linux Joysticks
+# ROS 2 Driver for Generic Linux Joysticks
 
-The joy package contains joy_linux_node, a node that interfaces a generic Linux joystick to ROS. This node publishes a "Joy" message, which contains the current state of each one of the joystick's buttons and axes.
+The joy_linux package contains joy_linux_node, a node that interfaces a generic Linux joystick to ROS. This is a lightweight, Linux-only node with no external dependencies.  If you are on an embedded type Linux system and need a joystick driver, this driver may be for you.  For all other use cases, the more modern, cross-platform, and supported "joy_node" should be used instead.
 
 ## Supported Hardware
 
@@ -8,7 +8,7 @@ This node should work with any joystick that is supported by Linux.
 
 ## Published Topics
 
-* joy ([sensor_msgs/Joy](http://docs.ros.org/api/sensor_msgs/html/msg/Joy.html)): outputs the joystick state.
+* joy ([sensor_msgs/msg/Joy](http://docs.ros.org/api/sensor_msgs/html/msg/Joy.html)): outputs the joystick state.
 
 ## Device Selection
 
@@ -23,7 +23,7 @@ If ~dev_name is defined, the node enumerates all available joysticks, i.e. /dev/
 
 To get a list of the names of all connected joysticks, an invalid ~dev_name can be specified. For example:
 
-`rosrun joy_linux joy_linux_node _dev_name:="*"`
+`ros2 run joy_linux joy_linux_node --ros-args -p dev_name:="*"`
 
 The output might look like this:
 
@@ -35,7 +35,7 @@ The output might look like this:
 
 Then the node can be started with the device name given in the list. For example:
 
-`rosrun joy_linux joy_linux_node _dev_name:="Microsoft X-Box 360 pad"`
+`ros2 run joy_linux joy_linux_node --ros-args -p dev_name:="Microsoft X-Box 360 pad"`
 
 ## Advanced Parameters
 
