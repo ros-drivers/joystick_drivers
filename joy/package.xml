@@ -1,4 +1,4 @@
-<package>
+<package format="2">
   <name>joy</name>
   <version>1.11.0</version>
   <license>BSD</license>
@@ -28,10 +28,10 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>joystick</build_depend>
 
-  <run_depend>roscpp</run_depend>
-  <run_depend>diagnostic_updater</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>joystick</run_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>diagnostic_updater</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>joystick</exec_depend>
 
   <test_depend>rosbag</test_depend>
 
