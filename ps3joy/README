@@ -2,7 +2,7 @@ Packages that need to be installed
 ----------------------------------
 joystick
 libusb-dev
-
+bluez-5.37
 Pairing instructions
 --------------------
 
@@ -37,6 +37,15 @@ Starting the PS3 joystick
 -------------------------
 
 rosrun ps3joy ps3joy.py
+
+Open a new terminal and reboot bluez and run joy with: 
+
+sudo systemctl restart bluetooth 
+rosrun joy joy_node  
+
+Open a new terminal and echo the joy topic 
+
+rostopic echo joy
 
 This should make a joystick appear at /dev/input/js?
 
