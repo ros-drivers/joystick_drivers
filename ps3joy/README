@@ -39,7 +39,7 @@ Starting the PS3 joystick
 
 1)rosrun ps3joy ps3joy.py
 
-2)Restart bluetooth
+2)Restart bluetooth if bluez crashes and press the pairing button
 sudo systemctl restart bluetooth
 
 This should make a joystick appear at /dev/input/js?
@@ -51,7 +51,7 @@ jstest /dev/input/js?
 
 Publishing to ROS
 
-Run an instance of joy
+Run a joy node
 
 >rosrun joy joy_node
 
