@@ -5,7 +5,6 @@ print "Looking for compatible devices"
 nearby_devices = discover_devices(lookup_names = 1,duration = 10,flush_cache=True)
 compatible_devices = None
 
-
 for addr,name in nearby_devices:
 
      if name == 'Nintendo RVL-CNT-01' or name == 'Nintendo RVL-WBC-01':
