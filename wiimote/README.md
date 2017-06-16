@@ -3,9 +3,9 @@ The wiimote nodes depend on the CWiid library. This library is rather old and
 outdated. The newest wiimotes are not compatible with CWiid. This script verifies
 if they're any comptatible wiimotes present
 
-* Run the python script and turn on discoverable mode by pressing 1+2
-  the script will search and display wether the Wiimotes present are
-  compatible
+* Run the python script and turn on discoverable mode (pressing 1+2 or the sync button).
+
+The script will search and display wether the Wiimotes present are compatible
 
 # Wiimote Nodes
 
