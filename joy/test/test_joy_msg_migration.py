@@ -128,7 +128,7 @@ class TestJoyMsgsMigration(unittest.TestCase):
     buff = StringIO()
     m.serialize(buff)
     m.deserialize(buff.getvalue())
-    
+
     # Strifying them helps make the comparison easier until I figure out why the equality operator is failing
     self.assertTrue(roslib.message.strify_message(msg) == roslib.message.strify_message(m))
 #    self.assertTrue(msgs[0][1] == m)

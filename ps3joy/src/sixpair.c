@@ -96,13 +96,13 @@ void process_device(int argc, char **argv, struct usb_device *dev,
     }
     pclose(f);
   }
-    
+
   set_master(devh, itfnum, mac);
 
   usb_close(devh);
 }
 
-int main(int argc, char *argv[]) {  
+int main(int argc, char *argv[]) {
 
   usb_init();
   if ( usb_find_busses() < 0 ) fatal("usb_find_busses");

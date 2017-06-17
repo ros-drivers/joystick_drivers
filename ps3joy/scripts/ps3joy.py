@@ -38,7 +38,7 @@ import select
 import fcntl
 import os
 import time
-import sys                    
+import sys
 import traceback
 import subprocess
 
@@ -81,7 +81,7 @@ class uinputjoy:
         #info = uinput.uinput_user_dev()
         #info.name = "Sony Playstation SixAxis/DS3"
         #info.id = id
-        
+
         UI_SET_EVBIT   = 0x40045564
         UI_SET_KEYBIT  = 0x40045565
         UI_SET_RELBIT  = 0x40045566
@@ -106,20 +106,20 @@ class uinputjoy:
             uinput.BUS_USB, 0x054C, 0x0268, 0, 0, *(absmax + absmin + absfuzz + absflat)))
 
         fcntl.ioctl(self.file, UI_SET_EVBIT, uinput.EV_KEY)
-        
+
         for b in buttons:
             fcntl.ioctl(self.file, UI_SET_KEYBIT, b)
-        
+
         for a in axes:
             fcntl.ioctl(self.file, UI_SET_EVBIT, uinput.EV_ABS)
             fcntl.ioctl(self.file, UI_SET_ABSBIT, a)
-        
+
         fcntl.ioctl(self.file, UI_DEV_CREATE)
 
         self.value = [None] * (len(buttons) + len(axes))
         self.type = [uinput.EV_KEY] * len(buttons) + [uinput.EV_ABS] * len(axes)
         self.code = buttons + axes
-    
+
     def update(self, value):
         input_event = "LLHHi"
         t = time.time()
@@ -138,8 +138,8 @@ class BadJoystickException(Exception):
 
 class decoder:
     def __init__(self, inactivity_timeout = float(1e3000), continuous_motion_output = False):
-        #buttons=[uinput.BTN_SELECT, uinput.BTN_THUMBL, uinput.BTN_THUMBR, uinput.BTN_START, 
-        #         uinput.BTN_FORWARD, uinput.BTN_RIGHT, uinput.BTN_BACK, uinput.BTN_LEFT, 
+        #buttons=[uinput.BTN_SELECT, uinput.BTN_THUMBL, uinput.BTN_THUMBR, uinput.BTN_START,
+        #         uinput.BTN_FORWARD, uinput.BTN_RIGHT, uinput.BTN_BACK, uinput.BTN_LEFT,
         #         uinput.BTN_TL, uinput.BTN_TR, uinput.BTN_TL2, uinput.BTN_TR2,
         #         uinput.BTN_X, uinput.BTN_A, uinput.BTN_B, uinput.BTN_Y,
         #         uinput.BTN_MODE]
@@ -167,7 +167,7 @@ class decoder:
         self.joy = uinputjoy(buttons, axes, axmin, axmax, axfuzz, axflat)
         self.axmid = [sum(pair)/2 for pair in zip(axmin, axmax)]
         self.fullstop() # Probably useless because of uinput startup bug
-        self.outlen = len(buttons) + len(axes)           
+        self.outlen = len(buttons) + len(axes)
         self.inactivity_timeout = inactivity_timeout
 
     step_active = 1
@@ -189,7 +189,7 @@ class decoder:
                     out.append(int((curbyte & (1 << k)) != 0))
             out = out + data
             self.joy.update(out)
-            axis_motion = [abs(out[17:][i] - self.axmid[i]) > 20 for i in range(0,len(out)-17-4)]  
+            axis_motion = [abs(out[17:][i] - self.axmid[i]) > 20 for i in range(0,len(out)-17-4)]
                                                                        # 17 buttons, 4 inertial sensors
             if any(out[0:17]) or any(axis_motion):
                 return self.step_active
@@ -258,7 +258,7 @@ def check_hci_status():
     if out.find('UP') == -1:
         os.system("hciconfig hci0 up > /dev/null 2>&1")
     if out.find('PSCAN') == -1:
-        os.system("hciconfig hci0 pscan > /dev/null 2>&1")   
+        os.system("hciconfig hci0 pscan > /dev/null 2>&1")
 
 class connection_manager:
     def __init__(self, decoder):
@@ -284,7 +284,7 @@ class connection_manager:
                     print >> sys.stderr, "Error binding to socket, will retry every 5 seconds. Do you have another ps3joy.py running? This error occurs on some distributions (such as Ubuntu Karmic). Please read http://www.ros.org/wiki/ps3joy/Troubleshooting for solutions."
                 first_loop = False
                 time.sleep(0.5)
-                continue 
+                continue
             sock.listen(1)
             return sock
 
@@ -297,7 +297,7 @@ class connection_manager:
         intr_sock = self.prepare_bluetooth_socket(L2CAP_PSM_HIDP_INTR)
         ctrl_sock = self.prepare_bluetooth_socket(L2CAP_PSM_HIDP_CTRL)
         self.listen(intr_sock, ctrl_sock)
-    
+
     def listen(self, intr_sock, ctrl_sock):
         self.n = 0
         while not self.shutdown:
@@ -314,7 +314,7 @@ class connection_manager:
                             check_hci_status()
                         else:
                             raise
-                    
+
                 try:
                     try:
                         (ctrl, (cdev, cport)) = ctrl_sock.accept();
@@ -330,7 +330,7 @@ class connection_manager:
                     finally:
                         ctrl.close()
                 finally:
-                    intr.close()        
+                    intr.close()
             except BadJoystickException:
                 pass
             except KeyboardInterrupt:
@@ -341,12 +341,12 @@ class connection_manager:
                 print >> sys.stderr, "Caught exception: %s"%str(e)
                 time.sleep(1)
             print
-                    
+
 inactivity_timout_string = "--inactivity-timeout"
 no_disable_bluetoothd_string = "--no-disable-bluetoothd"
 redirect_output_string = "--redirect-output"
 continuous_motion_output_string = "--continuous-output"
-                    
+
 def usage(errcode):
     print "usage: ps3joy.py ["+inactivity_timout_string+"=<n>] ["+no_disable_bluetoothd_string+"] ["+redirect_output_string+"] ["+continuous_motion_output_string+"]=<f>"
     print "<n>: inactivity timeout in seconds (saves battery life)."
@@ -373,8 +373,8 @@ if __name__ == "__main__":
             os.execlpe('sudo', *args)
         if euid != 0:
             raise SystemExit("Root Privlages Required.")
-  
-  
+
+
         inactivity_timeout = float(1e3000)
         disable_bluetoothd = True
         continuous_output = False
@@ -401,7 +401,7 @@ if __name__ == "__main__":
                 str_value = arg[len(redirect_output_string)+1:]
                 try:
                     print "Redirecting output to:", str_value
-                    sys.stdout = open(str_value, "a", 1)        
+                    sys.stdout = open(str_value, "a", 1)
                 except IOError, e:
                     print "Error opening file to redirect output:", str_value
                     raise Quit(1)
