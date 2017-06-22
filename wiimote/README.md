@@ -10,6 +10,11 @@ Original Python version of the wiimote node.
 
 The C++ implementation was designed with focus on reduced resource consumption.
 
+### Parameters
+
+* `bluetooth_addr` [str] - Bluetooth address for pairing. Default: `00:00:00:00:00:00` (first device)
+* `pair_timeout` [int] - Pair timeout in seconds. `-1` means never timeout. Default: `5`
+
 ### Differences from Python Implementation
 * Both "/wiimote/nunchuk" and "/wiimote/classic" topics are only published
 if the Nunchuk or Classic Controller are connected to the wiimote respectively.
