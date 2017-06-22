@@ -61,6 +61,7 @@
 #include <math.h>
 
 #include <vector>
+#include <string>
 
 WiimoteNode::WiimoteNode()
 {
@@ -1580,14 +1581,24 @@ int main(int argc, char *argv[])
   g_wiimote_node = new WiimoteNode();
 
   // Do we have a bluetooth address passed in?
-  if (argc > 1)
+  // Try not to consume a ROS arg/param
+  if (argc == 2 && argv[1][0] != '_')
   {
     g_wiimote_node->setBluetoothAddr(argv[1]);
   }
 
-  ROS_INFO("* * * Pairing");
+  std::string bluetooth_addr;
+  if (ros::param::get("~bluetooth_addr", bluetooth_addr))
+  {
+    g_wiimote_node->setBluetoothAddr(bluetooth_addr.c_str());
+  }
+
+  int pair_timeout;
+  ros::param::param<int>("~pair_timeout", pair_timeout, 5);
+
+  ROS_INFO("* * * Pairing with %s", g_wiimote_node->getBluetoothAddr());
   ROS_INFO("Allow all joy sticks to remain at center position until calibrated.");
-  if (g_wiimote_node->pairWiimote())
+  if (g_wiimote_node->pairWiimote(0, pair_timeout))
   {
     ROS_INFO("Wiimote is Paired");
 
