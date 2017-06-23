@@ -1,4 +1,4 @@
-<package>
+<package format="2">
   <name>wiimote</name>
   <version>1.11.0</version>
   <license>GPL</license>
@@ -24,31 +24,22 @@
   <author email="mark.d.horn@intel.com">Mark Horn</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-  
-  <build_depend>genmsg</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>python-cwiid</build_depend>
-  <build_depend>cwiid-dev</build_depend>
-  <build_depend>python-numpy</build_depend>
-  <build_depend>roslib</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>std_srvs</build_depend>
+
+  <build_depend>cwiid-dev</build_depend>  
   <build_depend>roslint</build_depend>
   
-  <run_depend>genmsg</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>python-cwiid</run_depend>
-  <run_depend>cwiid</run_depend>
-  <run_depend>python-numpy</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>std_srvs</run_depend>
-  <run_depend>rospy</run_depend>
-  <run_depend>roslib</run_depend>
-  <run_depend>roscpp</run_depend>
+  <depend>genmsg</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>python-cwiid</depend>
+  <depend>python-numpy</depend>
+  <depend>roslib</depend>
+  <depend>rospy</depend>
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  
+  <exec_depend>cwiid</exec_depend>
 
   <export>
     <architecture_independent/>
