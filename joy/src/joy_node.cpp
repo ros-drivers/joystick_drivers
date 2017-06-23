@@ -282,41 +282,41 @@ public:
           publish_now = true;
         
         if (publish_now) {
-			// Assume that all the JS_EVENT_INIT messages have arrived already.
-			// This should be the case as the kernel sends them along as soon as
-			// the device opens.
-			//ROS_INFO("Publish...");
-			if (sticky_buttons_ == true) {
-				// cycle through buttons
-				for (int i = 0; i < joy_msg.buttons.size(); i++) {
-					// change button state only on transition from 0 to 1
-					if (joy_msg.buttons[i] == 1 && last_published_joy_msg.buttons[i] == 0) {
-						sticky_buttons_joy_msg.buttons[i] = sticky_buttons_joy_msg.buttons[i] ? 0 : 1;
-					} else {
-						// do not change the message sate
-						//sticky_buttons_joy_msg.buttons[i] = sticky_buttons_joy_msg.buttons[i] ? 0 : 1;
-					}
-				}
-				// update last published message
-				last_published_joy_msg = joy_msg;
-				// fill rest of sticky_buttons_joy_msg (time stamps, axes, etc)
-				sticky_buttons_joy_msg.header.stamp.nsec = joy_msg.header.stamp.nsec;
-				sticky_buttons_joy_msg.header.stamp.sec  = joy_msg.header.stamp.sec;
-				sticky_buttons_joy_msg.header.frame_id   = joy_msg.header.frame_id;
-				for(int i=0; i < joy_msg.axes.size(); i++){
-					sticky_buttons_joy_msg.axes[i] = joy_msg.axes[i];
-				}
-				pub_.publish(sticky_buttons_joy_msg);
-			} else {
-				pub_.publish(joy_msg);
-			}
+                        // Assume that all the JS_EVENT_INIT messages have arrived already.
+                        // This should be the case as the kernel sends them along as soon as
+                        // the device opens.
+                        //ROS_INFO("Publish...");
+                        if (sticky_buttons_ == true) {
+                                // cycle through buttons
+                                for (int i = 0; i < joy_msg.buttons.size(); i++) {
+                                        // change button state only on transition from 0 to 1
+                                        if (joy_msg.buttons[i] == 1 && last_published_joy_msg.buttons[i] == 0) {
+                                                sticky_buttons_joy_msg.buttons[i] = sticky_buttons_joy_msg.buttons[i] ? 0 : 1;
+                                        } else {
+                                                // do not change the message sate
+                                                //sticky_buttons_joy_msg.buttons[i] = sticky_buttons_joy_msg.buttons[i] ? 0 : 1;
+                                        }
+                                }
+                                // update last published message
+                                last_published_joy_msg = joy_msg;
+                                // fill rest of sticky_buttons_joy_msg (time stamps, axes, etc)
+                                sticky_buttons_joy_msg.header.stamp.nsec = joy_msg.header.stamp.nsec;
+                                sticky_buttons_joy_msg.header.stamp.sec  = joy_msg.header.stamp.sec;
+                                sticky_buttons_joy_msg.header.frame_id   = joy_msg.header.frame_id;
+                                for(int i=0; i < joy_msg.axes.size(); i++){
+                                        sticky_buttons_joy_msg.axes[i] = joy_msg.axes[i];
+                                }
+                                pub_.publish(sticky_buttons_joy_msg);
+                        } else {
+                                pub_.publish(joy_msg);
+                        }
 
-			publish_now = false;
-			tv_set = false;
-			publication_pending = false;
-			publish_soon = false;
-			pub_count_++;
-		}
+                        publish_now = false;
+                        tv_set = false;
+                        publication_pending = false;
+                        publish_soon = false;
+                        pub_count_++;
+                }
         
         // If an axis event occurred, start a timer to combine with other
         // events.
@@ -335,7 +335,7 @@ public:
           tv.tv_sec = trunc(autorepeat_interval);
           tv.tv_usec = (autorepeat_interval - tv.tv_sec) * 1e6; 
           tv_set = true;
-          //ROS_INFO("Autorepeat pending... %i %i", tv.tv_sec, tv.tv_usec);
+          //ROS_INFO("Autorepeat pending... %li %li", tv.tv_sec, tv.tv_usec);
         }
         
         if (!tv_set)
