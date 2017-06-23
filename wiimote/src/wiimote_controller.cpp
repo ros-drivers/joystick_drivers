@@ -61,6 +61,7 @@
 #include <math.h>
 
 #include <vector>
+#include <string>
 
 WiimoteNode::WiimoteNode()
 {
@@ -149,7 +150,10 @@ bool WiimoteNode::pairWiimote(int flags = 0, int timeout = 5)
   bool status = true;
 
   ROS_INFO("Put Wiimote in discoverable mode now (press 1+2)...");
-  ROS_INFO("Timeout in about %d seconds if not paired.", timeout);
+  if(timeout == -1)
+    ROS_INFO("Searching indefinitely...");
+  else
+    ROS_INFO("Timeout in about %d seconds if not paired.", timeout);
 
   if (!(wiimote_ = wiimote_c::cwiid_open_timeout(&bt_device_addr_, flags, timeout)))
   {
@@ -1580,14 +1584,27 @@ int main(int argc, char *argv[])
   g_wiimote_node = new WiimoteNode();
 
   // Do we have a bluetooth address passed in?
-  if (argc > 1)
+  // Try not to consume a ROS arg/param
+  if (argc == 2 && argv[1][0] != '_')
   {
     g_wiimote_node->setBluetoothAddr(argv[1]);
   }
 
-  ROS_INFO("* * * Pairing");
+  std::string bluetooth_addr;
+  bool fed_addr = false;
+  if (ros::param::get("~bluetooth_addr", bluetooth_addr))
+  {
+    g_wiimote_node->setBluetoothAddr(bluetooth_addr.c_str());
+    fed_addr = true;
+  }
+
+  int pair_timeout;
+  ros::param::param<int>("~pair_timeout", pair_timeout, 5);
+  if (fed_addr)
+    ROS_INFO("* * * Pairing with %s", g_wiimote_node->getBluetoothAddr());
+  else ROS_INFO("Searching for Wiimotes");
   ROS_INFO("Allow all joy sticks to remain at center position until calibrated.");
-  if (g_wiimote_node->pairWiimote())
+  if (g_wiimote_node->pairWiimote(0, pair_timeout))
   {
     ROS_INFO("Wiimote is Paired");
 

@@ -47,8 +47,9 @@ private:
   bool open_;               
   std::string joy_dev_;
   double deadzone_;
-  double autorepeat_rate_;  // in Hz.  0 for no repeat.
+  double autorepeat_rate_;   // in Hz.  0 for no repeat.
   double coalesce_interval_; // Defaults to 100 Hz rate limit.
+  bool sticky_buttons_;		 // Sticky buttons option
   int event_count_;
   int pub_count_;
   ros::Publisher pub_;
@@ -74,6 +75,7 @@ private:
     stat.add("recent joystick event rate (Hz)", event_count_ / interval);
     stat.add("recent publication rate (Hz)", pub_count_ / interval);
     stat.add("subscribers", pub_.getNumSubscribers());
+    stat.add("sticky buttons", sticky_buttons_);
     event_count_ = 0;
     pub_count_ = 0;
     lastDiagTime_ = now;
@@ -96,6 +98,7 @@ public:
     nh_param.param<double>("deadzone", deadzone_, 0.05);
     nh_param.param<double>("autorepeat_rate", autorepeat_rate_, 0);
     nh_param.param<double>("coalesce_interval", coalesce_interval_, 0.001);
+    nh_param.param<bool>("sticky_buttons", sticky_buttons_, false);
     
     // Checks on parameters
     if (autorepeat_rate_ > 1 / coalesce_interval_)
@@ -187,6 +190,9 @@ public:
       tv.tv_sec = 1;
       tv.tv_usec = 0;
       sensor_msgs::Joy joy_msg; // Here because we want to reset it on device close.
+      double val = 0.0f;
+      sensor_msgs::Joy last_published_joy_msg; // used for sticky buttons option
+      sensor_msgs::Joy sticky_buttons_joy_msg; // used for sticky buttons option
       while (nh_.ok()) 
       {
         ros::spinOnce();
@@ -224,8 +230,13 @@ public:
             {
               int old_size = joy_msg.buttons.size();
               joy_msg.buttons.resize(event.number+1);
-              for(unsigned int i=old_size;i<joy_msg.buttons.size();i++)
+              last_published_joy_msg.buttons.resize(event.number+1);
+              sticky_buttons_joy_msg.buttons.resize(event.number+1);
+              for(unsigned int i=old_size;i<joy_msg.buttons.size();i++){
                 joy_msg.buttons[i] = 0.0;
+                last_published_joy_msg.buttons[i] = 0.0;
+                sticky_buttons_joy_msg.buttons[i] = 0.0;
+              }
             }
             joy_msg.buttons[event.number] = (event.value ? 1 : 0);
             // For initial events, wait a bit before sending to try to catch
@@ -237,26 +248,29 @@ public:
             break;
           case JS_EVENT_AXIS:
           case JS_EVENT_AXIS | JS_EVENT_INIT:
+            val = event.value;
             if(event.number >= joy_msg.axes.size())
             {
               int old_size = joy_msg.axes.size();
               joy_msg.axes.resize(event.number+1);
-              for(unsigned int i=old_size;i<joy_msg.axes.size();i++)
+              last_published_joy_msg.axes.resize(event.number+1);
+              sticky_buttons_joy_msg.axes.resize(event.number+1);
+              for(unsigned int i=old_size;i<joy_msg.axes.size();i++){
                 joy_msg.axes[i] = 0.0;
+                last_published_joy_msg.axes[i] = 0.0;
+                sticky_buttons_joy_msg.axes[i] = 0.0;
+              }
             }
-            if (!(event.type & JS_EVENT_INIT)) // Init event.value is wrong.
-            {
-              double val = event.value;
-              // Allows deadzone to be "smooth"
-              if (val > unscaled_deadzone)
+            
+            // Allows deadzone to be "smooth"
+            if (val > unscaled_deadzone)
                 val -= unscaled_deadzone;
-              else if (val < -unscaled_deadzone)
+            else if (val < -unscaled_deadzone)
                 val += unscaled_deadzone;
-              else
+            else
                 val = 0;
-              joy_msg.axes[event.number] = val * scale;
-            }
-            // Will wait a bit before sending to try to combine events. 				
+            joy_msg.axes[event.number] = val * scale;
+            // Will wait a bit before sending to try to combine events.
             publish_soon = true;
             break;
           default:
@@ -267,19 +281,42 @@ public:
         else if (tv_set) // Assume that the timer has expired.
           publish_now = true;
         
-        if (publish_now)
-        {
-          // Assume that all the JS_EVENT_INIT messages have arrived already.
-          // This should be the case as the kernel sends them along as soon as
-          // the device opens.
-          //ROS_INFO("Publish...");
-          pub_.publish(joy_msg);
-          publish_now = false;
-          tv_set = false;
-          publication_pending = false;
-          publish_soon = false;
-          pub_count_++;
-        }
+        if (publish_now) {
+                        // Assume that all the JS_EVENT_INIT messages have arrived already.
+                        // This should be the case as the kernel sends them along as soon as
+                        // the device opens.
+                        //ROS_INFO("Publish...");
+                        if (sticky_buttons_ == true) {
+                                // cycle through buttons
+                                for (int i = 0; i < joy_msg.buttons.size(); i++) {
+                                        // change button state only on transition from 0 to 1
+                                        if (joy_msg.buttons[i] == 1 && last_published_joy_msg.buttons[i] == 0) {
+                                                sticky_buttons_joy_msg.buttons[i] = sticky_buttons_joy_msg.buttons[i] ? 0 : 1;
+                                        } else {
+                                                // do not change the message sate
+                                                //sticky_buttons_joy_msg.buttons[i] = sticky_buttons_joy_msg.buttons[i] ? 0 : 1;
+                                        }
+                                }
+                                // update last published message
+                                last_published_joy_msg = joy_msg;
+                                // fill rest of sticky_buttons_joy_msg (time stamps, axes, etc)
+                                sticky_buttons_joy_msg.header.stamp.nsec = joy_msg.header.stamp.nsec;
+                                sticky_buttons_joy_msg.header.stamp.sec  = joy_msg.header.stamp.sec;
+                                sticky_buttons_joy_msg.header.frame_id   = joy_msg.header.frame_id;
+                                for(int i=0; i < joy_msg.axes.size(); i++){
+                                        sticky_buttons_joy_msg.axes[i] = joy_msg.axes[i];
+                                }
+                                pub_.publish(sticky_buttons_joy_msg);
+                        } else {
+                                pub_.publish(joy_msg);
+                        }
+
+                        publish_now = false;
+                        tv_set = false;
+                        publication_pending = false;
+                        publish_soon = false;
+                        pub_count_++;
+                }
         
         // If an axis event occurred, start a timer to combine with other
         // events.
@@ -298,7 +335,7 @@ public:
           tv.tv_sec = trunc(autorepeat_interval);
           tv.tv_usec = (autorepeat_interval - tv.tv_sec) * 1e6; 
           tv_set = true;
-          //ROS_INFO("Autorepeat pending... %i %i", tv.tv_sec, tv.tv_usec);
+          //ROS_INFO("Autorepeat pending... %li %li", tv.tv_sec, tv.tv_usec);
         }
         
         if (!tv_set)
