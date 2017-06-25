@@ -24,21 +24,21 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   
-  <build_depend>diagnostic_msgs</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>rosgraph</build_depend>
-  <build_depend>libusb-dev</build_depend>
-  <build_depend>joystick</build_depend>
   <build_depend>bluez</build_depend>
+  <build_depend>diagnostic_msgs</build_depend>
+  <build_depend>joystick</build_depend>
+  <build_depend>libusb-dev</build_depend>
   <build_depend>python-bluez</build_depend>
+  <build_depend>rosgraph</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>sensor_msgs</build_depend>
 
-  <exec_depend>diagnostic_msgs</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>rospy</exec_depend>
-  <exec_depend>rosgraph</exec_depend>
-  <exec_depend>libusb-dev</exec_depend>
-  <exec_depend>joystick</exec_depend>
   <exec_depend>bluez</exec_depend>
+  <exec_depend>diagnostic_msgs</exec_depend>
+  <exec_depend>joystick</exec_depend>
+  <exec_depend>libusb-dev</exec_depend>
   <exec_depend>python-bluez</exec_depend>
+  <exec_depend>rosgraph</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
 </package>

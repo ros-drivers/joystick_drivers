@@ -23,15 +23,15 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   
-  <build_depend>roscpp</build_depend>
   <build_depend>diagnostic_updater</build_depend>
-  <build_depend>sensor_msgs</build_depend>
   <build_depend>joystick</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
 
-  <exec_depend>roscpp</exec_depend>
   <exec_depend>diagnostic_updater</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>joystick</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
 
   <test_depend>rosbag</test_depend>
 

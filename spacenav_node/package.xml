@@ -16,16 +16,16 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>roscpp</build_depend>
   <build_depend>geometry_msgs</build_depend>
-  <build_depend>sensor_msgs</build_depend>
   <build_depend>libspnav-dev</build_depend>
   <build_depend>libx11-dev</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
 
-  <exec_depend>roscpp</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>libspnav-dev</exec_depend>
   <exec_depend>libx11-dev</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>spacenavd</exec_depend>
 </package>
