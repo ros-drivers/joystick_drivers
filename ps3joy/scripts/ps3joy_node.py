@@ -181,7 +181,7 @@ class decoder:
 
     def init_ros(self):
         try:
-            rospy.init_node('ps3joy', anonymous=False, disable_signals=True)
+            rospy.init_node('ps3joy', anonymous=True, disable_signals=True)
         except:
             print "rosnode init failed"
         rospy.Subscriber("joy/set_feedback",sensor_msgs.msg.JoyFeedbackArray,self.set_feedback)
@@ -354,9 +354,8 @@ class decoder:
 class Diagnostics():
     def __init__(self):
         self.STATE_TEXTS_CHARGING = {
-                                0:"Charging",
-                                2:"Charging",
-                                3:"Not Charging"}
+                                0:"Charging", 
+                                1:"Not Charging"}
         self.STATE_TEXTS_CONNECTION = {
                                 18:"USB Connection",
                                 20:"Rumbling",
@@ -387,7 +386,7 @@ class Diagnostics():
         diag = DiagnosticArray()
         diag.header.stamp = curr_time
         # battery info
-        stat = DiagnosticStatus(name='ps3joy'": Battery", level=DiagnosticStatus.OK, message="OK")
+        stat = DiagnosticStatus(name="Battery", level=DiagnosticStatus.OK, message="OK")
         try:
             battery_state_code = state[STATE_INDEX_BATTERY]
             stat.message = self.STATE_TEXTS_BATTERY[battery_state_code]
@@ -500,6 +499,7 @@ class connection_manager:
                         if idev == cdev:
                             self.decoder.run(intr, ctrl)
                             print "Connection terminated."
+                            quit(0)
                         else:
                             print >> sys.stderr, "Simultaneous connection from two different devices. Ignoring both."
                     finally:
@@ -576,11 +576,11 @@ if __name__ == "__main__":
 #                deamon = True
             else:
                 print "Ignoring parameter: '%s'"%arg
-        # TODO: Check for actual HW permissions, not root itself. Issue #53
-        # Error message hinting to root in case of failure is implemented already
-#        if os.getuid() != 0:
-#            print >> sys.stderr, "ps3joy.py must be run as root."
-#            quit(1)
+        
+        # If the user does not have HW permissions indicate that ps3joy must be run as root
+        if os.getuid() != 0:
+            print >> sys.stderr, "ps3joy.py must be run as root."
+            quit(1)
         if disable_bluetoothd:
             os.system("/etc/init.d/bluetooth stop > /dev/null 2>&1")
             time.sleep(1) # Give the socket time to be available.

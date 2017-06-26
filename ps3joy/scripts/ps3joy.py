@@ -408,11 +408,7 @@ if __name__ == "__main__":
                 sys.stderr = sys.stdout
             else:
                 print "Ignoring parameter: '%s'"%arg
-        # TODO: Check for actual HW permissions, not root itself. Issue #53
-        # Error message hinting to root in case of failure is implemented already
-#        if os.getuid() != 0:
-#            print >> sys.stderr, "ps3joy.py must be run as root."
-#            quit(1)
+
         if disable_bluetoothd:
             os.system("/etc/init.d/bluetooth stop > /dev/null 2>&1")
             time.sleep(1) # Give the socket time to be available.
