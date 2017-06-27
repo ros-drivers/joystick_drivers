@@ -28,6 +28,8 @@ env:
 matrix:
   allow_failures:
     - env: ROS_DISTRO="indigo" PRERELEASE=true  # Run docker-based ROS prerelease test http://wiki.ros.org/bloom/Tutorials/PrereleaseTest Because we might not want to run prerelease test for all PRs, it's omitted from pass-fail criteria.
+    - env: ROS_DISTRO="jade"   ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - env: ROS_DISTRO="jade"   ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
     - env: ROS_DISTRO="jade"   PRERELEASE=true
     - env: ROS_DISTRO="kinetic"  PRERELEASE=true
     - env: ROS_DISTRO="lunar"  PRERELEASE=true
