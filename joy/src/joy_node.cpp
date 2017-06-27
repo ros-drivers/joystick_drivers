@@ -187,6 +187,7 @@ public:
       tv.tv_sec = 1;
       tv.tv_usec = 0;
       sensor_msgs::Joy joy_msg; // Here because we want to reset it on device close.
+      double val = 0.0f;
       while (nh_.ok()) 
       {
         ros::spinOnce();
@@ -237,6 +238,7 @@ public:
             break;
           case JS_EVENT_AXIS:
           case JS_EVENT_AXIS | JS_EVENT_INIT:
+            val = event.value;
             if(event.number >= joy_msg.axes.size())
             {
               int old_size = joy_msg.axes.size();
@@ -244,19 +246,16 @@ public:
               for(unsigned int i=old_size;i<joy_msg.axes.size();i++)
                 joy_msg.axes[i] = 0.0;
             }
-            if (!(event.type & JS_EVENT_INIT)) // Init event.value is wrong.
-            {
-              double val = event.value;
-              // Allows deadzone to be "smooth"
-              if (val > unscaled_deadzone)
+            
+            // Allows deadzone to be "smooth"
+            if (val > unscaled_deadzone)
                 val -= unscaled_deadzone;
-              else if (val < -unscaled_deadzone)
+            else if (val < -unscaled_deadzone)
                 val += unscaled_deadzone;
-              else
+            else
                 val = 0;
-              joy_msg.axes[event.number] = val * scale;
-            }
-            // Will wait a bit before sending to try to combine events. 				
+            joy_msg.axes[event.number] = val * scale;
+            // Will wait a bit before sending to try to combine events.
             publish_soon = true;
             break;
           default:
