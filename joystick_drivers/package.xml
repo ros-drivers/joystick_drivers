@@ -17,9 +17,9 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <run_depend>joy</run_depend>
-  <run_depend>ps3joy</run_depend>  
-  <run_depend>spacenav_node</run_depend>  
-  <run_depend>wiimote</run_depend>  
+  <run_depend>ps3joy</run_depend>
+  <run_depend>spacenav_node</run_depend>
+  <run_depend>wiimote</run_depend>
 
   <export>
     <metapackage/>

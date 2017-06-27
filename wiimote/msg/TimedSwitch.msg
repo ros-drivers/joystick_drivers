@@ -16,7 +16,7 @@
 #          n>=0: run the pattern that is defined in pulse_pattern
 #                n times.
 #          n==FOREVER: run the pattern that is defined in pulse_pattern
-#                       until a new TimedSwitch message is sent.              
+#                       until a new TimedSwitch message is sent.
 #
 #     o pulse_pattern:
 #          A series of time durations in fractions of a second. The
@@ -24,8 +24,8 @@
 #          The second number is the duration for which the switch
 #          is off. The third is an 'on' period again, etc.
 #          A pattern is terminated with the end of the array.
-#           
-#          Example: [1,1] specifies an on-off sequence of 1 second.               
+#
+#          Example: [1,1] specifies an on-off sequence of 1 second.
 
 int8 ON        =  1
 int8 OFF       =  0

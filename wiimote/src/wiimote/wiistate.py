@@ -10,7 +10,7 @@
 # Package:      N/A
 # Status:       Experimental (Do Not Distribute)
 #
-# 
+#
 #
 ################################################################################
 #
@@ -36,12 +36,12 @@ class WIIState(object):
   """Holds the state of a WIIRemote-plus.
 
       The state is passed in and is as communicated
-      by one message from the WII+ device. We unpack 
-      the information and place it into individual 
+      by one message from the WII+ device. We unpack
+      the information and place it into individual
       dictionaries for callers to grab.
-      
+
       Public instance variables:
-        o time             Time in fractional seconds since beginning of Epoch of when 
+        o time             Time in fractional seconds since beginning of Epoch of when
                              state was measured (Float).
         o ascTime          Time when state was measured (Human-readable)
         o rumble           True/False if wiimote vibration is on/off
@@ -66,14 +66,14 @@ class WIIState(object):
         o nunchukStickRaw  A tuple with the two axes of the joystick on the nunchuk, raw readings
         o nunchukStick     A tuple with the two axes of the joystick on the nunchuk, zeroed to be [-1, 1]
         o nunchukButtons   A dictionary for which nunchuk buttons are down. Keys are BTN_C and BTN_Z
-  
+
       Public methods:
         o setAccelerometerCalibration   Bias setting for accelerometer. This triplet is used to
                                           turn raw accelerometer values into calibrated values.
         o setGyroCalibration            Bias setting for gyro. This triplet is used to
                                           turn raw gyro values into calibrated values.
   """
-  
+
   _accCalibrationZero = None
   _gyroZeroReading = None
   _nunchukZeroReading = None
@@ -150,7 +150,7 @@ class WIIState(object):
         # Second list member is accelerator triplet of numbers:
         accStatus = msgComp[1]
         self.accRaw = WIIReading(accStatus, self.time)
-        
+
         # If this class knows about accelerometer calibration
         # data, correct the raw reading:
         if self._accCalibrationZero is not None and self._accCalibrationOne is not None:
@@ -170,26 +170,26 @@ class WIIState(object):
         self.IRSources[1] = IRStatus[1]
         self.IRSources[2] = IRStatus[2]
         self.IRSources[3] = IRStatus[3]
-        
+
         continue
 
       elif msgType == WII_MSG_TYPE_MOTIONPLUS:
         # Second list member is a dictionary with the single
-        # key 'angle_rate', which yields as its value a gyro 
+        # key 'angle_rate', which yields as its value a gyro
         # readings triplet of numbers:
 
         gyroDict = msgComp[1]
-        
+
         if gyroDict is not None:
             # If this class knows about a zero-movement reading for the
             # gyro, subtract that reading from the raw measurement:
-            
+
             self.angleRateRaw = GyroReading(gyroDict['angle_rate'], self.time)
             if self._gyroZeroReading is not None:
                 self.angleRate = GyroReading(self.angleRateRaw - self._gyroZeroReading, self.time)
             else:
                 self.angleRate = self.angleRateRaw
-                
+
             self.motionPlusPresent = True
 
         continue
@@ -198,7 +198,7 @@ class WIIState(object):
         if nunChuk is not None:
             self.nunchukPresent = True
             self.nunchukAccRaw = WIIReading(nunChuk['acc'], self.time)
-        
+
             # If this class knows about accelerometer calibration
             # data, correct the raw reading:
             if self._nunchukZeroReading is not None:
@@ -208,8 +208,8 @@ class WIIState(object):
 
 
             self.nunchukStickRaw = nunChuk['stick']
-            
-            # scale the joystick to roughly [-1, 1] 
+
+            # scale the joystick to roughly [-1, 1]
             if (self._nunchukJoystickZero is None):
                 calibration = [127, 127]
             else:
@@ -252,12 +252,12 @@ class WIIState(object):
             self.classicButtons[CLASSIC_BTN_ZL]  = (clasButtons & CLASSIC_BTN_ZL) > 0
             self.classicButtons[CLASSIC_BTN_ZR]  = (clasButtons & CLASSIC_BTN_ZR) > 0
         continue
-       
+
 
   #----------------------------------------
   # setAccelerometerCalibration
   #----------
-  
+
   @classmethod
   def setAccelerometerCalibration(cls, zeroReading, oneReading):
       """Set the current accelerometer zeroing calibration."""
@@ -267,27 +267,27 @@ class WIIState(object):
   #----------------------------------------
   # getAccelerometerCalibration
   #----------
-  
+
   @classmethod
   def getAccelerometerCalibration(cls):
-      """Return current accelerometer zeroing offset as two lists of x/y/z: the 
+      """Return current accelerometer zeroing offset as two lists of x/y/z: the
       zero-reading, and the one-reading."""
       return (cls._accCalibrationZero.tuple(), cls._accCalibrationOne.tuple())
 
   #----------------------------------------
   # setGyroCalibration
   #----------
-  
+
   @classmethod
   def setGyroCalibration(cls, zeroReading):
       """Set the x/y/z zeroing offsets for the gyro. Argument is a list"""
-      
+
       cls._gyroZeroReading = GyroReading(zeroReading)
 
   #----------------------------------------
   # getGyroCalibration
   #----------
-  
+
   @classmethod
   def getGyroCalibration(cls):
       """Return current gyro zeroing offset as a list of x/y/z. """
@@ -296,7 +296,7 @@ class WIIState(object):
   #----------------------------------------
   # setNunchukAccelerometerCalibration
   #----------
-  
+
   @classmethod
   def setNunchukAccelerometerCalibration(cls, zeroReading, oneReading):
       """Set the current nunchuk accelerometer zeroing calibration."""
@@ -306,19 +306,19 @@ class WIIState(object):
   #----------------------------------------
   # setNunchukJoystickCalibration
   #----------
-  
+
   @classmethod
   def setNunchukJoystickCalibration(cls, readings):
       """Set the origin for the nunchuk joystick"""
-      cls._nunchukJoystickZero = readings    
+      cls._nunchukJoystickZero = readings
 
   #----------------------------------------
   # getNunchukAccelerometerCalibration
   #----------
-  
+
   @classmethod
   def getNunchukAccelerometerCalibration(cls):
-      """Return current nunchuk accelerometer zeroing offset as two lists of x/y/z: the 
+      """Return current nunchuk accelerometer zeroing offset as two lists of x/y/z: the
       zero-reading, and the one-reading."""
       return (cls._nunchukZeroReading.tuple(), cls._nunchukOneReading.tuple())
 
@@ -365,7 +365,7 @@ class WIIState(object):
       res += 'Buttons: none.\n'
     else:
       res += 'Buttons: ' + butRes.lstrip(', ') + '\n'
-      
+
 
     # Accelerator:
     if self.acc is not None:
@@ -373,7 +373,7 @@ class WIIState(object):
                `self.acc[X]` + ',' + \
                `self.acc[Y]` + ',' + \
                `self.acc[Z]` + ')\n'
-        
+
     # Gyro (angular rate):
 
     if self.angleRate is not None:
@@ -381,7 +381,7 @@ class WIIState(object):
                `self.angleRate[X]` + ',' + \
                `self.angleRate[Y]` + ',' + \
                `self.angleRate[Z]` + ')\n'
-    
+
     # Rumble status:
 
     if self.rumble:
@@ -391,21 +391,21 @@ class WIIState(object):
 
     # IR Sources:
 
-    irRes = '' 
+    irRes = ''
 
     if self.IRSources is not None:
         if self.IRSources[IR1] is not None:
           irRes += 'IR source 1'
-    
+
         if self.IRSources[IR2] is not None:
           irRes += 'IR source 2'
-    
+
         if self.IRSources[IR3] is not None:
           irRes += 'IR source 3'
-    
+
         if self.IRSources[IR4] is not None:
           irRes += 'IR source 4'
-    
+
         if not irRes:
           res += irRes.lstrip(', ') + '\n'
         else:
@@ -443,14 +443,14 @@ class WIIReading(object):
 
   def __init__(self, xyz, theTime=None):
     """Create a (possibly) time stamped WII Reading.
-    
+
     Parameter xyz is an array of x,y,z coordinates of the
     reading. WIIReading instances can be added, subtracted, and
     divided into each other. The operations are pairwise over
     x, y, and z. A numpy array of x,y,z is available by
     calling tuple(). The time stamp is available via time().
-    
-    """ 
+
+    """
     self.time = theTime
     self._measurement = np.array([xyz[X], xyz[Y], xyz[Z]],dtype=np.float64)
 
@@ -467,7 +467,7 @@ class WIIReading(object):
 
   def __repr__(self):
       return '[' + str(self._measurement[X]) + ', ' + str(self._measurement[Y]) + ', ' + str(self._measurement[Z]) + ']'
-  
+
   def tuple(self):
     return self._measurement
 
@@ -488,7 +488,7 @@ class WIIReading(object):
 
   def scale(self, scaleFactor):
     """Return a numpy tuple that with X, Y, Z scaled by the given factor."""
-    
+
     return self._measurement * scaleFactor
 
 #----------------------------------------
@@ -506,12 +506,12 @@ class GyroReading():
   """
   # Local instance vars:
   #   o _measurement = np.array(3, dtype=numpy.float64)
-  #   o time 
+  #   o time
 
 
   def __init__(self, phiThetaPsi, theTime=None):
     """Create a (possibly) time stamped WII Reading.
-    
+
     Parameter phiThetaPsi is an array of phi,theta,psi coordinates of the
     gyro reading. GyroReading instances can be added, subtracted, and
     divided into each other. The operations are pairwise over
@@ -521,7 +521,7 @@ class GyroReading():
 
     self.time = theTime
     self._measurement = np.array([phiThetaPsi[PHI], phiThetaPsi[THETA], phiThetaPsi[PSI]],dtype=np.float64)
-    
+
 
   def __getitem__(self, key):
     if key not in (PHI,THETA,PSI):
@@ -536,7 +536,7 @@ class GyroReading():
 
   def __repr__(self):
       '[' + str(self._measurement[PHI]) + ', ' + str(self._measurement[THETA]) + ', ' + str(self._measurement[PSI]) + ']'
-      
+
   def tuple(self):
     return self._measurement
 
@@ -545,7 +545,7 @@ class GyroReading():
     return self._measurement + other._measurement
 
   def __sub__(self, other):
-    """Subtracting two gyro readings returns a new reading 
+    """Subtracting two gyro readings returns a new reading
     with components subtracted pairwise.
 
     """
@@ -558,7 +558,7 @@ class GyroReading():
 
   def scale(self, scaleFactor):
     """Return a numpy tuple that with X, Y, Z scaled by the given factor."""
-    
+
     return self._measurement * scaleFactor
 
 #;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

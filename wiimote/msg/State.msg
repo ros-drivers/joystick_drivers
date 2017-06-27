@@ -104,8 +104,8 @@ bool rumble
 #----------------------
 # IR Light sensor (Camera)
 #-----------------------------
-# The Wiimote handles up to four light sources, 
-# and the wiimote_node.py software is written to 
+# The Wiimote handles up to four light sources,
+# and the wiimote_node.py software is written to
 # that limit as well. For future expansion
 # we make the following array extensible, rather
 # than locking its length down to four:
@@ -115,10 +115,10 @@ wiimote/IrSourceInfo[] ir_tracking
 #----------------------
 # Wiimote battery
 #-----------------------------
-# A battery reading consists of two numbers: 
+# A battery reading consists of two numbers:
 # the battery percentage, and the raw reading.
 # Maximum battery is 208 units (unknown how this
-# relates to electrical properties): 
+# relates to electrical properties):
 
 float32 raw_battery
 float32 percent_battery

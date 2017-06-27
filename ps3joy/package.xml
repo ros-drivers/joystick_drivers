@@ -23,7 +23,7 @@
   <url type="bugtracker">https://github.com/ros-drivers/joystick_drivers/issues</url>
 
   <buildtool_depend>catkin</buildtool_depend>
-  
+
   <build_depend>diagnostic_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>rospy</build_depend>

@@ -10,7 +10,7 @@
 # Package:      N/A
 # Status:       Experimental (Do Not Distribute)
 #
-# 
+#
 #
 ################################################################################
 
@@ -21,7 +21,7 @@ class WiimoteError(Exception):
 
   def __init__(self, theErrMsg):
     self.errMsg = theErrMsg
-  
+
   def __str__(self):
     return self.errMsg
 
@@ -42,4 +42,3 @@ class ResumeNonPausedError(WiimoteError):
 
 class CallbackStackEmptyError(WiimoteError):
   """Attemp to operate on an empty callback stack."""
-  

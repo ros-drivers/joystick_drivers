@@ -2,10 +2,10 @@
  * teleop_pr2
  * Copyright (c) 2009, Willow Garage, Inc.
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -14,7 +14,7 @@
  *     * Neither the name of the <ORGANIZATION> nor the names of its
  *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -44,7 +44,7 @@ class Joystick
 {
 private:
   ros::NodeHandle nh_;
-  bool open_;               
+  bool open_;
   std::string joy_dev_;
   double deadzone_;
   double autorepeat_rate_;  // in Hz.  0 for no repeat.
@@ -53,9 +53,9 @@ private:
   int pub_count_;
   ros::Publisher pub_;
   double lastDiagTime_;
-  
+
   diagnostic_updater::Updater diagnostic_;
-  
+
   ///\brief Publishes diagnostics and status
   void diagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat)
   {
@@ -65,7 +65,7 @@ private:
       stat.summary(0, "OK");
     else
       stat.summary(2, "Joystick not open.");
-    
+
     stat.add("topic", pub_.getTopic());
     stat.add("device", joy_dev_);
     stat.add("dead zone", deadzone_);
@@ -78,11 +78,11 @@ private:
     pub_count_ = 0;
     lastDiagTime_ = now;
   }
-  
+
 public:
   Joystick() : nh_(), diagnostic_()
   {}
-  
+
   ///\brief Opens joystick port, reads from port and publishes while node is active
   int main(int argc, char **argv)
   {
@@ -96,23 +96,23 @@ public:
     nh_param.param<double>("deadzone", deadzone_, 0.05);
     nh_param.param<double>("autorepeat_rate", autorepeat_rate_, 0);
     nh_param.param<double>("coalesce_interval", coalesce_interval_, 0.001);
-    
+
     // Checks on parameters
     if (autorepeat_rate_ > 1 / coalesce_interval_)
       ROS_WARN("joy_node: autorepeat_rate (%f Hz) > 1/coalesce_interval (%f Hz) does not make sense. Timing behavior is not well defined.", autorepeat_rate_, 1/coalesce_interval_);
-    
+
     if (deadzone_ >= 1)
     {
       ROS_WARN("joy_node: deadzone greater than 1 was requested. The semantics of deadzone have changed. It is now related to the range [-1:1] instead of [-32767:32767]. For now I am dividing your deadzone by 32767, but this behavior is deprecated so you need to update your launch file.");
       deadzone_ /= 32767;
     }
-    
+
     if (deadzone_ > 0.9)
     {
       ROS_WARN("joy_node: deadzone (%f) greater than 0.9, setting it to 0.9", deadzone_);
       deadzone_ = 0.9;
     }
-    
+
     if (deadzone_ < 0)
     {
       ROS_WARN("joy_node: deadzone_ (%f) less than 0, setting to 0.", deadzone_);
@@ -124,13 +124,13 @@ public:
       ROS_WARN("joy_node: autorepeat_rate (%f) less than 0, setting to 0.", autorepeat_rate_);
       autorepeat_rate_ = 0;
     }
-    
+
     if (coalesce_interval_ < 0)
     {
       ROS_WARN("joy_node: coalesce_interval (%f) less than 0, setting to 0.", coalesce_interval_);
       coalesce_interval_ = 0;
     }
-    
+
     // Parameter conversions
     double autorepeat_interval = 1 / autorepeat_rate_;
     double scale = -1. / (1. - deadzone_) / 32767.;
@@ -143,10 +143,10 @@ public:
     event_count_ = 0;
     pub_count_ = 0;
     lastDiagTime_ = ros::Time::now().toSec();
-    
+
     // Big while loop opens, publishes
     while (nh_.ok())
-    {                                      
+    {
       open_ = false;
       diagnostic_.force_update();
       bool first_fault = true;
@@ -177,25 +177,25 @@ public:
         sleep(1.0);
         diagnostic_.update();
       }
-      
+
       ROS_INFO("Opened joystick: %s. deadzone_: %f.", joy_dev_.c_str(), deadzone_);
       open_ = true;
       diagnostic_.force_update();
-      
+
       bool tv_set = false;
       bool publication_pending = false;
       tv.tv_sec = 1;
       tv.tv_usec = 0;
       sensor_msgs::Joy joy_msg; // Here because we want to reset it on device close.
-      while (nh_.ok()) 
+      while (nh_.ok())
       {
         ros::spinOnce();
-        
+
         bool publish_now = false;
         bool publish_soon = false;
         FD_ZERO(&set);
         FD_SET(joy_fd, &set);
-        
+
         //ROS_INFO("Select...");
         int select_out = select(joy_fd+1, &set, NULL, NULL, &tv);
         //ROS_INFO("Tick...");
@@ -207,12 +207,12 @@ public:
           continue;
           //				break; // Joystick is probably closed. Not sure if this case is useful.
         }
-        
+
         if (FD_ISSET(joy_fd, &set))
         {
           if (read(joy_fd, &event, sizeof(js_event)) == -1 && errno != EAGAIN)
             break; // Joystick is probably closed. Definitely occurs.
-          
+
           //ROS_INFO("Read data...");
           joy_msg.header.stamp = ros::Time().now();
           event_count_++;
@@ -256,7 +256,7 @@ public:
                 val = 0;
               joy_msg.axes[event.number] = val * scale;
             }
-            // Will wait a bit before sending to try to combine events. 				
+            // Will wait a bit before sending to try to combine events.
             publish_soon = true;
             break;
           default:
@@ -266,7 +266,7 @@ public:
         }
         else if (tv_set) // Assume that the timer has expired.
           publish_now = true;
-        
+
         if (publish_now)
         {
           // Assume that all the JS_EVENT_INIT messages have arrived already.
@@ -280,7 +280,7 @@ public:
           publish_soon = false;
           pub_count_++;
         }
-        
+
         // If an axis event occurred, start a timer to combine with other
         // events.
         if (!publication_pending && publish_soon)
@@ -291,34 +291,34 @@ public:
           tv_set = true;
           //ROS_INFO("Pub pending...");
         }
-        
+
         // If nothing is going on, start a timer to do autorepeat.
         if (!tv_set && autorepeat_rate_ > 0)
         {
           tv.tv_sec = trunc(autorepeat_interval);
-          tv.tv_usec = (autorepeat_interval - tv.tv_sec) * 1e6; 
+          tv.tv_usec = (autorepeat_interval - tv.tv_sec) * 1e6;
           tv_set = true;
           //ROS_INFO("Autorepeat pending... %i %i", tv.tv_sec, tv.tv_usec);
         }
-        
+
         if (!tv_set)
         {
           tv.tv_sec = 1;
           tv.tv_usec = 0;
         }
-	
+
         diagnostic_.update();
       } // End of joystick open loop.
-      
+
       close(joy_fd);
       ros::spinOnce();
       if (nh_.ok())
         ROS_ERROR("Connection to joystick device lost unexpectedly. Will reopen.");
     }
-    
+
   cleanup:
     ROS_INFO("joy_node shut down.");
-    
+
     return 0;
   }
 };
