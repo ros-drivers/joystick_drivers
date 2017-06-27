@@ -1,58 +1,57 @@
-Packages that need to be installed
+## Packages that need to be installed
 ----------------------------------
-joystick
-libusb-dev
-bluez-5.37
-Pairing instructions
+* joystick
+* libusb-dev
+* bluez-5.37
+* Pairing instructions
 --------------------
 
-1) If you can connect the joystick and the bluetooth dongle into the same
-computer.
+1. If you can connect the joystick and the bluetooth dongle into the same 
+   computer connect the joystick to the computer using a USB cable.
 
-Connect the joystick to the computer using a USB cable.
-
-Load the bluetooth dongle's MAC address into the ps3 joystick using:
+2. Load the bluetooth dongle's MAC address into the ps3 joystick using:
 ```
 sudo bash
 rosrun ps3joy sixpair
 ```
-2) If you cannot connect the joystick to the same computer as the dongle.
-
-Find out the bluetooth dongle's MAC address by running (on the computer
-that has the bluetooth dongle):
+  If you cannot connect the joystick to the same computer as the dongle,
+  find out the bluetooth dongle's MAC address by running (on the computer
+  that has the bluetooth dongle):
 ```
 hciconfig
 ```
-If this does not work, you may need to do
+  If this does not work, you may need to do
 ```
 sudo hciconfig hci0 up
 ```
-and retry
+  and retry
 ```
 hciconfig
 ```
-Plug the PS3 joystick into some other computer using a USB cable.
-
-Replace the joystick's mac address in the following command: 
+3. Plug the PS3 joystick into some other computer using a USB cable.
+   
+4. Replace the joystick's mac address in the following command: 
+```
 sudo rosrun ps3joy sixpair 01:23:45:67:89:ab
-
-Starting the PS3 joystick
+```
+## Starting the PS3 joystick
 -------------------------
-
+5. Run the following command
+```
 rosrun ps3joy ps3joy.py
-
-Open a new terminal and reboot bluez and run joy with: 
+```
+6. Open a new terminal and reboot bluez and run joy with: 
 ```
 sudo systemctl restart bluetooth 
 rosrun joy joy_node  
 ```
-Open a new terminal and echo the joy topic 
+7. Open a new terminal and echo the joy topic 
 ```
 rostopic echo joy
 ```
-This should make a joystick appear at /dev/input/js?
+8. This should make a joystick appear at /dev/input/js?
 
-You can check that it is working with
-jstest /dev/input/js?
-(replace ? with the name of your joystick)
+9. You can check that it is working with
+  jstest /dev/input/js?
+  (replace ? with the name of your joystick)
 
