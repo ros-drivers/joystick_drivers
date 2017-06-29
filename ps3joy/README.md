@@ -1,10 +1,12 @@
-## Packages that need to be installed
-----------------------------------
+# Playstation 3 Joystick Driver for ROS
+
+## Dependencies
+
 * joystick
 * libusb-dev
 * bluez-5.37
-* Pairing instructions
---------------------
+
+## Pairing instructions
 
 1. If you can connect the joystick and the bluetooth dongle into the same 
    computer connect the joystick to the computer using a USB cable.
@@ -34,8 +36,9 @@ hciconfig
 ```
 sudo rosrun ps3joy sixpair 01:23:45:67:89:ab
 ```
+
 ## Starting the PS3 joystick
--------------------------
+
 5. Run the following command
 ```
 rosrun ps3joy ps3joy.py
