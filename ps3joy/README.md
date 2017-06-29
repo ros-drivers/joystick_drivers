@@ -1,4 +1,13 @@
-# Playstation 3 Joystick Driver for ROS
+# PlayStation 3 Joystick Driver for ROS
+
+This package provides a driver for the PS3 (SIXAXIS or DUALSHOCK3) bluetooth joystick.
+
+This driver provides a more reliable connection, and provides access to the joystick's accelerometers and gyroscope. Linux's native support for the PS3 joystick does lacks this functionality.
+
+Additional documentation:
+
+ * [Testing Instructions](doc/testing.md)
+ * [Bluetooth Device Compatibility](doc/bluetooth_devices.md)
 
 ## Dependencies
 
@@ -58,3 +67,9 @@ rostopic echo joy
   jstest /dev/input/js?
   (replace ? with the name of your joystick)
 
+## Limitations
+
+This driver will not coexist with any other bluetooth device. In future releases, we plan to allow first non-HID and later any bluetooth device to coexist with this driver. The following devices do coexist:
+
+ * Non-HID devices using a userland driver, such as one written using pybluez.
+ * Keyboards or mice running in HID proxy mode, which appear to the kernel as USB devices.
