@@ -19,11 +19,11 @@ Setting master bd_addr to 00:15:83:ed:3f:21
 
 ## Running the ps3joy nodes ## 
 The package should consists of the following nodes:  
-*ps3joy.py 
-*ps3joy_node.py 
+* ps3joy.py 
+* ps3joy_node.py 
  
 
-Running ps3joy_node.py will** require** being root to run if the user does not have 
+Running ps3joy_node.py will **require** being root to run if the user does not have 
 permissions to the hardware. 
 
 Enter the following commands in the terminal:
@@ -132,8 +132,8 @@ Tell the ps3joy node which device is the ps3 joystick
 ``` 
 rosparam set joy_node/dev "dev/input/jsX"
 ``` 
-X would be the number you device listed is as.
-you can start the joy node 
+X would be the number your device was given.
+you can now start the joy node: 
 
 ``` 
 rosrun joy joy_node 
