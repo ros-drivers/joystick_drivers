@@ -1,6 +1,12 @@
 # Wiimote Nodes
 
-See http://wiki.ros.org/wiimote for details.
+Additional Documentation
+ * [Testing procedure](doc/testing.md)
+ 
+Tutorials
+ * [Teleop with Wiimote](doc/tutorials/teleop.md)
+
+See http://wiki.ros.org/wiimote for more.
 
 ## wiimote_node.py
 
