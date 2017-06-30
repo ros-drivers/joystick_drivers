@@ -153,7 +153,7 @@ class WIIState(object):
         
         # If this class knows about accelerometer calibration
         # data, correct the raw reading:
-        if self._accCalibrationZero is not None and self._accCalibrationOne is not None:
+        if self._accCalibrationZero is not None and self._accCalibrationOne is not None and np.linalg.norm(self._accCalibrationOne - self._accCalibrationZero) > 1E-5:
             self.acc = WIIReading((self.accRaw - self._accCalibrationZero) / (self._accCalibrationOne - self._accCalibrationZero), self.time)
         else:
             self.acc = WIIReading(self.accRaw, self.time)
