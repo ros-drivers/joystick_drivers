@@ -1,4 +1,4 @@
-<package>
+<package format="2">
   <name>ps3joy</name>
   <version>1.11.0</version>
   <license>BSD</license>
@@ -24,21 +24,13 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   
-  <build_depend>diagnostic_msgs</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>rosgraph</build_depend>
-  <build_depend>libusb-dev</build_depend>
-  <build_depend>joystick</build_depend>
-  <build_depend>bluez</build_depend>
-  <build_depend>python-bluez</build_depend>
+  <depend>diagnostic_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>rospy</depend>
+  <depend>rosgraph</depend>
+  <depend>libusb-dev</depend>
+  <depend>joystick</depend>
+  <depend>bluez</depend>
+  <depend>python-bluez</depend>
 
-  <run_depend>diagnostic_msgs</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>rospy</run_depend>
-  <run_depend>rosgraph</run_depend>
-  <run_depend>libusb-dev</run_depend>
-  <run_depend>joystick</run_depend>
-  <run_depend>bluez</run_depend>
-  <run_depend>python-bluez</run_depend>
 </package>

@@ -1,4 +1,4 @@
-<package>
+<package format="2">
   <name>joystick_drivers</name>
   <version>1.11.0</version>
   <license>BSD</license>
@@ -16,10 +16,10 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>joy</run_depend>
-  <run_depend>ps3joy</run_depend>  
-  <run_depend>spacenav_node</run_depend>  
-  <run_depend>wiimote</run_depend>  
+  <exec_depend>joy</exec_depend>
+  <exec_depend>ps3joy</exec_depend>  
+  <exec_depend>spacenav_node</exec_depend>  
+  <exec_depend>wiimote</exec_depend>  
 
   <export>
     <metapackage/>

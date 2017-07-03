@@ -1,4 +1,4 @@
-<package>
+<package format="2">
   <name>spacenav_node</name>
   <version>1.11.0</version>
   <license>BSD</license>
@@ -16,16 +16,11 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   
-  <build_depend>roscpp</build_depend> 
-  <build_depend>geometry_msgs</build_depend> 
-  <build_depend>sensor_msgs</build_depend> 
-  <build_depend>libspnav-dev</build_depend> 
-  <build_depend>libx11-dev</build_depend>
-
-  <run_depend>roscpp</run_depend> 
-  <run_depend>geometry_msgs</run_depend> 
-  <run_depend>sensor_msgs</run_depend> 
-  <run_depend>libspnav-dev</run_depend> 
-  <run_depend>libx11-dev</run_depend> 
-  <run_depend>spacenavd</run_depend> 
+  <depend>roscpp</depend> 
+  <depend>geometry_msgs</depend> 
+  <depend>sensor_msgs</depend> 
+  <depend>libspnav-dev</depend> 
+  <depend>libx11-dev</depend>
+  
+  <exec_depend>spacenavd</exec_depend> 
 </package>

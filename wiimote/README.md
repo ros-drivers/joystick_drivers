@@ -1,6 +1,11 @@
 # Wiimote Nodes
 
-See http://wiki.ros.org/wiimote for details.
+Additional Documentation
+ * [Testing procedure](doc/testing.md)
+ * [ROS Wiki](http://wiki.ros.org/wiimote)
+ 
+Tutorials
+ * [Teleop with Wiimote](doc/tutorials/teleop.md)
 
 ## wiimote_node.py
 
@@ -9,6 +14,11 @@ Original Python version of the wiimote node.
 ## wiimote_node
 
 The C++ implementation was designed with focus on reduced resource consumption.
+
+### Parameters
+
+* `bluetooth_addr` [str] - Bluetooth address for pairing. Default: `00:00:00:00:00:00` (first device)
+* `pair_timeout` [int] - Pair timeout in seconds. `-1` means never timeout. Default: `5`
 
 ### Differences from Python Implementation
 * Both "/wiimote/nunchuk" and "/wiimote/classic" topics are only published
