@@ -218,16 +218,12 @@ class WIIMote(object):
     self.setGyroCalibration([0,0,0])
 
     # Set nunchuk calibration to factory defaults.
-    # Unfortunately, if neither WiimotePlus nor nunchuk are attached
-    # we get two error msgs to the screen from the lowest cwiid levels.
-    # TODO: suppress those two error messages ('Wiimote read error' and
-    #       'Read error (nunchuk cal)'
-    rospy.loginfo("Checking presence of Nunchuk attachment ...ignore two possibly following error msgs.")
-    try:
-      (factoryZero, factoryOne) = self.getNunchukFactoryCalibrationSettings()
-      self.setNunchukAccelerometerCalibration(factoryZero, factoryOne)
-    except:
-      pass
+    if (self._wm.state['ext_type'] == cwiid.EXT_NUNCHUK):
+      try:
+        (factoryZero, factoryOne) = self.getNunchukFactoryCalibrationSettings()
+        self.setNunchukAccelerometerCalibration(factoryZero, factoryOne)
+      except:
+        pass
 
     time.sleep(0.2)
     self._wiiCallbackStack.push(self._steadyStateCallback)
