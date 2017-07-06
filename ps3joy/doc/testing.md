@@ -1,4 +1,4 @@
-# Testing procedures for the ps3joy package # 
+ # Testing procedures for the ps3joy package # 
 
 ## Pairing the ps3 controller via bluetooth ##
 If the controller is not paired to the bluetooth dongle connect 
