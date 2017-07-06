@@ -8,8 +8,7 @@ This node should work with any joystick that is supported by Linux.
 
 ## Published Topics
 
-* joy ([sensor_msgs/Joy](http://docs.ros.org/api/sensor_msgs/html/msg/Joy.html))
-   outputs the joystick state.
+* joy ([sensor_msgs/Joy](http://docs.ros.org/api/sensor_msgs/html/msg/Joy.html)): outputs the joystick state.
 
 ## Device Selection
 
@@ -40,14 +39,14 @@ Then the node can be started with the device name given in the list. For example
 
 ## Advanced Parameters
 
-~deadzone (double, default: 0.05)
-   Amount by which the joystick has to move before it is considered to be off-center. This parameter is specified relative to an axis normalized between -1 and 1. Thus, 0.1 means that the joystick has to move 10% of the way to the edge of an axis's range before that axis will output a non-zero value. Linux does its own deadzone processing, so in many cases this value can be set to zero.
+* ~deadzone (double, default: 0.05)
+  * Amount by which the joystick has to move before it is considered to be off-center. This parameter is specified relative to an axis normalized between -1 and 1. Thus, 0.1 means that the joystick has to move 10% of the way to the edge of an axis's range before that axis will output a non-zero value. Linux does its own deadzone processing, so in many cases this value can be set to zero.
 
-~autorepeat_rate (double, default: 0.0 (disabled))
-   Rate in Hz at which a joystick that has a non-changing state will resend the previously sent message.
+* ~autorepeat_rate (double, default: 0.0 (disabled))
+  * Rate in Hz at which a joystick that has a non-changing state will resend the previously sent message.
 
-~coalesce_interval (double, default: 0.001)
-   Axis events that are received within coalesce_interval (seconds) of each other are sent out in a single ROS message. Since the kernel sends each axis motion as a separate event, coalescing greatly reduces the rate at which messages are sent. This option can also be used to limit the rate of outgoing messages. Button events are always sent out immediately to avoid missing button presses.
+* ~coalesce_interval (double, default: 0.001)
+  * Axis events that are received within coalesce_interval (seconds) of each other are sent out in a single ROS message. Since the kernel sends each axis motion as a separate event, coalescing greatly reduces the rate at which messages are sent. This option can also be used to limit the rate of outgoing messages. Button events are always sent out immediately to avoid missing button presses.
 
 ## Further Information
 
