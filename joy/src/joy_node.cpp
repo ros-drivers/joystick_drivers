@@ -34,6 +34,8 @@
 #include <math.h>
 #include <linux/joystick.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <dirent.h>
 #include <diagnostic_updater/diagnostic_updater.h>
 #include "ros/ros.h"
 #include <sensor_msgs/Joy.h>
@@ -48,6 +50,7 @@ private:
   bool sticky_buttons_;
   bool default_trig_val_;
   std::string joy_dev_;
+  std::string joy_dev_name_;
   double deadzone_;
   double autorepeat_rate_;   // in Hz.  0 for no repeat.
   double coalesce_interval_; // Defaults to 100 Hz rate limit.
@@ -70,6 +73,7 @@ private:
     
     stat.add("topic", pub_.getTopic());
     stat.add("device", joy_dev_);
+    stat.add("device name", joy_dev_name_);
     stat.add("dead zone", deadzone_);
     stat.add("autorepeat rate (Hz)", autorepeat_rate_);
     stat.add("coalesce interval (s)", coalesce_interval_);
@@ -81,6 +85,57 @@ private:
     event_count_ = 0;
     pub_count_ = 0;
     lastDiagTime_ = now;
+  }
+
+  /*! \brief Returns the device path of the first joystick that matches joy_name.
+   *         If no match is found, an empty string is returned.
+   */
+  std::string get_dev_by_joy_name(const std::string& joy_name)
+  {
+    const char path[] = "/dev/input"; // no trailing / here
+    struct dirent *entry;
+    struct stat stat_buf;
+
+    DIR *dev_dir = opendir(path);
+    if (dev_dir == NULL)
+    {
+      ROS_ERROR("Couldn't open %s. Error %i: %s.", path, errno, strerror(errno));
+      return "";
+    }
+
+    while ((entry = readdir(dev_dir)) != NULL)
+    {
+      // filter entries
+      if (strncmp(entry->d_name, "js", 2) != 0) // skip device if it's not a joystick
+        continue;
+      std::string current_path = std::string(path) + "/" + entry->d_name;
+      if (stat(current_path.c_str(), &stat_buf) == -1)
+        continue;
+      if (!S_ISCHR(stat_buf.st_mode)) // input devices are character devices, skip other
+        continue;
+
+      // get joystick name
+      int joy_fd = open(current_path.c_str(), O_RDONLY);
+      if (joy_fd == -1)
+        continue;
+
+      char current_joy_name[128];
+      if (ioctl(joy_fd, JSIOCGNAME(sizeof(current_joy_name)), current_joy_name) < 0)
+        strncpy(current_joy_name, "Unknown", sizeof(current_joy_name));
+
+      close(joy_fd);
+
+      ROS_INFO("Found joystick: %s (%s).", current_joy_name, current_path.c_str());
+
+      if (strcmp(current_joy_name, joy_name.c_str()) == 0)
+      {
+          closedir(dev_dir);
+          return current_path;
+      }
+    }
+
+    closedir(dev_dir);
+    return "";
   }
   
 public:
@@ -97,13 +152,26 @@ public:
     ros::NodeHandle nh_param("~");
     pub_ = nh_.advertise<sensor_msgs::Joy>("joy", 1);
     nh_param.param<std::string>("dev", joy_dev_, "/dev/input/js0");
+    nh_param.param<std::string>("dev_name", joy_dev_name_, "");
     nh_param.param<double>("deadzone", deadzone_, 0.05);
     nh_param.param<double>("autorepeat_rate", autorepeat_rate_, 0);
     nh_param.param<double>("coalesce_interval", coalesce_interval_, 0.001);
     nh_param.param<bool>("default_trig_val",default_trig_val_,false);
     nh_param.param<bool>("sticky_buttons", sticky_buttons_, false);
-    
+
     // Checks on parameters
+    if (!joy_dev_name_.empty())
+    {
+        std::string joy_dev_path = get_dev_by_joy_name(joy_dev_name_);
+        if (joy_dev_path.empty())
+            ROS_ERROR("Couldn't find a joystick with name %s. Falling back to default device.", joy_dev_name_.c_str());
+        else
+        {
+            ROS_INFO("Using %s as joystick device.", joy_dev_path.c_str());
+            joy_dev_ = joy_dev_path;
+        }
+    }
+
     if (autorepeat_rate_ > 1 / coalesce_interval_)
       ROS_WARN("joy_node: autorepeat_rate (%f Hz) > 1/coalesce_interval (%f Hz) does not make sense. Timing behavior is not well defined.", autorepeat_rate_, 1/coalesce_interval_);
     
@@ -309,7 +377,7 @@ public:
 	  //ROS_INFO("Publish...");
 	  if (sticky_buttons_ == true) {
 	    // cycle through buttons
-	    for (int i = 0; i < joy_msg.buttons.size(); i++) {
+            for (size_t i = 0; i < joy_msg.buttons.size(); i++) {
 	      // change button state only on transition from 0 to 1
 	      if (joy_msg.buttons[i] == 1 && last_published_joy_msg.buttons[i] == 0) {
 		sticky_buttons_joy_msg.buttons[i] = sticky_buttons_joy_msg.buttons[i] ? 0 : 1;
@@ -324,7 +392,7 @@ public:
 	    sticky_buttons_joy_msg.header.stamp.nsec = joy_msg.header.stamp.nsec;
 	    sticky_buttons_joy_msg.header.stamp.sec  = joy_msg.header.stamp.sec;
 	    sticky_buttons_joy_msg.header.frame_id   = joy_msg.header.frame_id;
-	    for(int i=0; i < joy_msg.axes.size(); i++){
+            for(size_t i=0; i < joy_msg.axes.size(); i++){
 	      sticky_buttons_joy_msg.axes[i] = joy_msg.axes[i];
 	    }
 	    pub_.publish(sticky_buttons_joy_msg);
