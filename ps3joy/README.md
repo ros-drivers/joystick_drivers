@@ -68,10 +68,10 @@ rostopic echo joy
   (replace ? with the name of your joystick)
 
 ## Command-line Options 
-In an attempt to run either ps3joy.py or ps3joy_node.py, paramaters can be added to enable features.
+
+### ps3joy.py
    
 ```
-rosrun ps3joy ps3joy.py --help
 usage: ps3joy.py [--inactivity-timeout=<n>] [--no-disable-bluetoothd] [--redirect-output] [--continuous-output]=<f>
 <n>: inactivity timeout in seconds (saves battery life).
 <f>: file name to redirect output to.
