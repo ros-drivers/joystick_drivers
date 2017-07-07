@@ -6,6 +6,7 @@ This driver provides a more reliable connection, and provides access to the joys
 
 Additional documentation:
 
+ * [Troubleshooting](doc/troubleshooting.md)
  * [Testing Instructions](doc/testing.md)
  * [Bluetooth Device Compatibility](doc/bluetooth_devices.md)
 
