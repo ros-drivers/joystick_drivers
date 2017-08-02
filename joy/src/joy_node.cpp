@@ -148,6 +148,7 @@ public:
   Joystick() : nh_(), diagnostic_(), ff_fd_(-1)
   {}
 
+  bool update_feedback_;
   void set_feedback(const sensor_msgs::JoyFeedbackArray::ConstPtr& msg)
   {
     if (ff_fd_ == -1)
@@ -157,20 +158,20 @@ public:
     for (int i = 0; i < size; i++)
     {
       //process each feedback
-      if (msg->array[i].type == 1)//TYPE_RUMBLE
+      if (msg->array[i].type == 1 && ff_fd_ != -1)//TYPE_RUMBLE
       {
         //if id is zero, thats low freq, 1 is high
         joy_effect_.direction = 0;//down
         joy_effect_.type = FF_RUMBLE;
-		if (msg->array[i].id == 1)
+		if (msg->array[i].id == 0)
           joy_effect_.u.rumble.strong_magnitude = ((float)(1<<15))*msg->array[i].intensity;
         else  
           joy_effect_.u.rumble.weak_magnitude = ((float)(1<<15))*msg->array[i].intensity;
-        joy_effect_.replay.length = 100;
+
+        joy_effect_.replay.length = 1000;
         joy_effect_.replay.delay = 0;
 		
-        //upload the effect
-        int ret = ioctl(ff_fd_, EVIOCSFF, &joy_effect_);
+        update_feedback_ = true;
       }
     }
   }
@@ -186,7 +187,7 @@ public:
     pub_ = nh_.advertise<sensor_msgs::Joy>("joy", 1);
 	ros::Subscriber sub = nh_.subscribe("joy/set_feedback", 10, &Joystick::set_feedback, this);
     nh_param.param<std::string>("dev", joy_dev_, "/dev/input/js0");
-    nh_param.param<std::string>("dev_ff", joy_def_ff_, "/dev/input/event15");
+    nh_param.param<std::string>("dev_ff", joy_def_ff_, "/dev/input/event2");
     nh_param.param<std::string>("dev_name", joy_dev_name_, "");
     nh_param.param<double>("deadzone", deadzone_, 0.05);
     nh_param.param<double>("autorepeat_rate", autorepeat_rate_, 0);
@@ -287,29 +288,38 @@ public:
         diagnostic_.update();
       }
 
-      ff_fd_ = open(joy_def_ff_.c_str(), O_RDWR);
+      if (joy_def_ff_.length())
+      {
+        ff_fd_ = open(joy_def_ff_.c_str(), O_RDWR);
+
+        //check that the ff is supported on this device
+        int bits = 0;
+        ioctl(ff_fd_, EVIOCGBIT(0,4), &bits); 
+        if (bits & EV_FF == 0)
+          ROS_ERROR("Couldn't open joystick force feedback!");
 	
-      /* Set the gain of the device*/
-      int gain = 75;           /* between 0 and 100 */
-      struct input_event ie;      /* structure used to communicate with the driver */
+        /* Set the gain of the device*/
+        int gain = 100;           /* between 0 and 100 */
+        struct input_event ie;      /* structure used to communicate with the driver */
 
-      ie.type = EV_FF;
-      ie.code = FF_GAIN;
-      ie.value = 0xFFFFUL * gain / 100;
+        ie.type = EV_FF;
+        ie.code = FF_GAIN;
+        ie.value = 0xFFFFUL * gain / 100;
 
-      if (write(ff_fd_, &ie, sizeof(ie)) == -1)
-        perror("set gain");
+        if (write(ff_fd_, &ie, sizeof(ie)) == -1)
+          perror("set gain");
 
-      joy_effect_.id = -1;//0;
-      joy_effect_.direction = 0;//down
-      joy_effect_.type = FF_RUMBLE;
-      joy_effect_.u.rumble.strong_magnitude = 0;
-      joy_effect_.u.rumble.weak_magnitude = 0;
-      joy_effect_.replay.length = 100;
-      joy_effect_.replay.delay = 0;
+        joy_effect_.id = -1;//0;
+        joy_effect_.direction = 0;//down
+        joy_effect_.type = FF_RUMBLE;
+        joy_effect_.u.rumble.strong_magnitude = 0;
+        joy_effect_.u.rumble.weak_magnitude = 0;
+        joy_effect_.replay.length = 1000;
+        joy_effect_.replay.delay = 0;
 		
-      //upload the effect
-      int ret = ioctl(ff_fd_, EVIOCSFF, &joy_effect_);
+        //upload the effect
+        int ret = ioctl(ff_fd_, EVIOCSFF, &joy_effect_);
+      }
       
       ROS_INFO("Opened joystick: %s. deadzone_: %f.", joy_dev_.c_str(), deadzone_);
       open_ = true;
@@ -345,11 +355,22 @@ public:
         }
 
         //play the rumble effect (can probably do this at lower rate later)
-        struct input_event start;
-		start.type = EV_FF;
-		start.code = joy_effect_.id;
-		start.value = 3;
-		write(ff_fd_, (const void*) &start, sizeof(start));
+        if (ff_fd_ != -1)
+        {
+          struct input_event start;
+		  start.type = EV_FF;
+		  start.code = joy_effect_.id;
+		  start.value = 3;
+          if (write(ff_fd_, (const void*) &start, sizeof(start)) == -1)
+			break;//fd closed
+
+          //upload the effect
+          if (update_feedback_ == true)
+          {
+            int ret = ioctl(ff_fd_, EVIOCSFF, &joy_effect_);
+            update_feedback_ = false;
+          }
+        }
         
         if (FD_ISSET(joy_fd, &set))
         {
@@ -502,6 +523,7 @@ public:
         diagnostic_.update();
       } // End of joystick open loop.
       
+      close(ff_fd_);
       close(joy_fd);
       ros::spinOnce();
       if (nh_.ok())
