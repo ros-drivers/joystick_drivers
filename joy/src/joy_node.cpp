@@ -185,7 +185,7 @@ public:
     // Parameters
     ros::NodeHandle nh_param("~");
     pub_ = nh_.advertise<sensor_msgs::Joy>("joy", 1);
-	ros::Subscriber sub = nh_.subscribe("joy/set_feedback", 10, &Joystick::set_feedback, this);
+    ros::Subscriber sub = nh_.subscribe("joy/set_feedback", 10, &Joystick::set_feedback, this);
     nh_param.param<std::string>("dev", joy_dev_, "/dev/input/js0");
     nh_param.param<std::string>("dev_ff", joy_def_ff_, "/dev/input/by-id/usb-Sony_PLAYSTATION_R_3_Controller-event-joystick");
     nh_param.param<std::string>("dev_name", joy_dev_name_, "");
@@ -291,12 +291,6 @@ public:
       if (joy_def_ff_.length())
       {
         ff_fd_ = open(joy_def_ff_.c_str(), O_RDWR);
-
-        //check that the ff is supported on this device
-        //int bits = 0;
-        //ioctl(ff_fd_, EVIOCGBIT(0,4), &bits); 
-        //if (bits & EV_FF == 0)
-        //  ROS_ERROR("Couldn't open joystick force feedback!");
 	
         /* Set the gain of the device*/
         int gain = 100;           /* between 0 and 100 */
@@ -358,11 +352,11 @@ public:
         if (ff_fd_ != -1)
         {
           struct input_event start;
-		  start.type = EV_FF;
-		  start.code = joy_effect_.id;
-		  start.value = 3;
+          start.type = EV_FF;
+          start.code = joy_effect_.id;
+		      start.value = 3;
           if (write(ff_fd_, (const void*) &start, sizeof(start)) == -1)
-			break;//fd closed
+            break;//fd closed
 
           //upload the effect
           if (update_feedback_ == true)
