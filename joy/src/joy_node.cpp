@@ -163,7 +163,7 @@ public:
         //if id is zero, thats low freq, 1 is high
         joy_effect_.direction = 0;//down
         joy_effect_.type = FF_RUMBLE;
-		if (msg->array[i].id == 0)
+        if (msg->array[i].id == 0)
           joy_effect_.u.rumble.strong_magnitude = ((float)(1<<15))*msg->array[i].intensity;
         else  
           joy_effect_.u.rumble.weak_magnitude = ((float)(1<<15))*msg->array[i].intensity;
