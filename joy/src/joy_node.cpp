@@ -51,7 +51,8 @@ private:
   bool default_trig_val_;
   std::string joy_dev_;
   std::string joy_dev_name_;
-  std::string joy_dev_list[10];//list to store all xbox devices path
+  std::string joy_dev_list[10];// to store all xbox devices path
+  int joy_dev_count_; //to store xbox device
   double deadzone_;
   double autorepeat_rate_;   // in Hz.  0 for no repeat.
   double coalesce_interval_; // Defaults to 100 Hz rate limit.
@@ -105,16 +106,15 @@ private:
       return "";
     }
 
-	int i=0//to count joy device number
     while ((entry = readdir(dev_dir)) != NULL)
     {
       // filter entries
       //changed to compare path id cause this one is more unique
       if (strncmp(entry->d_name, "usb-©Microsoft_Xbox_360_Wireless_Receiver_for_Windows", 53) != 0) // skip device if it's not a joystick
         continue;
-      joy_dev_list[i]=std::string(path) + "/" + entry->d_name;
+      joy_dev_list[joy_dev_count_]=std::string(path) + "/" + entry->d_name;
       //std::cout<<"list_string"<<joy_dev_list[i]<<std::endl;
-      joy_list++;
+      joy_dev_count_++;
     }
     //to choose the shortest one cause this one is always right acoording to experiences
     std::string temp_joy_dev=joy_dev_list[0];
@@ -158,7 +158,7 @@ private:
   }
   
 public:
-  Joystick() : nh_(), diagnostic_(),joy_list(0)
+  Joystick() : nh_(), diagnostic_(),joy_dev_count_(0)
   {}
   
   ///\brief Opens joystick port, reads from port and publishes while node is active
