@@ -368,7 +368,10 @@ public:
           }
         }
         else if (tv_set) // Assume that the timer has expired.
+        {
+          joy_msg.header.stamp = ros::Time().now();
           publish_now = true;
+        }
 
         if (publish_now) {
           // Assume that all the JS_EVENT_INIT messages have arrived already.
