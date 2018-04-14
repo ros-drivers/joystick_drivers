@@ -2,10 +2,10 @@
  * teleop_pr2
  * Copyright (c) 2009, Willow Garage, Inc.
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -14,7 +14,7 @@
  *     * Neither the name of the <ORGANIZATION> nor the names of its
  *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -58,9 +58,9 @@ private:
   int pub_count_;
   ros::Publisher pub_;
   double lastDiagTime_;
-  
+
   diagnostic_updater::Updater diagnostic_;
-  
+
   ///\brief Publishes diagnostics and status
   void diagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat)
   {
@@ -70,7 +70,7 @@ private:
       stat.summary(0, "OK");
     else
       stat.summary(2, "Joystick not open.");
-    
+
     stat.add("topic", pub_.getTopic());
     stat.add("device", joy_dev_);
     stat.add("device name", joy_dev_name_);
@@ -137,11 +137,11 @@ private:
     closedir(dev_dir);
     return "";
   }
-  
+
 public:
   Joystick() : nh_(), diagnostic_()
   {}
-  
+
   ///\brief Opens joystick port, reads from port and publishes while node is active
   int main(int argc, char **argv)
   {
@@ -174,19 +174,19 @@ public:
 
     if (autorepeat_rate_ > 1 / coalesce_interval_)
       ROS_WARN("joy_node: autorepeat_rate (%f Hz) > 1/coalesce_interval (%f Hz) does not make sense. Timing behavior is not well defined.", autorepeat_rate_, 1/coalesce_interval_);
-    
+
     if (deadzone_ >= 1)
     {
       ROS_WARN("joy_node: deadzone greater than 1 was requested. The semantics of deadzone have changed. It is now related to the range [-1:1] instead of [-32767:32767]. For now I am dividing your deadzone by 32767, but this behavior is deprecated so you need to update your launch file.");
       deadzone_ /= 32767;
     }
-    
+
     if (deadzone_ > 0.9)
     {
       ROS_WARN("joy_node: deadzone (%f) greater than 0.9, setting it to 0.9", deadzone_);
       deadzone_ = 0.9;
     }
-    
+
     if (deadzone_ < 0)
     {
       ROS_WARN("joy_node: deadzone_ (%f) less than 0, setting to 0.", deadzone_);
@@ -198,13 +198,13 @@ public:
       ROS_WARN("joy_node: autorepeat_rate (%f) less than 0, setting to 0.", autorepeat_rate_);
       autorepeat_rate_ = 0;
     }
-    
+
     if (coalesce_interval_ < 0)
     {
       ROS_WARN("joy_node: coalesce_interval (%f) less than 0, setting to 0.", coalesce_interval_);
       coalesce_interval_ = 0;
     }
-    
+
     // Parameter conversions
     double autorepeat_interval = 1 / autorepeat_rate_;
     double scale = -1. / (1. - deadzone_) / 32767.;
@@ -217,10 +217,10 @@ public:
     event_count_ = 0;
     pub_count_ = 0;
     lastDiagTime_ = ros::Time::now().toSec();
-    
+
     // Big while loop opens, publishes
     while (nh_.ok())
-    {                                      
+    {
       open_ = false;
       diagnostic_.force_update();
       bool first_fault = true;
@@ -251,11 +251,11 @@ public:
         sleep(1.0);
         diagnostic_.update();
       }
-      
+
       ROS_INFO("Opened joystick: %s. deadzone_: %f.", joy_dev_.c_str(), deadzone_);
       open_ = true;
       diagnostic_.force_update();
-      
+
       bool tv_set = false;
       bool publication_pending = false;
       tv.tv_sec = 1;
@@ -264,15 +264,15 @@ public:
       double val; //Temporary variable to hold event values
       sensor_msgs::Joy last_published_joy_msg; // used for sticky buttons option
       sensor_msgs::Joy sticky_buttons_joy_msg; // used for sticky buttons option
-      while (nh_.ok()) 
+      while (nh_.ok())
       {
         ros::spinOnce();
-        
+
         bool publish_now = false;
         bool publish_soon = false;
         FD_ZERO(&set);
         FD_SET(joy_fd, &set);
-        
+
         //ROS_INFO("Select...");
         int select_out = select(joy_fd+1, &set, NULL, NULL, &tv);
         //ROS_INFO("Tick...");
@@ -284,12 +284,12 @@ public:
           continue;
           //break; // Joystick is probably closed. Not sure if this case is useful.
         }
-        
+
         if (FD_ISSET(joy_fd, &set))
         {
           if (read(joy_fd, &event, sizeof(js_event)) == -1 && errno != EAGAIN)
             break; // Joystick is probably closed. Definitely occurs.
-          
+
           //ROS_INFO("Read data...");
           joy_msg.header.stamp = ros::Time().now();
           event_count_++;
@@ -332,83 +332,83 @@ public:
                 sticky_buttons_joy_msg.axes[i] = 0.0;
               }
             }
-	    if(default_trig_val_){ 
-	      // Allows deadzone to be "smooth"
-	      if (val > unscaled_deadzone)
-		val -= unscaled_deadzone;
-	      else if (val < -unscaled_deadzone)
-		val += unscaled_deadzone;
-	      else
-		val = 0;
-	      joy_msg.axes[event.number] = val * scale;
-	      // Will wait a bit before sending to try to combine events. 				
-	      publish_soon = true;
-	      break;
-	    } 
-	    else 
-	    {
-	      if (!(event.type & JS_EVENT_INIT))
-	      {
-		val = event.value;
-		if(val > unscaled_deadzone)
-		  val -= unscaled_deadzone;
-		else if(val < -unscaled_deadzone)
-		  val += unscaled_deadzone;
-		else
-		  val=0;
-		joy_msg.axes[event.number]= val * scale;
-	      }
+            if(default_trig_val_){
+              // Allows deadzone to be "smooth"
+              if (val > unscaled_deadzone)
+                val -= unscaled_deadzone;
+              else if (val < -unscaled_deadzone)
+                val += unscaled_deadzone;
+              else
+                val = 0;
+              joy_msg.axes[event.number] = val * scale;
+              // Will wait a bit before sending to try to combine events.
+              publish_soon = true;
+              break;
+            }
+            else
+            {
+              if (!(event.type & JS_EVENT_INIT))
+              {
+                val = event.value;
+                if(val > unscaled_deadzone)
+                  val -= unscaled_deadzone;
+                else if(val < -unscaled_deadzone)
+                  val += unscaled_deadzone;
+                else
+                  val=0;
+                joy_msg.axes[event.number]= val * scale;
+              }
 
-	      publish_soon = true;
-	      break;
-	      default:
-	      ROS_WARN("joy_node: Unknown event type. Please file a ticket. time=%u, value=%d, type=%Xh, number=%d", event.time, event.value, event.type, event.number);
-	      break;
-	    }
-	  }
+              publish_soon = true;
+              break;
+              default:
+              ROS_WARN("joy_node: Unknown event type. Please file a ticket. time=%u, value=%d, type=%Xh, number=%d", event.time, event.value, event.type, event.number);
+              break;
+            }
+          }
         }
-	else if (tv_set) // Assume that the timer has expired.
-	  publish_now = true;
+        else if (tv_set) // Assume that the timer has expired.
+          publish_now = true;
 
-	if (publish_now) {
-	  // Assume that all the JS_EVENT_INIT messages have arrived already.
-	  // This should be the case as the kernel sends them along as soon as
-	  // the device opens.
-	  //ROS_INFO("Publish...");
-	  if (sticky_buttons_ == true) {
-	    // cycle through buttons
+        if (publish_now) {
+          // Assume that all the JS_EVENT_INIT messages have arrived already.
+          // This should be the case as the kernel sends them along as soon as
+          // the device opens.
+          //ROS_INFO("Publish...");
+          if (sticky_buttons_ == true) {
+            // cycle through buttons
             for (size_t i = 0; i < joy_msg.buttons.size(); i++) {
-	      // change button state only on transition from 0 to 1
-	      if (joy_msg.buttons[i] == 1 && last_published_joy_msg.buttons[i] == 0) {
-		sticky_buttons_joy_msg.buttons[i] = sticky_buttons_joy_msg.buttons[i] ? 0 : 1;
-	      } else {
-		// do not change the message sate
-		//sticky_buttons_joy_msg.buttons[i] = sticky_buttons_joy_msg.buttons[i] ? 0 : 1;
-	      }
-	    }
-	    // update last published message
-	    last_published_joy_msg = joy_msg;
-	    // fill rest of sticky_buttons_joy_msg (time stamps, axes, etc)
-	    sticky_buttons_joy_msg.header.stamp.nsec = joy_msg.header.stamp.nsec;
-	    sticky_buttons_joy_msg.header.stamp.sec  = joy_msg.header.stamp.sec;
-	    sticky_buttons_joy_msg.header.frame_id   = joy_msg.header.frame_id;
+              // change button state only on transition from 0 to 1
+              if (joy_msg.buttons[i] == 1 && last_published_joy_msg.buttons[i] == 0) {
+                sticky_buttons_joy_msg.buttons[i] = sticky_buttons_joy_msg.buttons[i] ? 0 : 1;
+              } else {
+                // do not change the message sate
+                //sticky_buttons_joy_msg.buttons[i] = sticky_buttons_joy_msg.buttons[i] ? 0 : 1;
+              }
+            }
+            // update last published message
+            last_published_joy_msg = joy_msg;
+            // fill rest of sticky_buttons_joy_msg (time stamps, axes, etc)
+            sticky_buttons_joy_msg.header.stamp.nsec = joy_msg.header.stamp.nsec;
+            sticky_buttons_joy_msg.header.stamp.sec  = joy_msg.header.stamp.sec;
+            sticky_buttons_joy_msg.header.frame_id   = joy_msg.header.frame_id;
             for(size_t i=0; i < joy_msg.axes.size(); i++){
-	      sticky_buttons_joy_msg.axes[i] = joy_msg.axes[i];
-	    }
-	    pub_.publish(sticky_buttons_joy_msg);
-	  } else {
-	    pub_.publish(joy_msg);
-	  }
+              sticky_buttons_joy_msg.axes[i] = joy_msg.axes[i];
+            }
+            pub_.publish(sticky_buttons_joy_msg);
+          } else {
+            pub_.publish(joy_msg);
+          }
 
-	  publish_now = false;
-	  tv_set = false;
-	  publication_pending = false;
-	  publish_soon = false;
-	  pub_count_++;
-	}
+          publish_now = false;
+          tv_set = false;
+          publication_pending = false;
+          publish_soon = false;
+          pub_count_++;
+        }
 
-	// If an axis event occurred, start a timer to combine with other
-	// events.
+        // If an axis event occurred, start a timer to combine with other
+        // events.
         if (!publication_pending && publish_soon)
         {
           tv.tv_sec = trunc(coalesce_interval_);
@@ -417,34 +417,34 @@ public:
           tv_set = true;
           //ROS_INFO("Pub pending...");
         }
-        
+
         // If nothing is going on, start a timer to do autorepeat.
         if (!tv_set && autorepeat_rate_ > 0)
         {
           tv.tv_sec = trunc(autorepeat_interval);
-          tv.tv_usec = (autorepeat_interval - tv.tv_sec) * 1e6; 
+          tv.tv_usec = (autorepeat_interval - tv.tv_sec) * 1e6;
           tv_set = true;
           //ROS_INFO("Autorepeat pending... %li %li", tv.tv_sec, tv.tv_usec);
         }
-        
+
         if (!tv_set)
         {
           tv.tv_sec = 1;
           tv.tv_usec = 0;
         }
-	
+
         diagnostic_.update();
       } // End of joystick open loop.
-      
+
       close(joy_fd);
       ros::spinOnce();
       if (nh_.ok())
         ROS_ERROR("Connection to joystick device lost unexpectedly. Will reopen.");
     }
-    
+
   cleanup:
     ROS_INFO("joy_node shut down.");
-    
+
     return 0;
   }
 };
