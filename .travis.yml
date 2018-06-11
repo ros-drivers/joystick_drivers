@@ -14,14 +14,14 @@ notifications:
       - jwhitley@autonomoustuff.com
 env:
   matrix:
-    - ROS_DISTRO="indigo" ROS_REPO=ros
-    - ROS_DISTRO="indigo" ROS_REPO=ros-shadow-fixed
+    - ROS_DISTRO="indigo" ROS_REPO=ros DOCKER_BASE_IMAGE=ros:indigo-ros-core
+    - ROS_DISTRO="indigo" ROS_REPO=ros-shadow-fixed DOCKER_BASE_IMAGE=ros:indigo-ros-core
     - ROS_DISTRO="indigo" PRERELEASE=true
-    - ROS_DISTRO="kinetic" ROS_REPO=ros
-    - ROS_DISTRO="kinetic" ROS_REPO=ros-shadow-fixed
+    - ROS_DISTRO="kinetic" ROS_REPO=ros DOCKER_BASE_IMAGE=ros:kinetic-ros-core
+    - ROS_DISTRO="kinetic" ROS_REPO=ros-shadow-fixed DOCKER_BASE_IMAGE=ros:kinetic-ros-core
     - ROS_DISTRO="kinetic" PRERELEASE=true
-    - ROS_DISTRO="lunar" ROS_REPO=ros
-    - ROS_DISTRO="lunar" ROS_REPO=ros-shadow-fixed
+    - ROS_DISTRO="lunar" ROS_REPO=ros DOCKER_BASE_IMAGE=ros:lunar-ros-core
+    - ROS_DISTRO="lunar" ROS_REPO=ros-shadow-fixed DOCKER_BASE_IMAGE=ros:lunar-ros-core
     - ROS_DISTRO="lunar" PRERELEASE=true
 matrix:
   allow_failures:
