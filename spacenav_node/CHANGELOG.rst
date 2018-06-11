@@ -2,6 +2,17 @@
 Changelog for package spacenav_node
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adding tested spacenav scaling
+* Added README
+* Addressed numerous outstanding PRs.
+* Changed package xml to format 2
+* Reduce the number of scale params in spacenav_node
+* Add a scale parameter to each axis in spacenav_node
+  Do not apply the scale to the joy topic.
+* Contributors: Gaël Ecorchard, Jonathan Bohren, jprod123
+
 1.11.0 (2017-02-10)
 -------------------
 * Update dependencies to remove warnings

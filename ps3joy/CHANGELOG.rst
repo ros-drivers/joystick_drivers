@@ -2,6 +2,20 @@
 Changelog for package ps3joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Addressed numerous outstanding PRs.
+* Created bluetooth_devices.md
+* Created testing guide for ps3joy.
+* Create procedure_test.md
+* Let ps3joy_node not quit on inactivity-timeout.
+* Refine diagnostics message usage in ps3joy_node
+* Improve ps3joy_node with rospy.init_node and .is_shutdown
+* Remove quit on failed root level check, part one of issue `#53 <https://github.com/ros-drivers/joystick_drivers/issues/53>`_
+* Create README
+* Changed package xml to format 2
+* Contributors: Alenso Labady, Felix Kolbe, Jonathan Bohren, alab288, jprod123
+
 1.11.0 (2017-02-10)
 -------------------
 * Update dependencies to remove warnings
