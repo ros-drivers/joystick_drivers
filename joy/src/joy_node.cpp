@@ -51,6 +51,8 @@ private:
   bool default_trig_val_;
   std::string joy_dev_;
   std::string joy_dev_name_;
+  std::string joy_dev_list[10];// to store all xbox devices path
+  int joy_dev_count_; //to store xbox device
   double deadzone_;
   double autorepeat_rate_;   // in Hz.  0 for no repeat.
   double coalesce_interval_; // Defaults to 100 Hz rate limit.
@@ -60,6 +62,7 @@ private:
   double lastDiagTime_;
   
   diagnostic_updater::Updater diagnostic_;
+  
   
   ///\brief Publishes diagnostics and status
   void diagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat)
@@ -92,7 +95,7 @@ private:
    */
   std::string get_dev_by_joy_name(const std::string& joy_name)
   {
-    const char path[] = "/dev/input"; // no trailing / here
+    const char path[] = "/dev/input/by-id"; // no trailing / here
     struct dirent *entry;
     struct stat stat_buf;
 
@@ -106,40 +109,56 @@ private:
     while ((entry = readdir(dev_dir)) != NULL)
     {
       // filter entries
-      if (strncmp(entry->d_name, "js", 2) != 0) // skip device if it's not a joystick
+      //changed to compare path id cause this one is more unique
+      if (strncmp(entry->d_name, "usb-©Microsoft_Xbox_360_Wireless_Receiver_for_Windows", 53) != 0) // skip device if it's not a joystick
         continue;
-      std::string current_path = std::string(path) + "/" + entry->d_name;
-      if (stat(current_path.c_str(), &stat_buf) == -1)
-        continue;
-      if (!S_ISCHR(stat_buf.st_mode)) // input devices are character devices, skip other
-        continue;
-
-      // get joystick name
-      int joy_fd = open(current_path.c_str(), O_RDONLY);
-      if (joy_fd == -1)
-        continue;
-
-      char current_joy_name[128];
-      if (ioctl(joy_fd, JSIOCGNAME(sizeof(current_joy_name)), current_joy_name) < 0)
-        strncpy(current_joy_name, "Unknown", sizeof(current_joy_name));
-
-      close(joy_fd);
-
-      ROS_INFO("Found joystick: %s (%s).", current_joy_name, current_path.c_str());
-
-      if (strcmp(current_joy_name, joy_name.c_str()) == 0)
-      {
-          closedir(dev_dir);
-          return current_path;
-      }
+      joy_dev_list[joy_dev_count_]=std::string(path) + "/" + entry->d_name;
+      //std::cout<<"list_string"<<joy_dev_list[i]<<std::endl;
+      joy_dev_count_++;
     }
+    //to choose the shortest one cause this one is always right acoording to experiences
+    std::string temp_joy_dev=joy_dev_list[0];
+    for(int j=1;j<10;j++)
+    {
+        if(joy_dev_list[j].length()>=3)
+        {
+             if(joy_dev_list[j].length()<=temp_joy_dev.length())
+             {temp_joy_dev=joy_dev_list[j];}
+             //std::cout<<"joy="<<joy_dev_list[j]<<std::endl;
+        }
 
+    }
+    //std::cout<<"temp_joy_dev="<<temp_joy_dev<<std::endl;
+    std::string current_path=temp_joy_dev;
+    //std::string current_path = std::string(path) + "/" + entry->d_name;
+
+    if (stat(current_path.c_str(), &stat_buf) == -1)
+        return "";
+        //continue;
+    if (!S_ISCHR(stat_buf.st_mode)) //input devices are character devices, skip other
+        return "";
+      //continue;
+
+    // get joystick name
+    int joy_fd = open(current_path.c_str(), O_RDONLY);
+    if (joy_fd == -1)
+        return "";
+        //continue;
+
+    char current_joy_name[128];
+    if (ioctl(joy_fd, JSIOCGNAME(sizeof(current_joy_name)), current_joy_name) < 0)
+      strncpy(current_joy_name, "Unknown", sizeof(current_joy_name));
+
+    close(joy_fd);
+    //std::cout<<"current_joy_name"<<current_joy_name<<std::endl;
+    ROS_INFO("Found joystick: %s (%s).", current_joy_name, current_path.c_str());
     closedir(dev_dir);
-    return "";
+    return current_path;
+
   }
   
 public:
-  Joystick() : nh_(), diagnostic_()
+  Joystick() : nh_(), diagnostic_(),joy_dev_count_(0)
   {}
   
   ///\brief Opens joystick port, reads from port and publishes while node is active
@@ -152,7 +171,7 @@ public:
     ros::NodeHandle nh_param("~");
     pub_ = nh_.advertise<sensor_msgs::Joy>("joy", 1);
     nh_param.param<std::string>("dev", joy_dev_, "/dev/input/js0");
-    nh_param.param<std::string>("dev_name", joy_dev_name_, "");
+    nh_param.param<std::string>("dev_name", joy_dev_name_, "/js0");
     nh_param.param<double>("deadzone", deadzone_, 0.05);
     nh_param.param<double>("autorepeat_rate", autorepeat_rate_, 0);
     nh_param.param<double>("coalesce_interval", coalesce_interval_, 0.001);
@@ -252,7 +271,8 @@ public:
         diagnostic_.update();
       }
       
-      ROS_INFO("Opened joystick: %s. deadzone_: %f.", joy_dev_.c_str(), deadzone_);
+      //ROS_INFO("Opened joystick: %s. deadzone_: %f.", joy_dev_.c_str(), deadzone_);
+      std::cout<<"Opened joystick: "<<joy_dev_.c_str()<<std::endl;
       open_ = true;
       diagnostic_.force_update();
       
