@@ -2,8 +2,8 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.0 (2018-06-11)
+-------------------
 * Update timestamp when using autorepeat_rate
 * Added dev_name parameter to select joystick by name
 * Added Readme for joy package with description of new device name parameter

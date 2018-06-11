@@ -2,8 +2,8 @@
 Changelog for package joystick_drivers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.0 (2018-06-11)
+-------------------
 * Addressed numerous outstanding PRs.
 * Changed package xml to format 2
 * Contributors: Jonathan Bohren, jprod123

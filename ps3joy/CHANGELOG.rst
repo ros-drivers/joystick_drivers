@@ -2,8 +2,8 @@
 Changelog for package ps3joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.0 (2018-06-11)
+-------------------
 * Addressed numerous outstanding PRs.
 * Created bluetooth_devices.md
 * Created testing guide for ps3joy.

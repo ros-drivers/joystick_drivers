@@ -2,8 +2,8 @@
 Changelog for package wiimote
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.0 (2018-06-11)
+-------------------
 * Addressed numerous outstanding PRs.
 * Fixed issue when nunchuk wasn't connected
 * Update README.md
