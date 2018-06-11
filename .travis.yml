@@ -26,8 +26,8 @@ env:
 matrix:
   allow_failures:
     - env: ROS_DISTRO="indigo" PRERELEASE=true
-    - env: ROS_DISTRO="kinetic"  PRERELEASE=true
-    - env: ROS_DISTRO="lunar"  PRERELEASE=true
+    - env: ROS_DISTRO="kinetic" PRERELEASE=true
+    - env: ROS_DISTRO="lunar" PRERELEASE=true
 
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .industrial_ci
