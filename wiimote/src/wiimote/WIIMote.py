@@ -245,15 +245,15 @@ class WIIMote(object):
         # by the instantiator of this instance:
         if self.wiiStateLock is not None:
             self.wiiStateLock.acquire()
-	try:
-	  self.wiiMoteState = wiistate.WIIState(state, theTime, self.getRumble(), self._wm.state['buttons']);
-	except ValueError:
-	  # A 'Wiimote is closed' error can occur as a race condition
-	  # as threads close down after a Cnt-C. Catch those and
-	  # ignore:
-	  pass
-        if self.wiiStateLock is not None:
-            self.wiiStateLock.release()
+    try:
+        self.wiiMoteState = wiistate.WIIState(state, theTime, self.getRumble(), self._wm.state['buttons']);
+    except ValueError:
+        # A 'Wiimote is closed' error can occur as a race condition
+        # as threads close down after a Cnt-C. Catch those and
+        # ignore:
+        pass
+    if self.wiiStateLock is not None:
+        self.wiiStateLock.release()
         self._startTime = now
 
   #----------------------------------------

@@ -11,10 +11,24 @@
 # TODO: Catch wiimote being turned off.
 
 
-import WIIMote
-from wiimoteExceptions import *
-from wiiutils import *
-from wiistate import *
+from __future__ import absolute_import
+#!/usr/bin/python
+#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#
+#    WIIMote Run Tests
+#
+#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+# TODO: Don't duplicate cwiid constants in armConrolConstants.py
+# TODO: Offer exception if stdev is too high in IMU readings
+# TODO: Zeroing
+# TODO: Catch wiimote being turned off.
+
+
+from . import WIIMote
+from .wiimoteExceptions import *
+from .wiiutils import *
+from .wiistate import *
 import numpy as np 
 
 mySampleRate = 1
@@ -60,7 +74,7 @@ try:
   #********************
   
   #ac.integrate()
-except WiimoteError, e:
+except WiimoteError as e:
   report(e)
   exit()
 
