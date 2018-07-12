@@ -254,7 +254,7 @@ class WIIMote(object):
             pass
         if self.wiiStateLock is not None:
             self.wiiStateLock.release()
-            self._startTime = now
+        self._startTime = now
 
   #----------------------------------------
   # _calibrationCallback
