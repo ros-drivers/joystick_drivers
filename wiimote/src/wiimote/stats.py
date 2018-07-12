@@ -155,7 +155,6 @@ SUPPORT FUNCTIONS:  writecc
                     findwithin
 """
 from __future__ import print_function
-from __future__ import absolute_import
 ## CHANGE LOG:
 ## ===========
 ## 07-11.26 ... conversion for numpy started
@@ -224,7 +223,7 @@ from __future__ import absolute_import
 ##              changed name of skewness and askewness to skew and askew
 ##              fixed (a)histogram (which sometimes counted points <lowerlimit)
 
-from . import pstat               # required 3rd party module
+import pstat               # required 3rd party module
 import math, string, copy  # required python modules
 from types import *
 
