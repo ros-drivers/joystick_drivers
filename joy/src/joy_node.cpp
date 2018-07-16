@@ -291,6 +291,7 @@ public:
             break; // Joystick is probably closed. Definitely occurs.
 
           //ROS_INFO("Read data...");
+          joy_msg.header.stamp = ros::Time().now();
           event_count_++;
           switch(event.type)
           {
@@ -368,6 +369,7 @@ public:
         }
         else if (tv_set) // Assume that the timer has expired.
         {
+          joy_msg.header.stamp = ros::Time().now();
           publish_now = true;
         }
 
