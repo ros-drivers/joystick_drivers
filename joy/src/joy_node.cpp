@@ -400,6 +400,7 @@ public:
             }
             pub_.publish(sticky_buttons_joy_msg);
           } else {
+            joy_msg.header.stamp = ros::Time().now();
             pub_.publish(joy_msg);
           }
 
