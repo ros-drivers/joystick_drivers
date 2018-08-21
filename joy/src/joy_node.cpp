@@ -164,7 +164,9 @@ public:
     {
         std::string joy_dev_path = get_dev_by_joy_name(joy_dev_name_);
         if (joy_dev_path.empty())
+        {
             ROS_ERROR("Couldn't find a joystick with name %s. Falling back to default device.", joy_dev_name_.c_str());
+        }
         else
         {
             ROS_INFO("Using %s as joystick device.", joy_dev_path.c_str());
@@ -173,7 +175,9 @@ public:
     }
 
     if (autorepeat_rate_ > 1 / coalesce_interval_)
+    {
       ROS_WARN("joy_node: autorepeat_rate (%f Hz) > 1/coalesce_interval (%f Hz) does not make sense. Timing behavior is not well defined.", autorepeat_rate_, 1/coalesce_interval_);
+    }
 
     if (deadzone_ >= 1)
     {
@@ -443,7 +447,9 @@ public:
       close(joy_fd);
       ros::spinOnce();
       if (nh_.ok())
+      {
         ROS_ERROR("Connection to joystick device lost unexpectedly. Will reopen.");
+      }
     }
 
   cleanup:
