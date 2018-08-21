@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 ################################################################################
 #
 # File:         wiiutils.py
@@ -15,7 +17,7 @@
 
 import sys
 import time
-import wiimoteConstants as acConst
+from . import wiimoteConstants as acConst
 from math import sqrt
 import numpy as np
 import random
@@ -30,17 +32,17 @@ import random
 def report(str, debuglevel=acConst._DEBUGLEVEL):
   """For error reporting, controlled by debuglevel."""
   if debuglevel > 0:
-    print >> sys.stderr, str
+    print(str, file=sys.stderr)
   return
 
 def log(str, file=None):
     if acConst._MONITOR_LEVEL > 0:
-        print >> sys.stderr, str
+        print(str, file=sys.stderr)
         
 
 def promptUsr(str):
   """Prompting user."""
-  print >> sys.stderr, str
+  print(str, file=sys.stderr)
   return
 
 def getTimeStamp():
@@ -58,7 +60,7 @@ if __name__ == '__main__':
     test = (foo > bar).any() 
     
     
-    print repr(isGreater)
-    print isBad
-    print test
+    print(repr(isGreater))
+    print(isBad)
+    print(test)
 

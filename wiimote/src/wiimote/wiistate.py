@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 ################################################################################
 #
 # File:         wiistate.py
@@ -24,8 +25,8 @@
 #  Added calibration for nunchuk
 ################################################################################
 
-from wiimoteConstants import *
-from wiiutils import *
+from .wiimoteConstants import *
+from .wiiutils import *
 import numpy as np
 
 #----------------------------------------
@@ -87,7 +88,7 @@ class WIIState(object):
     """Unpack the given state, normalizing if normalizers are passed in."""
 
     self.time = theTime
-    self.ascTime = `theTime`
+    self.ascTime = repr(theTime)
     self.rumble = theRumble
     self.IRSources = [None, None, None, None]
     self.battery = None
@@ -370,17 +371,17 @@ class WIIState(object):
     # Accelerator:
     if self.acc is not None:
         res += 'Accelerator: (' + \
-               `self.acc[X]` + ',' + \
-               `self.acc[Y]` + ',' + \
-               `self.acc[Z]` + ')\n'
+               repr(self.acc[X]) + ',' + \
+               repr(self.acc[Y]) + ',' + \
+               repr(self.acc[Z]) + ')\n'
         
     # Gyro (angular rate):
 
     if self.angleRate is not None:
         res += 'Gyro (angular rate): (' + \
-               `self.angleRate[X]` + ',' + \
-               `self.angleRate[Y]` + ',' + \
-               `self.angleRate[Z]` + ')\n'
+               repr(self.angleRate[X]) + ',' + \
+               repr(self.angleRate[Y]) + ',' + \
+               repr(self.angleRate[Z]) + ')\n'
     
     # Rumble status:
 
@@ -456,7 +457,7 @@ class WIIReading(object):
 
   def __getitem__(self, key):
     if key not in (X,Y,Z):
-        raise AttributeError("Attempt to index into a 3-D measurement array with index " + `key` + ".")
+        raise AttributeError("Attempt to index into a 3-D measurement array with index " + repr(key) + ".")
     return self._measurement[key]
 
     def __str__(self):
@@ -525,7 +526,7 @@ class GyroReading():
 
   def __getitem__(self, key):
     if key not in (PHI,THETA,PSI):
-        raise AttributeError("Attempt to index into a 3-D measurement array with index " + `key` + ".")
+        raise AttributeError("Attempt to index into a 3-D measurement array with index " + repr(key) + ".")
     return self._measurement[key]
 
   def __str__(self):
