@@ -66,6 +66,8 @@ public:
   int unpairWiimote();
 
   void publish();
+  void checkConnection();
+  void timerCallback(const ros::TimerEvent&);
 
   void setLedState(uint8_t led_state);
   void setRumbleState(uint8_t rumble);
