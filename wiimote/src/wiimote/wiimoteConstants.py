@@ -149,8 +149,8 @@ EARTH_GRAVITY = 9.80665             # m/sec^2
 #    - Rotate the chair at approximately constant speed
 #      for 10 seconds. This resulted in 6 chair revolutions
 #    - On average, the Wiimote gyro read 3570 during this
-#      experiment. 
-#    - Speed of chair revolving: 
+#      experiment.
+#    - Speed of chair revolving:
 #         * One full circle is: 2#pi radians
 #         * Six revolutions = 12pi radians. ==> 12pi rad in 10 sec ==> 1.2pi rad/sec
 #         * => 3570 == 1.2pi
@@ -178,12 +178,12 @@ WII_MSG_TYPE_UNKNOWN     = 9
 #define CWIID_IR_X_MAX        1024
 #define CWIID_IR_Y_MAX        768
 
-ACC_X_STDEV_THRESHOLD    = 1.0 
-ACC_Y_STDEV_THRESHOLD    = 1.0 
+ACC_X_STDEV_THRESHOLD    = 1.0
+ACC_Y_STDEV_THRESHOLD    = 1.0
 ACC_Z_STDEV_THRESHOLD    = 1.0
 
-GYRO_X_STDEV_THRESHOLD    = 50.0 
-GYRO_Y_STDEV_THRESHOLD    = 50.0 
+GYRO_X_STDEV_THRESHOLD    = 50.0
+GYRO_Y_STDEV_THRESHOLD    = 50.0
 GYRO_Z_STDEV_THRESHOLD    = 50.0
 
 THRESHOLDS_ARRAY = np.array([ACC_X_STDEV_THRESHOLD,
@@ -192,5 +192,3 @@ THRESHOLDS_ARRAY = np.array([ACC_X_STDEV_THRESHOLD,
                              GYRO_X_STDEV_THRESHOLD,
                              GYRO_Y_STDEV_THRESHOLD,
                              GYRO_Z_STDEV_THRESHOLD])
-
- 
