@@ -933,6 +933,15 @@ void WiimoteNode::setLedState(uint8_t led_state)
   }
 }
 
+void WiimoteNode::checkConnection()
+{
+  if (wiimote_c::cwiid_set_led(wiimote_, led_state_))
+  {
+    ROS_INFO("Connection to wiimote lost");
+    ros::shutdown();
+  }
+}
+
 void WiimoteNode::setRumbleState(uint8_t rumble)
 {
   if (wiimote_c::cwiid_set_rumble(wiimote_, rumble))
@@ -1599,7 +1608,9 @@ int main(int argc, char *argv[])
   }
 
   int pair_timeout;
+  double check_connection_interval;
   ros::param::param<int>("~pair_timeout", pair_timeout, 5);
+  ros::param::param<double>("~check_connection_interval", check_connection_interval, 0.0);
 
   if (fed_addr)
     ROS_INFO("* * * Pairing with %s", g_wiimote_node->getBluetoothAddr());
@@ -1622,8 +1633,15 @@ int main(int argc, char *argv[])
     ros::shutdown();
   }
 
-  ros::Rate loop_rate(10);  // 10Hz
+  ros::NodeHandle nh;
+  ros::Timer timer;
+  if (check_connection_interval > 0.0)
+  {
+    timer = nh.createTimer(ros::Duration(check_connection_interval),
+                           boost::bind(&WiimoteNode::checkConnection, g_wiimote_node));
+  }
 
+  ros::Rate loop_rate(10);  // 10Hz
   while (ros::ok())
   {
     g_wiimote_node->publish();
