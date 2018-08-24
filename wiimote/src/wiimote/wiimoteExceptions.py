@@ -10,36 +10,35 @@
 # Package:      N/A
 # Status:       Experimental (Do Not Distribute)
 #
-# 
+#
 #
 ################################################################################
 
 class WiimoteError(Exception):
-  """Mother of all Wiimote exceptions"""
+    """Mother of all Wiimote exceptions"""
 
-  errMsg = None
+    errMsg = None
 
-  def __init__(self, theErrMsg):
-    self.errMsg = theErrMsg
-  
-  def __str__(self):
-    return self.errMsg
+    def __init__(self, theErrMsg):
+        self.errMsg = theErrMsg
+
+    def __str__(self):
+        return self.errMsg
 
 
 class WiimoteNotFoundError(WiimoteError):
-  """Tried to pair but failed."""
+    """Tried to pair but failed."""
 
 
 class WiimoteEnableError(WiimoteError):
-  """Found wiimote, but couldn't enable it."""
+    """Found wiimote, but couldn't enable it."""
 
 
 class CallbackStackMultInstError(WiimoteError):
-  """Code attempted to create a second callback stack instance."""
+    """Code attempted to create a second callback stack instance."""
 
 class ResumeNonPausedError(WiimoteError):
-  """Code attempted to resume callbacks without first pausing."""
+    """Code attempted to resume callbacks without first pausing."""
 
 class CallbackStackEmptyError(WiimoteError):
-  """Attemp to operate on an empty callback stack."""
-  
+    """Attemp to operate on an empty callback stack."""

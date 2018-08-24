@@ -38,7 +38,7 @@ import select
 import fcntl
 import os
 import time
-import sys                    
+import sys
 import traceback
 import threading
 import ps3joy
@@ -66,7 +66,7 @@ class driversim(threading.Thread):
 
     def shutdown(self):
         self.cm.shutdown = True
-                    
+
 class joysim(threading.Thread):
     def __init__(self, intr, ctrl):
         threading.Thread.__init__(self)
@@ -119,10 +119,10 @@ class joysim(threading.Thread):
 
 if __name__ == "__main__":
     def stop_all_threads(a, b):
-      #ds.shutdown()
-      #js.shutdown = True
-      #shutdown = True
-      exit(0)
+        #ds.shutdown()
+        #js.shutdown = True
+        #shutdown = True
+        exit(0)
 
     signal.signal(signal.SIGINT, stop_all_threads)
 
@@ -131,10 +131,10 @@ if __name__ == "__main__":
     (ctrl_in, ctrl_port) = mk_in_socket()
 
     ds = driversim(intr_in, ctrl_in)
-   
+
     # Give the simulator a chance to get going
     time.sleep(2)
-    
+
     # Call up the simulator telling it which ports to connect to.
     js = joysim(intr_port, ctrl_port)
     buttons1 = [True] * 16
@@ -158,5 +158,5 @@ if __name__ == "__main__":
         time.sleep(0.01)
        # js.publishstate(axes3, buttons3)
        # time.sleep(0.01)
-    
+
     print("main exiting")

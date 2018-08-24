@@ -6,10 +6,10 @@
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,7 +20,7 @@
 #
 # Comments and/or additions are welcome (send e-mail to:
 # strang@nmr.mgh.harvard.edu).
-# 
+#
 """
 pstat.py module
 
@@ -43,7 +43,7 @@ functions include:
       linexand (listoflists,columnlist,valuelist)
       linexor (listoflists,columnlist,valuelist)
       linedelimited (inlist,delimiter)
-      lineincols (inlist,colsize) 
+      lineincols (inlist,colsize)
       lineincustcols (inlist,colsizes)
       list2string (inlist)
       makelol(inlist)
@@ -101,7 +101,7 @@ from __future__ import print_function
 ## 12/05/98 ... updated doc-strings
 ##              added features to collapse() function
 ##              added flat() function for lists
-##              fixed a broken asortrows() 
+##              fixed a broken asortrows()
 ## 11/16/98 ... fixed minor bug in aput for 1D arrays
 ##
 ## 11/08/98 ... fixed aput to output large arrays correctly
@@ -230,7 +230,7 @@ Returns: a list-of-lists corresponding to the columns from listoflists
 
 
 def collapse (listoflists,keepcols,collapsecols,fcn1=None,fcn2=None,cfcn=None):
-     """
+    """
 Averages data in collapsecol, keeping all unique items in keepcols
 (using unique, which keeps unique LISTS of column numbers), retaining the
 unique sets of values in keepcols, the mean for each.  Setting fcn1
@@ -242,69 +242,69 @@ others could be passed).
 
 Usage:    collapse (listoflists,keepcols,collapsecols,fcn1=None,fcn2=None,cfcn=None)
 Returns: a list of lists with all unique permutations of entries appearing in
-     columns ("conditions") specified by keepcols, abutted with the result of
-     cfcn (if cfcn=None, defaults to the mean) of each column specified by
-     collapsecols.
+    columns ("conditions") specified by keepcols, abutted with the result of
+    cfcn (if cfcn=None, defaults to the mean) of each column specified by
+    collapsecols.
 """
-     def collmean (inlist):
-         s = 0
-         for item in inlist:
-             s = s + item
-         return s/float(len(inlist))
+    def collmean (inlist):
+        s = 0
+        for item in inlist:
+            s = s + item
+        return s/float(len(inlist))
 
-     if type(keepcols) not in [ListType,TupleType]:
-         keepcols = [keepcols]
-     if type(collapsecols) not in [ListType,TupleType]:
-         collapsecols = [collapsecols]
-     if cfcn == None:
-         cfcn = collmean
-     if keepcols == []:
-         means = [0]*len(collapsecols)
-         for i in range(len(collapsecols)):
-             avgcol = colex(listoflists,collapsecols[i])
-             means[i] = cfcn(avgcol)
-             if fcn1:
-                 try:
-                     test = fcn1(avgcol)
-                 except:
-                     test = 'N/A'
-                     means[i] = [means[i], test]
-             if fcn2:
-                 try:
-                     test = fcn2(avgcol)
-                 except:
-                     test = 'N/A'
-                 try:
-                     means[i] = means[i] + [len(avgcol)]
-                 except TypeError:
-                     means[i] = [means[i],len(avgcol)]
-         return means
-     else:
-         values = colex(listoflists,keepcols)
-         uniques = unique(values)
-         uniques.sort()
-         newlist = []
-         if type(keepcols) not in [ListType,TupleType]:  keepcols = [keepcols]
-         for item in uniques:
-             if type(item) not in [ListType,TupleType]:  item =[item]
-             tmprows = linexand(listoflists,keepcols,item)
-             for col in collapsecols:
-                 avgcol = colex(tmprows,col)
-                 item.append(cfcn(avgcol))
-                 if fcn1 != None:
-                     try:
-                         test = fcn1(avgcol)
-                     except:
-                         test = 'N/A'
-                     item.append(test)
-                 if fcn2 != None:
-                     try:
-                         test = fcn2(avgcol)
-                     except:
-                         test = 'N/A'
-                     item.append(test)
-                 newlist.append(item)
-         return newlist
+    if type(keepcols) not in [ListType,TupleType]:
+        keepcols = [keepcols]
+    if type(collapsecols) not in [ListType,TupleType]:
+        collapsecols = [collapsecols]
+    if cfcn == None:
+        cfcn = collmean
+    if keepcols == []:
+        means = [0]*len(collapsecols)
+        for i in range(len(collapsecols)):
+            avgcol = colex(listoflists,collapsecols[i])
+            means[i] = cfcn(avgcol)
+            if fcn1:
+                try:
+                    test = fcn1(avgcol)
+                except:
+                    test = 'N/A'
+                    means[i] = [means[i], test]
+            if fcn2:
+                try:
+                    test = fcn2(avgcol)
+                except:
+                    test = 'N/A'
+                try:
+                    means[i] = means[i] + [len(avgcol)]
+                except TypeError:
+                    means[i] = [means[i],len(avgcol)]
+        return means
+    else:
+        values = colex(listoflists,keepcols)
+        uniques = unique(values)
+        uniques.sort()
+        newlist = []
+        if type(keepcols) not in [ListType,TupleType]:  keepcols = [keepcols]
+        for item in uniques:
+            if type(item) not in [ListType,TupleType]:  item =[item]
+            tmprows = linexand(listoflists,keepcols,item)
+            for col in collapsecols:
+                avgcol = colex(tmprows,col)
+                item.append(cfcn(avgcol))
+                if fcn1 != None:
+                    try:
+                        test = fcn1(avgcol)
+                    except:
+                        test = 'N/A'
+                    item.append(test)
+                if fcn2 != None:
+                    try:
+                        test = fcn2(avgcol)
+                    except:
+                        test = 'N/A'
+                    item.append(test)
+                newlist.append(item)
+        return newlist
 
 
 def dm (listoflists,criterion):
@@ -610,7 +610,7 @@ def remap (listoflists,criterion):
     """
 Remaps values in a given column of a 2D list (listoflists).  This requires
 a criterion as a function of 'x' so that the result of the following is
-returned ... map(lambda x: 'criterion',listoflists).  
+returned ... map(lambda x: 'criterion',listoflists).
 
 Usage:   remap(listoflists,criterion)    criterion=string
 Returns: remapped version of listoflists
@@ -716,352 +716,352 @@ Usage:   nonrepeats (inlist)
 #===================   PSTAT ARRAY FUNCTIONS  =====================
 
 try:                         # DEFINE THESE *ONLY* IF numpy IS AVAILABLE
- import numpy as N
+    import numpy as N
 
- def aabut (source, *args):
+    def aabut (source, *args):
+        """
+    Like the |Stat abut command.  It concatenates two arrays column-wise
+    and returns the result.  CAUTION:  If one array is shorter, it will be
+    repeated until it is as long as the other.
+
+    Usage:   aabut (source, args)    where args=any # of arrays
+    Returns: an array as long as the LONGEST array past, source appearing on the
+             'left', arrays in <args> attached on the 'right'.
     """
-Like the |Stat abut command.  It concatenates two arrays column-wise
-and returns the result.  CAUTION:  If one array is shorter, it will be
-repeated until it is as long as the other.
-
-Usage:   aabut (source, args)    where args=any # of arrays
-Returns: an array as long as the LONGEST array past, source appearing on the
-         'left', arrays in <args> attached on the 'right'.
-"""
-    if len(source.shape)==1:
-        width = 1
-        source = N.resize(source,[source.shape[0],width])
-    else:
-        width = source.shape[1]
-    for addon in args:
-        if len(addon.shape)==1:
+        if len(source.shape)==1:
             width = 1
-            addon = N.resize(addon,[source.shape[0],width])
+            source = N.resize(source,[source.shape[0],width])
         else:
             width = source.shape[1]
-        if len(addon) < len(source):
-            addon = N.resize(addon,[source.shape[0],addon.shape[1]])
-        elif len(source) < len(addon):
-            source = N.resize(source,[addon.shape[0],source.shape[1]])
-        source = N.concatenate((source,addon),1)
-    return source
+        for addon in args:
+            if len(addon.shape)==1:
+                width = 1
+                addon = N.resize(addon,[source.shape[0],width])
+            else:
+                width = source.shape[1]
+            if len(addon) < len(source):
+                addon = N.resize(addon,[source.shape[0],addon.shape[1]])
+            elif len(source) < len(addon):
+                source = N.resize(source,[addon.shape[0],source.shape[1]])
+            source = N.concatenate((source,addon),1)
+        return source
 
 
- def acolex (a,indices,axis=1):
+    def acolex (a,indices,axis=1):
+        """
+    Extracts specified indices (a list) from passed array, along passed
+    axis (column extraction is default).  BEWARE: A 1D array is presumed to be a
+    column-array (and that the whole array will be returned as a column).
+
+    Usage:   acolex (a,indices,axis=1)
+    Returns: the columns of a specified by indices
     """
-Extracts specified indices (a list) from passed array, along passed
-axis (column extraction is default).  BEWARE: A 1D array is presumed to be a
-column-array (and that the whole array will be returned as a column).
-
-Usage:   acolex (a,indices,axis=1)
-Returns: the columns of a specified by indices
-"""
-    if type(indices) not in [ListType,TupleType,N.ndarray]:
-        indices = [indices]
-    if len(N.shape(a)) == 1:
-        cols = N.resize(a,[a.shape[0],1])
-    else:
-        cols = N.take(a,indices,axis)
-    return cols
+        if type(indices) not in [ListType,TupleType,N.ndarray]:
+            indices = [indices]
+        if len(N.shape(a)) == 1:
+            cols = N.resize(a,[a.shape[0],1])
+        else:
+            cols = N.take(a,indices,axis)
+        return cols
 
 
- def acollapse (a,keepcols,collapsecols,fcn1=None,fcn2=None,cfcn=None):
+    def acollapse (a,keepcols,collapsecols,fcn1=None,fcn2=None,cfcn=None):
+        """
+    Averages data in collapsecol, keeping all unique items in keepcols
+    (using unique, which keeps unique LISTS of column numbers), retaining
+    the unique sets of values in keepcols, the mean for each.  If stderror or
+    N of the mean are desired, set either or both parameters to 1.
+
+    Usage:   acollapse (a,keepcols,collapsecols,fcn1=None,fcn2=None,cfcn=None)
+    Returns: unique 'conditions' specified by the contents of columns specified
+             by keepcols, abutted with the mean(s) of column(s) specified by
+             collapsecols
     """
-Averages data in collapsecol, keeping all unique items in keepcols
-(using unique, which keeps unique LISTS of column numbers), retaining
-the unique sets of values in keepcols, the mean for each.  If stderror or
-N of the mean are desired, set either or both parameters to 1.
+        def acollmean (inarray):
+            return N.sum(N.ravel(inarray))
 
-Usage:   acollapse (a,keepcols,collapsecols,fcn1=None,fcn2=None,cfcn=None)
-Returns: unique 'conditions' specified by the contents of columns specified
-         by keepcols, abutted with the mean(s) of column(s) specified by
-         collapsecols
-"""
-    def acollmean (inarray):
-        return N.sum(N.ravel(inarray))
-
-    if type(keepcols) not in [ListType,TupleType,N.ndarray]:
-        keepcols = [keepcols]
-    if type(collapsecols) not in [ListType,TupleType,N.ndarray]:
-        collapsecols = [collapsecols]
-
-    if cfcn == None:
-        cfcn = acollmean
-    if keepcols == []:
-        avgcol = acolex(a,collapsecols)
-        means = N.sum(avgcol)/float(len(avgcol))
-        if fcn1!=None:
-            try:
-                test = fcn1(avgcol)
-            except:
-                test = N.array(['N/A']*len(means))
-            means = aabut(means,test)
-        if fcn2!=None:
-            try:
-                test = fcn2(avgcol)
-            except:
-                test = N.array(['N/A']*len(means))
-            means = aabut(means,test)
-        return means
-    else:
         if type(keepcols) not in [ListType,TupleType,N.ndarray]:
             keepcols = [keepcols]
-        values = colex(a,keepcols)   # so that "item" can be appended (below)
-        uniques = unique(values)  # get a LIST, so .sort keeps rows intact
-        uniques.sort()
-        newlist = []
-        for item in uniques:
-            if type(item) not in [ListType,TupleType,N.ndarray]:
-                item =[item]
-            tmprows = alinexand(a,keepcols,item)
-            for col in collapsecols:
-                avgcol = acolex(tmprows,col)
-                item.append(acollmean(avgcol))
-                if fcn1!=None:
-                    try:
-                        test = fcn1(avgcol)
-                    except:
-                        test = 'N/A'
-                    item.append(test)
-                if fcn2!=None:
-                    try:
-                        test = fcn2(avgcol)
-                    except:
-                        test = 'N/A'
-                    item.append(test)
-                newlist.append(item)
-        try:
-            new_a = N.array(newlist)
-        except TypeError:
-            new_a = N.array(newlist,'O')
-        return new_a
+        if type(collapsecols) not in [ListType,TupleType,N.ndarray]:
+            collapsecols = [collapsecols]
 
-
- def adm (a,criterion):
-    """
-Returns rows from the passed list of lists that meet the criteria in
-the passed criterion expression (a string as a function of x).
-
-Usage:   adm (a,criterion)   where criterion is like 'x[2]==37'
-"""
-    function = 'filter(lambda x: '+criterion+',a)'
-    lines = eval(function)
-    try:
-        lines = N.array(lines)
-    except:
-        lines = N.array(lines,dtype='O')
-    return lines
-
-
- def isstring(x):
-    if type(x)==StringType:
-        return 1
-    else:
-        return 0
-
-
- def alinexand (a,columnlist,valuelist):
-    """
-Returns the rows of an array where col (from columnlist) = val
-(from valuelist).  One value is required for each column in columnlist.
-
-Usage:   alinexand (a,columnlist,valuelist)
-Returns: the rows of a where columnlist[i]=valuelist[i] for ALL i
-"""
-    if type(columnlist) not in [ListType,TupleType,N.ndarray]:
-        columnlist = [columnlist]
-    if type(valuelist) not in [ListType,TupleType,N.ndarray]:
-        valuelist = [valuelist]
-    criterion = ''
-    for i in range(len(columnlist)):
-        if type(valuelist[i])==StringType:
-            critval = '\'' + valuelist[i] + '\''
-        else:
-            critval = str(valuelist[i])
-        criterion = criterion + ' x['+str(columnlist[i])+']=='+critval+' and'
-    criterion = criterion[0:-3]         # remove the "and" after the last crit
-    return adm(a,criterion)
-
-
- def alinexor (a,columnlist,valuelist):
-    """
-Returns the rows of an array where col (from columnlist) = val (from
-valuelist).  One value is required for each column in columnlist.
-The exception is if either columnlist or valuelist has only 1 value,
-in which case that item will be expanded to match the length of the
-other list.
-
-Usage:   alinexor (a,columnlist,valuelist)
-Returns: the rows of a where columnlist[i]=valuelist[i] for ANY i
-"""
-    if type(columnlist) not in [ListType,TupleType,N.ndarray]:
-        columnlist = [columnlist]
-    if type(valuelist) not in [ListType,TupleType,N.ndarray]:
-        valuelist = [valuelist]
-    criterion = ''
-    if len(columnlist) == 1 and len(valuelist) > 1:
-        columnlist = columnlist*len(valuelist)
-    elif len(valuelist) == 1 and len(columnlist) > 1:
-        valuelist = valuelist*len(columnlist)
-    for i in range(len(columnlist)):
-        if type(valuelist[i])==StringType:
-            critval = '\'' + valuelist[i] + '\''
-        else:
-            critval = str(valuelist[i])
-        criterion = criterion + ' x['+str(columnlist[i])+']=='+critval+' or'
-    criterion = criterion[0:-2]         # remove the "or" after the last crit
-    return adm(a,criterion)
-
-
- def areplace (a,oldval,newval):
-    """
-Replaces all occurrences of oldval with newval in array a.
-
-Usage:   areplace(a,oldval,newval)
-"""
-    return N.where(a==oldval,newval,a)
-
-
- def arecode (a,listmap,col='all'):
-    """
-Remaps the values in an array to a new set of values (useful when
-you need to recode data from (e.g.) strings to numbers as most stats
-packages require.  Can work on SINGLE columns, or 'all' columns at once.
-@@@BROKEN 2007-11-26
-
-Usage:   arecode (a,listmap,col='all')
-Returns: a version of array a where listmap[i][0] = (instead) listmap[i][1]
-"""
-    ashape = a.shape
-    if col == 'all':
-        work = a.ravel()
-    else:
-        work = acolex(a,col)
-        work = work.ravel()
-    for pair in listmap:
-        if type(pair[1]) == StringType or work.dtype.char=='O' or a.dtype.char=='O':
-            work = N.array(work,dtype='O')
-            a = N.array(a,dtype='O')
-            for i in range(len(work)):
-                if work[i]==pair[0]:
-                    work[i] = pair[1]
-            if col == 'all':
-                return N.reshape(work,ashape)
-            else:
-                return N.concatenate([a[:,0:col],work[:,N.newaxis],a[:,col+1:]],1)
-        else:   # must be a non-Object type array and replacement
-            work = N.where(work==pair[0],pair[1],work)
-            return N.concatenate([a[:,0:col],work[:,N.newaxis],a[:,col+1:]],1)
-
-
- def arowcompare(row1, row2):
-    """
-Compares two rows from an array, regardless of whether it is an
-array of numbers or of python objects (which requires the cmp function).
-@@@PURPOSE? 2007-11-26
-
-Usage:   arowcompare(row1,row2)
-Returns: an array of equal length containing 1s where the two rows had
-         identical elements and 0 otherwise
-"""
-    return 
-    if row1.dtype.char=='O' or row2.dtype=='O':
-        cmpvect = N.logical_not(abs(N.array(map(cmp,row1,row2)))) # cmp fcn gives -1,0,1
-    else:
-        cmpvect = N.equal(row1,row2)
-    return cmpvect
-
-
- def arowsame(row1, row2):
-    """
-Compares two rows from an array, regardless of whether it is an
-array of numbers or of python objects (which requires the cmp function).
-
-Usage:   arowsame(row1,row2)
-Returns: 1 if the two rows are identical, 0 otherwise.
-"""
-    cmpval = N.alltrue(arowcompare(row1,row2))
-    return cmpval
-
-
- def asortrows(a,axis=0):
-    """
-Sorts an array "by rows".  This differs from the Numeric.sort() function,
-which sorts elements WITHIN the given axis.  Instead, this function keeps
-the elements along the given axis intact, but shifts them 'up or down'
-relative to one another.
-
-Usage:   asortrows(a,axis=0)
-Returns: sorted version of a
-"""
-    return N.sort(a,axis=axis,kind='mergesort')
-
-
- def aunique(inarray):
-    """
-Returns unique items in the FIRST dimension of the passed array. Only
-works on arrays NOT including string items.
-
-Usage:   aunique (inarray)
-"""
-    uniques = N.array([inarray[0]])
-    if len(uniques.shape) == 1:            # IF IT'S A 1D ARRAY
-        for item in inarray[1:]:
-            if N.add.reduce(N.equal(uniques,item).ravel()) == 0:
+        if cfcn == None:
+            cfcn = acollmean
+        if keepcols == []:
+            avgcol = acolex(a,collapsecols)
+            means = N.sum(avgcol)/float(len(avgcol))
+            if fcn1!=None:
                 try:
-                    uniques = N.concatenate([uniques,N.array[N.newaxis,:]])
-                except TypeError:
-                    uniques = N.concatenate([uniques,N.array([item])])
-    else:                                  # IT MUST BE A 2+D ARRAY
-        if inarray.dtype.char != 'O':  # not an Object array
-            for item in inarray[1:]:
-                if not N.sum(N.alltrue(N.equal(uniques,item),1)):
-                    try:
-                        uniques = N.concatenate( [uniques,item[N.newaxis,:]] )
-                    except TypeError:    # the item to add isn't a list
-                        uniques = N.concatenate([uniques,N.array([item])])
-                else:
-                    pass  # this item is already in the uniques array
-        else:   # must be an Object array, alltrue/equal functions don't work
-            for item in inarray[1:]:
-                newflag = 1
-                for unq in uniques:  # NOTE: cmp --> 0=same, -1=<, 1=>
-                    test = N.sum(abs(N.array(map(cmp,item,unq))))
-                    if test == 0:   # if item identical to any 1 row in uniques
-                        newflag = 0 # then not a novel item to add
-                        break
-                if newflag == 1:
-                    try:
-                        uniques = N.concatenate( [uniques,item[N.newaxis,:]] )
-                    except TypeError:    # the item to add isn't a list
-                        uniques = N.concatenate([uniques,N.array([item])])
-    return uniques
+                    test = fcn1(avgcol)
+                except:
+                    test = N.array(['N/A']*len(means))
+                means = aabut(means,test)
+            if fcn2!=None:
+                try:
+                    test = fcn2(avgcol)
+                except:
+                    test = N.array(['N/A']*len(means))
+                means = aabut(means,test)
+            return means
+        else:
+            if type(keepcols) not in [ListType,TupleType,N.ndarray]:
+                keepcols = [keepcols]
+            values = colex(a,keepcols)   # so that "item" can be appended (below)
+            uniques = unique(values)  # get a LIST, so .sort keeps rows intact
+            uniques.sort()
+            newlist = []
+            for item in uniques:
+                if type(item) not in [ListType,TupleType,N.ndarray]:
+                    item =[item]
+                tmprows = alinexand(a,keepcols,item)
+                for col in collapsecols:
+                    avgcol = acolex(tmprows,col)
+                    item.append(acollmean(avgcol))
+                    if fcn1!=None:
+                        try:
+                            test = fcn1(avgcol)
+                        except:
+                            test = 'N/A'
+                        item.append(test)
+                    if fcn2!=None:
+                        try:
+                            test = fcn2(avgcol)
+                        except:
+                            test = 'N/A'
+                        item.append(test)
+                    newlist.append(item)
+            try:
+                new_a = N.array(newlist)
+            except TypeError:
+                new_a = N.array(newlist,'O')
+            return new_a
 
 
- def aduplicates(inarray):
+    def adm (a,criterion):
+        """
+    Returns rows from the passed list of lists that meet the criteria in
+    the passed criterion expression (a string as a function of x).
+
+    Usage:   adm (a,criterion)   where criterion is like 'x[2]==37'
     """
-Returns duplicate items in the FIRST dimension of the passed array. Only
-works on arrays NOT including string items.
+        function = 'filter(lambda x: '+criterion+',a)'
+        lines = eval(function)
+        try:
+            lines = N.array(lines)
+        except:
+            lines = N.array(lines,dtype='O')
+        return lines
 
-Usage:   aunique (inarray)
-"""
-    inarray = N.array(inarray)
-    if len(inarray.shape) == 1:            # IF IT'S A 1D ARRAY
-        dups = []
-        inarray = inarray.tolist()
-        for i in range(len(inarray)):
-            if inarray[i] in inarray[i+1:]:
-                dups.append(inarray[i])
-        dups = aunique(dups)
-    else:                                  # IT MUST BE A 2+D ARRAY
-        dups = []
-        aslist = inarray.tolist()
-        for i in range(len(aslist)):
-            if aslist[i] in aslist[i+1:]:
-                dups.append(aslist[i])
-        dups = unique(dups)
-        dups = N.array(dups)
-    return dups
+
+    def isstring(x):
+        if type(x)==StringType:
+            return 1
+        else:
+            return 0
+
+
+    def alinexand (a,columnlist,valuelist):
+        """
+    Returns the rows of an array where col (from columnlist) = val
+    (from valuelist).  One value is required for each column in columnlist.
+
+    Usage:   alinexand (a,columnlist,valuelist)
+    Returns: the rows of a where columnlist[i]=valuelist[i] for ALL i
+    """
+        if type(columnlist) not in [ListType,TupleType,N.ndarray]:
+            columnlist = [columnlist]
+        if type(valuelist) not in [ListType,TupleType,N.ndarray]:
+            valuelist = [valuelist]
+        criterion = ''
+        for i in range(len(columnlist)):
+            if type(valuelist[i])==StringType:
+                critval = '\'' + valuelist[i] + '\''
+            else:
+                critval = str(valuelist[i])
+            criterion = criterion + ' x['+str(columnlist[i])+']=='+critval+' and'
+        criterion = criterion[0:-3]         # remove the "and" after the last crit
+        return adm(a,criterion)
+
+
+    def alinexor (a,columnlist,valuelist):
+        """
+    Returns the rows of an array where col (from columnlist) = val (from
+    valuelist).  One value is required for each column in columnlist.
+    The exception is if either columnlist or valuelist has only 1 value,
+    in which case that item will be expanded to match the length of the
+    other list.
+
+    Usage:   alinexor (a,columnlist,valuelist)
+    Returns: the rows of a where columnlist[i]=valuelist[i] for ANY i
+    """
+        if type(columnlist) not in [ListType,TupleType,N.ndarray]:
+            columnlist = [columnlist]
+        if type(valuelist) not in [ListType,TupleType,N.ndarray]:
+            valuelist = [valuelist]
+        criterion = ''
+        if len(columnlist) == 1 and len(valuelist) > 1:
+            columnlist = columnlist*len(valuelist)
+        elif len(valuelist) == 1 and len(columnlist) > 1:
+            valuelist = valuelist*len(columnlist)
+        for i in range(len(columnlist)):
+            if type(valuelist[i])==StringType:
+                critval = '\'' + valuelist[i] + '\''
+            else:
+                critval = str(valuelist[i])
+            criterion = criterion + ' x['+str(columnlist[i])+']=='+critval+' or'
+        criterion = criterion[0:-2]         # remove the "or" after the last crit
+        return adm(a,criterion)
+
+
+    def areplace (a,oldval,newval):
+        """
+    Replaces all occurrences of oldval with newval in array a.
+
+    Usage:   areplace(a,oldval,newval)
+    """
+        return N.where(a==oldval,newval,a)
+
+
+    def arecode (a,listmap,col='all'):
+        """
+    Remaps the values in an array to a new set of values (useful when
+    you need to recode data from (e.g.) strings to numbers as most stats
+    packages require.  Can work on SINGLE columns, or 'all' columns at once.
+    @@@BROKEN 2007-11-26
+
+    Usage:   arecode (a,listmap,col='all')
+    Returns: a version of array a where listmap[i][0] = (instead) listmap[i][1]
+    """
+        ashape = a.shape
+        if col == 'all':
+            work = a.ravel()
+        else:
+            work = acolex(a,col)
+            work = work.ravel()
+        for pair in listmap:
+            if type(pair[1]) == StringType or work.dtype.char=='O' or a.dtype.char=='O':
+                work = N.array(work,dtype='O')
+                a = N.array(a,dtype='O')
+                for i in range(len(work)):
+                    if work[i]==pair[0]:
+                        work[i] = pair[1]
+                if col == 'all':
+                    return N.reshape(work,ashape)
+                else:
+                    return N.concatenate([a[:,0:col],work[:,N.newaxis],a[:,col+1:]],1)
+            else:   # must be a non-Object type array and replacement
+                work = N.where(work==pair[0],pair[1],work)
+                return N.concatenate([a[:,0:col],work[:,N.newaxis],a[:,col+1:]],1)
+
+
+    def arowcompare(row1, row2):
+        """
+    Compares two rows from an array, regardless of whether it is an
+    array of numbers or of python objects (which requires the cmp function).
+    @@@PURPOSE? 2007-11-26
+
+    Usage:   arowcompare(row1,row2)
+    Returns: an array of equal length containing 1s where the two rows had
+             identical elements and 0 otherwise
+    """
+        return
+        if row1.dtype.char=='O' or row2.dtype=='O':
+            cmpvect = N.logical_not(abs(N.array(map(cmp,row1,row2)))) # cmp fcn gives -1,0,1
+        else:
+            cmpvect = N.equal(row1,row2)
+        return cmpvect
+
+
+    def arowsame(row1, row2):
+        """
+    Compares two rows from an array, regardless of whether it is an
+    array of numbers or of python objects (which requires the cmp function).
+
+    Usage:   arowsame(row1,row2)
+    Returns: 1 if the two rows are identical, 0 otherwise.
+    """
+        cmpval = N.alltrue(arowcompare(row1,row2))
+        return cmpval
+
+
+    def asortrows(a,axis=0):
+        """
+    Sorts an array "by rows".  This differs from the Numeric.sort() function,
+    which sorts elements WITHIN the given axis.  Instead, this function keeps
+    the elements along the given axis intact, but shifts them 'up or down'
+    relative to one another.
+
+    Usage:   asortrows(a,axis=0)
+    Returns: sorted version of a
+    """
+        return N.sort(a,axis=axis,kind='mergesort')
+
+
+    def aunique(inarray):
+        """
+    Returns unique items in the FIRST dimension of the passed array. Only
+    works on arrays NOT including string items.
+
+    Usage:   aunique (inarray)
+    """
+        uniques = N.array([inarray[0]])
+        if len(uniques.shape) == 1:            # IF IT'S A 1D ARRAY
+            for item in inarray[1:]:
+                if N.add.reduce(N.equal(uniques,item).ravel()) == 0:
+                    try:
+                        uniques = N.concatenate([uniques,N.array[N.newaxis,:]])
+                    except TypeError:
+                        uniques = N.concatenate([uniques,N.array([item])])
+        else:                                  # IT MUST BE A 2+D ARRAY
+            if inarray.dtype.char != 'O':  # not an Object array
+                for item in inarray[1:]:
+                    if not N.sum(N.alltrue(N.equal(uniques,item),1)):
+                        try:
+                            uniques = N.concatenate( [uniques,item[N.newaxis,:]] )
+                        except TypeError:    # the item to add isn't a list
+                            uniques = N.concatenate([uniques,N.array([item])])
+                    else:
+                        pass  # this item is already in the uniques array
+            else:   # must be an Object array, alltrue/equal functions don't work
+                for item in inarray[1:]:
+                    newflag = 1
+                    for unq in uniques:  # NOTE: cmp --> 0=same, -1=<, 1=>
+                        test = N.sum(abs(N.array(map(cmp,item,unq))))
+                        if test == 0:   # if item identical to any 1 row in uniques
+                            newflag = 0 # then not a novel item to add
+                            break
+                    if newflag == 1:
+                        try:
+                            uniques = N.concatenate( [uniques,item[N.newaxis,:]] )
+                        except TypeError:    # the item to add isn't a list
+                            uniques = N.concatenate([uniques,N.array([item])])
+        return uniques
+
+
+    def aduplicates(inarray):
+        """
+    Returns duplicate items in the FIRST dimension of the passed array. Only
+    works on arrays NOT including string items.
+
+    Usage:   aunique (inarray)
+    """
+        inarray = N.array(inarray)
+        if len(inarray.shape) == 1:            # IF IT'S A 1D ARRAY
+            dups = []
+            inarray = inarray.tolist()
+            for i in range(len(inarray)):
+                if inarray[i] in inarray[i+1:]:
+                    dups.append(inarray[i])
+            dups = aunique(dups)
+        else:                                  # IT MUST BE A 2+D ARRAY
+            dups = []
+            aslist = inarray.tolist()
+            for i in range(len(aslist)):
+                if aslist[i] in aslist[i+1:]:
+                    dups.append(aslist[i])
+            dups = unique(dups)
+            dups = N.array(dups)
+        return dups
 
 except ImportError:    # IF NUMERIC ISN'T AVAILABLE, SKIP ALL arrayfuncs
- pass
+    pass
