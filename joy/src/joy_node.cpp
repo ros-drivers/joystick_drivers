@@ -151,12 +151,12 @@ private:
   // Enshore thate the values inside the deadzond is zero
   // Allso adapt the scale of val to be consistent whit deadzond
   void deadzone_aplyer(double* val, double* unscaled_deadzone){
-	if (*val > *unscaled_deadzone)
-   	  *val -= *unscaled_deadzone;
-  	else if (*val < -*unscaled_deadzone)
-   	  *val  += *unscaled_deadzone;
-  	else
-   	  *val = 0;
+    if (*val > *unscaled_deadzone)
+      *val -= *unscaled_deadzone;
+    else if (*val < -*unscaled_deadzone)
+      *val  += *unscaled_deadzone;
+    else
+      *val = 0;
   }
 
 
@@ -434,8 +434,8 @@ public:
             }
             if(default_trig_val_){
               // Aplye deadzone to val
-			  deadzone_aplyer(&val, &unscaled_deadzone);
-			  joy_msg.axes[event.number] = val * scale;
+	      deadzone_aplyer(&val, &unscaled_deadzone);
+	      joy_msg.axes[event.number] = val * scale;
               // Will wait a bit before sending to try to combine events.
               publish_soon = true;
               break;
@@ -444,10 +444,10 @@ public:
             {
               if (!(event.type & JS_EVENT_INIT))
               {
-				// Aplaye deadzone to val
-			    val = event.value;
-				deadzone_aplyer(&val, &unscaled_deadzone);
-                joy_msg.axes[event.number]= val * scale;
+		// Aplaye deadzone to val
+		val = event.value;
+		deadzone_aplyer(&val, &unscaled_deadzone);
+		joy_msg.axes[event.number]= val * scale;
               }
 
               publish_soon = true;
