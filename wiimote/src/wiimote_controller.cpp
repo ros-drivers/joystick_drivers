@@ -1630,7 +1630,7 @@ int main(int argc, char *argv[])
   else
   {
     ROS_ERROR("* * * Wiimote pairing failed.");
-    ros::shutdown();
+    return -2;
   }
 
   ros::NodeHandle nh;
