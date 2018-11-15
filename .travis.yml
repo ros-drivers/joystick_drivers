@@ -23,11 +23,15 @@ env:
     - ROS_DISTRO="lunar" ROS_REPO=ros DOCKER_BASE_IMAGE=ros:lunar-ros-core
     - ROS_DISTRO="lunar" ROS_REPO=ros-shadow-fixed DOCKER_BASE_IMAGE=ros:lunar-ros-core
     - ROS_DISTRO="lunar" PRERELEASE=true
+    - ROS_DISTRO="melodic" ROS_REPO=ros DOCKER_BASE_IMAGE=ros:melodic-ros-core
+    - ROS_DISTRO="melodic" ROS_REPO=ros-shadow-fixed DOCKER_BASE_IMAGE=ros:melodic-ros-core
+    - ROS_DISTRO="melodic" PRERELEASE=true
 matrix:
   allow_failures:
     - env: ROS_DISTRO="indigo" PRERELEASE=true
     - env: ROS_DISTRO="kinetic" PRERELEASE=true
     - env: ROS_DISTRO="lunar" PRERELEASE=true
+    - env: ROS_DISTRO="melodic" PRERELEASE=true
 
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .industrial_ci
