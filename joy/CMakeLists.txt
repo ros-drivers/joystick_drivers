@@ -29,6 +29,6 @@ install(TARGETS joy_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 endif(HAVE_LINUX_JOYSTICK_H)
 
-install(DIRECTORY migration_rules
+install(DIRECTORY migration_rules scripts config launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  )
+  USE_SOURCE_PERMISSIONS)
