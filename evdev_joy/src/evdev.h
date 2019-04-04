@@ -34,12 +34,19 @@ class ModernJoystick{
         std::map<int,int> _buttonsMapping;
         std::map<int,int> _axesMapping;
         std::map<int, int> _axesAbsMax; //maximum abs value, of min/max -> to calculate the perc.
-        std::map<int, int> _feedbackDeviceID; //maps ArraySlot to Device-Feedback-Slot
+        std::map<int, short> _feedbackDeviceID; //maps ArraySlot to Device-Feedback-Slot
 
+        //libevdev
         void readJoy(struct input_event & ev);
         void reSyncJoy();
         void updateMessage(const struct input_event & ev);
         float mapAxesValue(int value, int evCode);
+
+        //feedback
+        void addEffect(struct ff_effect & effect);
+        void playEffect(short effectID);
+        void stopEffect(short effectID);
+        void removeEffect(short effectID);
 
     public:
         ModernJoystick(ros::NodeHandle nh, ros::NodeHandle pnh);
