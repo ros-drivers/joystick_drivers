@@ -17,15 +17,15 @@ int main(int argc, char **argv)
 
 ModernJoystick::ModernJoystick(ros::NodeHandle nh, ros::NodeHandle pnh) : _nodeHandle(nh),
                                                                           _privateNodeHandle(pnh),
-                                                                          _joyDevName("/dev/input/event0"),
+                                                                          _joyDevName("/dev/input/event10"),
                                                                           _buttonsMappingParam{"BTN_SOUTH",
                                                                                                "BTN_EAST",
                                                                                                "BTN_NORTH",
                                                                                                "BTN_WEST",
                                                                                                "BTN_TL",
                                                                                                "BTN_TR",
-                                                                                               "BTN_SELECT",
-                                                                                               "BTN_START",
+                                                                                              "BTN_SELECT",
+                                                                                              "BTN_START",
                                                                                                "BTN_MODE",
                                                                                                "BTN_THUMBL",
                                                                                                "BTN_THUMBR"},
@@ -69,7 +69,7 @@ void ModernJoystick::init()
     }
 
     //Checking and Calculating Mapping (Axes & Buttons)
-    for (int i; i < _buttonsMappingParam.size(); i++)
+    for (int i = 0; i < _buttonsMappingParam.size(); i++)
     {
         std::string buttonName = _buttonsMappingParam[i];
         int eventCode = libevdev_event_code_from_name(EV_KEY, buttonName.c_str());
@@ -83,7 +83,7 @@ void ModernJoystick::init()
         }
     }
 
-    for (int i; i < _axesMappingParam.size(); i++)
+    for (int i = 0; i < _axesMappingParam.size(); i++)
     {
         std::string axesName = _axesMappingParam[i];
         int eventCode = libevdev_event_code_from_name(EV_ABS, axesName.c_str());
@@ -101,6 +101,8 @@ void ModernJoystick::init()
             _axesAbsMax.insert(std::make_pair(eventCode, absMax));
         }
     }
+
+    
 
     /**
      * Initing ROS spefic things
@@ -135,6 +137,7 @@ void ModernJoystick::run()
 
 void ModernJoystick::feedbackCallback(const sensor_msgs::JoyFeedbackArrayConstPtr &msg)
 {
+    ROS_INFO("Feedback-Callback");
     //For Each Feedback:
     //(Each Array-Slot is one Feedback-Slot in the Device, each feedback on the
     //slot, will overwrite previous Feedbacks on this fitting Device-Slot.
@@ -144,7 +147,7 @@ void ModernJoystick::feedbackCallback(const sensor_msgs::JoyFeedbackArrayConstPt
         sensor_msgs::JoyFeedback feedback = msg->array[i];
         if (feedback.type = feedback.TYPE_RUMBLE)
         { //Other Things arent Handled!
-            struct ff_effect effect;
+            struct ff_effect effect = ff_effect();
             effect.direction = 0;
             effect.id = -1;
             effect.replay.length = 0; //Infinity -> TODO: Parametrize
@@ -153,13 +156,15 @@ void ModernJoystick::feedbackCallback(const sensor_msgs::JoyFeedbackArrayConstPt
             case RUMBLE_HEAVY:
             {
                 effect.type = FF_RUMBLE;
-                effect.u.rumble.strong_magnitude = ((float)(1 << 15)) * feedback.intensity; //TODO: ????
+                effect.u.rumble.strong_magnitude = 0xFFFF * feedback.intensity; //TODO: ????
+                ROS_INFO("mag: %04x", effect.u.rumble.strong_magnitude);
             }
             break;
             case RUMBLE_LIGHT:
             {
                 effect.type = FF_RUMBLE;
-                effect.u.rumble.weak_magnitude = ((float)(1 << 15)) * feedback.intensity; //TODO: ????
+                effect.u.rumble.weak_magnitude = 0xFFFF * feedback.intensity; //TODO: ????
+                ROS_INFO("mag: %04x", effect.u.rumble.weak_magnitude);
             }
             break;
             default:
@@ -170,7 +175,7 @@ void ModernJoystick::feedbackCallback(const sensor_msgs::JoyFeedbackArrayConstPt
                 return;
             }
 
-            //get that Evet-ID of this array Slot
+        //get that Evet-ID of this array Slot
             if (_feedbackDeviceID.count(i) == 0)
             { //New Feedback!
                 addEffect(effect);
@@ -180,8 +185,11 @@ void ModernJoystick::feedbackCallback(const sensor_msgs::JoyFeedbackArrayConstPt
             else
             { //Old Feedback has to bee destroyed
                 stopEffect(_feedbackDeviceID[i]);
+                //ros::Duration(2).sleep();
                 removeEffect(_feedbackDeviceID[i]);
+                //ros::Duration(2).sleep();
                 addEffect(effect);
+                //ros::Duration(2).sleep();
                 playEffect(effect.id);
                 _feedbackDeviceID[i] = effect.id;
             }
@@ -191,7 +199,8 @@ void ModernJoystick::feedbackCallback(const sensor_msgs::JoyFeedbackArrayConstPt
 
 void ModernJoystick::addEffect(struct ff_effect & effect)
 {
-    int res = ioctl(_joyFD, EVIOCSFF, effect);
+    ROS_INFO("add");
+    int res = ioctl(_joyFD, EVIOCSFF, &effect);
     if (res < 0)
     {
         ROS_ERROR("Failed to Upload Effect to Joystick. %s", strerror(res));
@@ -199,6 +208,7 @@ void ModernJoystick::addEffect(struct ff_effect & effect)
 }
 
 void ModernJoystick::removeEffect(short effectID){
+    ROS_INFO("remove");
     int res = ioctl(_joyFD, EVIOCRMFF, effectID);
     if (res < 0)
     {
@@ -207,6 +217,7 @@ void ModernJoystick::removeEffect(short effectID){
 }
 
 void ModernJoystick::playEffect(short effectID){
+        ROS_INFO("play");
         struct input_event play = input_event(); //Zero-Init
         play.type = EV_FF;
         play.code = effectID;
@@ -219,6 +230,7 @@ void ModernJoystick::playEffect(short effectID){
 }
 
 void ModernJoystick::stopEffect(short effectID){
+    ROS_INFO("stop");
     struct input_event stop = input_event(); //Zero-Init
     stop.type = EV_FF;
     stop.code = effectID;
