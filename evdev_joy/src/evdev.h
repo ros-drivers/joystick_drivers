@@ -34,7 +34,7 @@ class ModernJoystick{
         std::map<int,int> _buttonsMapping;
         std::map<int,int> _axesMapping;
         std::map<int, int> _axesAbsMax; //maximum abs value, of min/max -> to calculate the perc.
-        
+        std::map<int, int> _feedbackDeviceID; //maps ArraySlot to Device-Feedback-Slot
 
         void readJoy(struct input_event & ev);
         void reSyncJoy();
@@ -48,5 +48,11 @@ class ModernJoystick{
         void run();
         void init();
 
+        enum FeedBackID{
+            RUMBLE_HEAVY, RUMBLE_LIGHT 
+        };
+
       
 };
+
+

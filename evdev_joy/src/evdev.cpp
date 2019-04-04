@@ -125,13 +125,44 @@ void ModernJoystick::run(){
 
 void ModernJoystick::feedbackCallback(const sensor_msgs::JoyFeedbackArrayConstPtr& msg){
     //For Each Feedback:
-    for(sensor_msgs::JoyFeedback feedback : msg->array){
-        struct ff_effect effect;
-        
+    //(Each Array-Slot is one Feedback-Slot in the Device, each feedback on the 
+    //slot, will overwrite previous Feedbacks on this fitting Device-Slot.
+    //If the Array-Slot is empty or not TYPE_RUMBLE, this event will let untouched on Device.)
+    for(int i = 0; i < msg->array.size(); i++){
+        sensor_msgs::JoyFeedback feedback = msg->array[i];
+        if(feedback.type=feedback.TYPE_RUMBLE){ //Other Things arent Handled!
+            struct ff_effect effect;
+            effect.direction=0;
+            effect.id=-1;
+            effect.replay.length = 0; //Infinity -> TODO: Parametrize
+            switch (feedback.id){
+                case RUMBLE_HEAVY :{
+                    effect.type = FF_RUMBLE;
+                    effect.u.rumble.strong_magnitude = ((float)(1<<15))*feedback.intensity; //TODO: ????
+                }break;
+                case RUMBLE_LIGHT :{
+                    effect.type = FF_RUMBLE;
+                    effect.u.rumble.weak_magnitude = ((float)(1<<15))*feedback.intensity;  //TODO: ????
+                }break;
+                default :{
+                    //Nothing more implemented yet
+                    ROS_WARN("This Effect-ID (Type) isn't implemented yet!");
+                }return;
+            }
+
+        //get that Evet-ID of this array Slot
+        if(_feedbackDeviceID.count(i) == 0) { //New Feedback!
+            
+        }else{ //Old Feedback has to bee destroyed
+
+        }
     }
 
 
-    
+
+
+
+
 }
 
 ModernJoystick::~ModernJoystick(){
