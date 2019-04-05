@@ -23,10 +23,13 @@ class ModernJoystick{
         ros::NodeHandle _privateNodeHandle;
         ros::Subscriber _feedbackSubscriber;
         ros::Publisher  _joyPublisher;
+        ros::Timer _sendTimer;
         //Params
         std::string _joyDevName;
         std::vector<std::string> _buttonsMappingParam;
         std::vector<std::string> _axesMappingParam;
+        int _maxSendFrequency;
+
 
         //Device
         int _joyFD;
@@ -39,7 +42,7 @@ class ModernJoystick{
         std::map<int, short> _feedbackDeviceID; //maps ArraySlot to Device-Feedback-Slot
 
         //libevdev
-        void readJoy(struct input_event & ev);
+        bool readJoy(struct input_event & ev);
         void reSyncJoy();
         void updateMessage(const struct input_event & ev);
         float mapAxesValue(int value, int evCode);
@@ -50,10 +53,13 @@ class ModernJoystick{
         void stopEffect(short effectID);
         void removeEffect(short effectID);
 
+        void publishJoyMessage();
+
     public:
         ModernJoystick(ros::NodeHandle nh, ros::NodeHandle pnh);
         ~ModernJoystick();
         void feedbackCallback(const sensor_msgs::JoyFeedbackArrayConstPtr& msg);
+        void timerCallback(const ros::TimerEvent & event);
         void run();
         void init();
 
