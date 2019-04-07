@@ -140,6 +140,12 @@ void ModernJoystick::publishJoyMessage(){
 
 void ModernJoystick::run()
 {
+    fd_set fdSET;
+    FD_ZERO(&fdSET);
+    FD_SET(_joyFD, &fdSET);
+
+    int result = select(_joyFD + 1, &fdSET, NULL, NULL, NULL);
+
     struct input_event ev;
     bool nowSend = readJoy(ev);
     updateMessage(ev);
@@ -280,7 +286,7 @@ bool ModernJoystick::readJoy(struct input_event &ev)
     int rs = libevdev_next_event(_joyDEV, libevdev_read_flag::LIBEVDEV_READ_FLAG_NORMAL | libevdev_read_flag::LIBEVDEV_READ_FLAG_BLOCKING, &ev); //BLOCKING!
     if (rs == libevdev_read_status::LIBEVDEV_READ_STATUS_SUCCESS)
     {
-        
+
     }
     else if (rs == libevdev_read_status::LIBEVDEV_READ_STATUS_SYNC)
     {

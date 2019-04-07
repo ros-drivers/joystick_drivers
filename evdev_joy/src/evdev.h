@@ -16,6 +16,8 @@
 
 #include <cmath>
 
+#include <sys/select.h>
+
 class ModernJoystick{
     private:
         //ROS
@@ -34,6 +36,7 @@ class ModernJoystick{
         //Device
         int _joyFD;
         libevdev *_joyDEV;
+        fd_set _fdSET;
 
         sensor_msgs::Joy _joyMessage;
         std::map<int,int> _buttonsMapping;
