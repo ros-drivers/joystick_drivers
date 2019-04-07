@@ -70,6 +70,7 @@ void ModernJoystick::init()
     _privateNodeHandle.param<int>("max_send_fequency", _maxSendFrequency, _maxSendFrequency);
 
     this->connect();
+    ROS_INFO(_buttonsMappingParam[0].c_str());
 
     /**
      * Quering Device Capabilitys 
@@ -118,6 +119,8 @@ void ModernJoystick::init()
     }
 
     
+
+
 
     /**
      * Initing ROS spefic things

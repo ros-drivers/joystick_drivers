@@ -1,0 +1,28 @@
+<launch>
+  <node pkg="evdev_joy" type="evdev_joystick_node" name="joystick" output="screen">
+        <param name="device_file_path" value="/dev/input/event10"/>
+        <param name="max_send_fequency" value="200"/>
+        <rosparam param="buttons_mapping">  [BTN_SOUTH,
+                                            BTN_EAST,
+                                            BTN_NORTH,
+                                            BTN_WEST,
+                                            BTN_TL,
+                                            BTN_TR,
+                                            BTN_SELECT,
+                                            BTN_START,
+                                            BTN_MODE,
+                                            BTN_THUMBL,
+                                            BTN_THUMBR]
+        </rosparam>
+    <rosparam param="axes_mapping">         [ABS_X,
+                                            ABS_Y,
+                                            ABS_Z,
+                                            ABS_RX,
+                                            ABS_RY,
+                                            ABS_RZ,
+                                            ABS_HAT0X,
+                                            ABS_HAT0Y]
+    </rosparam>
+  </node>
+</launch>
+
