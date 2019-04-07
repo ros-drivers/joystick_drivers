@@ -42,6 +42,23 @@ ModernJoystick::ModernJoystick(ros::NodeHandle nh, ros::NodeHandle pnh) : _nodeH
     this->init();
 }
 
+void ModernJoystick::connect(){
+    /**
+     * Open Device
+     */
+    do{
+    ModernJoystick::_joyFD = open(ModernJoystick::_joyDevName.c_str(), O_RDWR); 
+    ROS_ERROR_COND(_joyFD < 0, "Failed to open Device '%s' . %s \n\r Retry in 2 seconds.", _joyDevName.c_str(),strerror(errno)); 
+    }while(_joyFD < 0 && ros::Duration(2).sleep());
+    int err = libevdev_new_from_fd(_joyFD, &_joyDEV);
+    if(err < 0){
+        ROS_ERROR( "Filed to init libevdev - Quit Node. %s", strerror(-err));
+        ros::shutdown(); //If this Appairs, there must be a Hardwareproblem or incompability.
+    }
+    ROS_INFO("Connected to %s.", libevdev_get_name(_joyDEV));
+}
+
+
 void ModernJoystick::init()
 {
     /**
@@ -52,22 +69,18 @@ void ModernJoystick::init()
     _privateNodeHandle.param<std::vector<std::string>>("axes_mapping", _axesMappingParam, _axesMappingParam);
     _privateNodeHandle.param<int>("max_send_fequency", _maxSendFrequency, _maxSendFrequency);
 
-    /**
-     * Open Device
-     */
-    ModernJoystick::_joyFD = open(ModernJoystick::_joyDevName.c_str(), O_RDWR); //TODO: nonblocking read?
-    ROS_ERROR_COND(_joyFD < 0, "Failed to open Device. %s", strerror(errno));   //TODO: Retry
-    int err = libevdev_new_from_fd(_joyFD, &_joyDEV);
-    ROS_ERROR_COND(err < 0, "Filed to init libevdev. %s", strerror(-err));
-    //TODO: Exit
+    this->connect();
 
     /**
      * Quering Device Capabilitys 
      */
-    ROS_INFO_STREAM("Input device name: " << libevdev_get_name(_joyDEV));
     if (libevdev_has_event_type(_joyDEV, EV_ABS))
     {
         ROS_INFO("Looks like a Controller, with Axes!");
+    }
+    if (libevdev_has_event_type(_joyDEV, EV_KEY))
+    {
+        ROS_INFO("Looks like a Controller, with Buttons!");
     }
 
     //Checking and Calculating Mapping (Axes & Buttons)
@@ -140,12 +153,7 @@ void ModernJoystick::publishJoyMessage(){
 
 void ModernJoystick::run()
 {
-    fd_set fdSET;
-    FD_ZERO(&fdSET);
-    FD_SET(_joyFD, &fdSET);
-
-    int result = select(_joyFD + 1, &fdSET, NULL, NULL, NULL);
-
+    
     struct input_event ev;
     bool nowSend = readJoy(ev);
     updateMessage(ev);
@@ -166,7 +174,6 @@ void ModernJoystick::timerCallback(const ros::TimerEvent & event){
 
 void ModernJoystick::feedbackCallback(const sensor_msgs::JoyFeedbackArrayConstPtr &msg)
 {
-    ROS_INFO("Feedback-Callback");
     //For Each Feedback:
     //(Each Array-Slot is one Feedback-Slot in the Device, each feedback on the
     //slot, will overwrite previous Feedbacks on this fitting Device-Slot.
@@ -186,14 +193,12 @@ void ModernJoystick::feedbackCallback(const sensor_msgs::JoyFeedbackArrayConstPt
             {
                 effect.type = FF_RUMBLE;
                 effect.u.rumble.strong_magnitude = 0xFFFF * feedback.intensity; //TODO: ????
-                ROS_INFO("mag: %04x", effect.u.rumble.strong_magnitude);
             }
             break;
             case RUMBLE_LIGHT:
             {
                 effect.type = FF_RUMBLE;
                 effect.u.rumble.weak_magnitude = 0xFFFF * feedback.intensity; //TODO: ????
-                ROS_INFO("mag: %04x", effect.u.rumble.weak_magnitude);
             }
             break;
             default:
@@ -228,7 +233,6 @@ void ModernJoystick::feedbackCallback(const sensor_msgs::JoyFeedbackArrayConstPt
 
 void ModernJoystick::addEffect(struct ff_effect & effect)
 {
-    ROS_INFO("add");
     int res = ioctl(_joyFD, EVIOCSFF, &effect);
     if (res < 0)
     {
@@ -237,7 +241,6 @@ void ModernJoystick::addEffect(struct ff_effect & effect)
 }
 
 void ModernJoystick::removeEffect(short effectID){
-    ROS_INFO("remove");
     int res = ioctl(_joyFD, EVIOCRMFF, effectID);
     if (res < 0)
     {
@@ -246,7 +249,6 @@ void ModernJoystick::removeEffect(short effectID){
 }
 
 void ModernJoystick::playEffect(short effectID){
-        ROS_INFO("play");
         struct input_event play = input_event(); //Zero-Init
         play.type = EV_FF;
         play.code = effectID;
@@ -259,7 +261,6 @@ void ModernJoystick::playEffect(short effectID){
 }
 
 void ModernJoystick::stopEffect(short effectID){
-    ROS_INFO("stop");
     struct input_event stop = input_event(); //Zero-Init
     stop.type = EV_FF;
     stop.code = effectID;
@@ -302,7 +303,10 @@ bool ModernJoystick::readJoy(struct input_event &ev)
         }
         else
         {
-            //Error
+            ROS_ERROR("Error: %s", strerror(rs));
+            ROS_ERROR("Trying to Reconnect Controller.");
+            _sendTimer.stop();
+            this->connect();
         }
     }
 

@@ -58,6 +58,7 @@ class ModernJoystick{
 
         void publishJoyMessage();
 
+        void connect();
     public:
         ModernJoystick(ros::NodeHandle nh, ros::NodeHandle pnh);
         ~ModernJoystick();
