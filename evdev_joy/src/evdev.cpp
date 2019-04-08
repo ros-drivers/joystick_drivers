@@ -134,6 +134,7 @@ void ModernJoystick::init()
     }
     ros::Rate rate(_maxSendFrequency);
     _sendTimer = _privateNodeHandle.createTimer(rate, &ModernJoystick::timerCallback, this);
+    _sendTimer.stop(); //Don't send, without values!
     ROS_INFO_STREAM("Maximum Send Frequency is set to " <<_maxSendFrequency << "Hz .");
 
 
