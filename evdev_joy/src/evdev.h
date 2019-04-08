@@ -18,6 +18,8 @@
 
 #include <sys/select.h>
 
+#include <signal.h>
+
 class ModernJoystick{
     private:
         //ROS
@@ -35,8 +37,8 @@ class ModernJoystick{
 
         //Device
         int _joyFD;
-        libevdev *_joyDEV;
-        fd_set _fdSET;
+        libevdev *_joyDEV;    
+        
 
         sensor_msgs::Joy _joyMessage;
         std::map<int,int> _buttonsMapping;
@@ -66,6 +68,7 @@ class ModernJoystick{
         void timerCallback(const ros::TimerEvent & event);
         void run();
         void init();
+        bool isUP();
 
         enum FeedBackID{
             RUMBLE_HEAVY, RUMBLE_LIGHT 
