@@ -176,7 +176,7 @@ void ModernJoystick::timerCallback(const ros::TimerEvent & event){
 }
 
 void ModernJoystick::feedbackCallback(const sensor_msgs::JoyFeedbackArrayConstPtr &msg)
-{
+{	
     //For Each Feedback:
     //(Each Array-Slot is one Feedback-Slot in the Device, each feedback on the
     //slot, will overwrite previous Feedbacks on this fitting Device-Slot.
@@ -196,7 +196,7 @@ void ModernJoystick::feedbackCallback(const sensor_msgs::JoyFeedbackArrayConstPt
             {
                 effect.type = FF_RUMBLE;
                 effect.u.rumble.strong_magnitude = 0xFFFF * feedback.intensity; //TODO: ????
-            }
+	    }
             break;
             case RUMBLE_LIGHT:
             {
@@ -218,7 +218,7 @@ void ModernJoystick::feedbackCallback(const sensor_msgs::JoyFeedbackArrayConstPt
                 addEffect(effect);
                 playEffect(effect.id);
                 _feedbackDeviceID[i] = effect.id;
-            }
+	    }
             else
             { //Old Feedback has to bee destroyed
                 stopEffect(_feedbackDeviceID[i]);
