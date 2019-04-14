@@ -1,6 +1,6 @@
 <launch>
   <node pkg="evdev_joy" type="evdev_joystick_node" name="joystick" output="screen">
-        <param name="device_file_path" value="/dev/input/event10"/>
+        <param name="device_file_path" value="/dev/input/event23"/>
         <param name="max_send_fequency" value="200"/>
         <rosparam param="buttons_mapping">  [BTN_SOUTH,
                                             BTN_EAST,

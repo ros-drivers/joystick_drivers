@@ -1,10 +1,36 @@
 #include "evdev.h"
 
+
+ModernJoystick * joy = nullptr; //Needed for Custom Signal handler.
+
+void sigintHandle(int sig){
+   
+    ROS_INFO("Terminating Node");
+    if(joy->isUP())
+    {
+        /**
+         * THIS IS A WORAROUND, TO get a return from the Blocking IOCTL in Libevdev_next_event:
+         * Sending a "Fake-Firde-Feedback", which will result in a new Event.
+         **/
+        sensor_msgs::JoyFeedbackArray fA;
+        sensor_msgs::JoyFeedback f;
+        f.id = 0;
+        f.intensity = 0;
+        f.type = 0;
+        fA.array[0] = f;
+        joy->feedbackCallback(sensor_msgs::JoyFeedbackArrayConstPtr(&fA));
+    }
+    ros::shutdown();
+    ROS_INFO("Node stopped.");
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "evdev_joy");
 
     ModernJoystick joyer(ros::NodeHandle(""), ros::NodeHandle("~"));
+    joy = &joyer;
+    signal(SIGINT, sigintHandle);
     ros::AsyncSpinner asyncSpinner(1); //A second thread is needed, because this thread will
                                         //Block in joyer.run() 
     asyncSpinner.start();
@@ -17,29 +43,13 @@ int main(int argc, char **argv)
 
 ModernJoystick::ModernJoystick(ros::NodeHandle nh, ros::NodeHandle pnh) : _nodeHandle(nh),
                                                                           _privateNodeHandle(pnh),
-                                                                          _joyDevName("/dev/input/event10"),
-                                                                          _maxSendFrequency(100),
-                                                                          _buttonsMappingParam{"BTN_SOUTH",
-                                                                                               "BTN_EAST",
-                                                                                               "BTN_NORTH",
-                                                                                               "BTN_WEST",
-                                                                                               "BTN_TL",
-                                                                                               "BTN_TR",
-                                                                                              "BTN_SELECT",
-                                                                                              "BTN_START",
-                                                                                               "BTN_MODE",
-                                                                                               "BTN_THUMBL",
-                                                                                               "BTN_THUMBR"},
-                                                                          _axesMappingParam{"ABS_X",
-                                                                                            "ABS_Y",
-                                                                                            "ABS_Z",
-                                                                                            "ABS_RX",
-                                                                                            "ABS_RY",
-                                                                                            "ABS_RZ",
-                                                                                            "ABS_HAT0X",
-                                                                                            "ABS_HAT0Y"}
+                                                                          _maxSendFrequency(100)
 {
     this->init();
+}
+
+bool ModernJoystick::isUP(){
+    return (fcntl(_joyFD, F_GETFD) != -1 || errno != EBADF);
 }
 
 void ModernJoystick::connect(){
@@ -70,7 +80,7 @@ void ModernJoystick::init()
     _privateNodeHandle.param<int>("max_send_fequency", _maxSendFrequency, _maxSendFrequency);
 
     this->connect();
-    ROS_INFO(_buttonsMappingParam[0].c_str());
+
 
     /**
      * Quering Device Capabilitys 
@@ -279,8 +289,11 @@ void ModernJoystick::stopEffect(short effectID){
 
 ModernJoystick::~ModernJoystick()
 {
-    libevdev_free(_joyDEV);
-    close(_joyFD); //TODO: ERROR
+    if(isUP())
+    {
+        libevdev_free(_joyDEV);
+        close(_joyFD); //TODO: ERROR
+    };
 }
 
 /**
