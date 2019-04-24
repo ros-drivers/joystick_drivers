@@ -1,3 +1,5 @@
+//\author: Franek Stark
+
 #include "ros/ros.h"
 #include "sensor_msgs/Joy.h"
 #include "sensor_msgs/JoyFeedbackArray.h"

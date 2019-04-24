@@ -1,3 +1,5 @@
+//\author: Franek Stark
+
 #include "evdev.h"
 
 
@@ -77,7 +79,7 @@ void ModernJoystick::init()
     _privateNodeHandle.param<std::string>("device_file_path", _joyDevName, _joyDevName);
     _privateNodeHandle.param<std::vector<std::string>>("buttons_mapping", _buttonsMappingParam, _buttonsMappingParam);
     _privateNodeHandle.param<std::vector<std::string>>("axes_mapping", _axesMappingParam, _axesMappingParam);
-    _privateNodeHandle.param<int>("max_send_fequency", _maxSendFrequency, _maxSendFrequency);
+    _privateNodeHandle.param<int>("max_send_frequency", _maxSendFrequency, _maxSendFrequency);
 
     this->connect();
 
