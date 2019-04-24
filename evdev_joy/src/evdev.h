@@ -47,7 +47,7 @@ class ModernJoystick{
         std::map<int, short> _feedbackDeviceID; //maps ArraySlot to Device-Feedback-Slot
 
         //libevdev
-        bool readJoy(struct input_event & ev);
+        int readJoy(struct input_event & ev);
         void reSyncJoy();
         void updateMessage(const struct input_event & ev);
         float mapAxesValue(int value, int evCode);

@@ -169,15 +169,16 @@ void ModernJoystick::run()
 {
     
     struct input_event ev;
-    bool nowSend = readJoy(ev);
+    int evType = readJoy(ev);
     updateMessage(ev);
-    if(nowSend){
+    if(evType == EV_KEY){
         _sendTimer.stop();//Timer is stopped, because all Events are send.  (Before publish, because of Race Conditions!);
         publishJoyMessage();         
     }
-    else{
+    else if(evType == EV_ABS){
         _sendTimer.start();//Timer start, because new Event, has to be send.
     }
+    //Otherwise nothing, because no important evebt.
 }
 
 
@@ -297,9 +298,9 @@ ModernJoystick::~ModernJoystick()
 }
 
 /**
- * Returns, wether a send is needed, because its an Event like Button, that you can't wait for
+ * Returns, what the event was:
  */
-bool ModernJoystick::readJoy(struct input_event &ev)
+int ModernJoystick::readJoy(struct input_event &ev)
 {
     int rs = libevdev_next_event(_joyDEV, libevdev_read_flag::LIBEVDEV_READ_FLAG_NORMAL | libevdev_read_flag::LIBEVDEV_READ_FLAG_BLOCKING, &ev); //BLOCKING!
     if (rs == libevdev_read_status::LIBEVDEV_READ_STATUS_SUCCESS)
@@ -327,7 +328,7 @@ bool ModernJoystick::readJoy(struct input_event &ev)
         }
     }
 
-    return (ev.type == EV_KEY);
+    return ev.type;
 }
 
 void ModernJoystick::updateMessage(const struct input_event &ev)
