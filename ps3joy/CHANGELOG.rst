@@ -2,6 +2,15 @@
 Changelog for package ps3joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#128 <https://github.com/ros-drivers/joystick_drivers/issues/128>`_ from ros-drivers/fix/tab_errors
+* Cleaning up Python indentation.
+* Merge pull request `#123 <https://github.com/ros-drivers/joystick_drivers/issues/123>`_ from cclauss/modernize-python2-code
+* Modernize Python 2 code to get ready for Python 3
+* Merge branch 'master' into indigo-devel
+* Contributors: Joshua Whitley, Matthew, cclauss
+
 1.12.0 (2018-06-11)
 -------------------
 * Addressed numerous outstanding PRs.

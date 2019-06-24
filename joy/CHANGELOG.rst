@@ -2,6 +2,28 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#120 <https://github.com/ros-drivers/joystick_drivers/issues/120>`_ from furushchev/remap
+  add joy_remap and its sample
+* Merge pull request `#128 <https://github.com/ros-drivers/joystick_drivers/issues/128>`_ from ros-drivers/fix/tab_errors
+  Cleaning up Python indentation.
+* Merge pull request `#111 <https://github.com/ros-drivers/joystick_drivers/issues/111>`_ from matt-attack/indigo-devel
+  Add Basic Force Feedback Support
+* Merge pull request `#126 <https://github.com/ros-drivers/joystick_drivers/issues/126>`_ from clalancette/minor-formatting
+* Put brackets around ROS\_* macros.
+  In some circumstances they may be defined to empty, so we need
+  to have brackets to ensure that they are syntactically valid.
+  Signed-off-by: Chris Lalancette <clalancette@openrobotics.org>
+* Merge pull request `#122 <https://github.com/ros-drivers/joystick_drivers/issues/122>`_ from lbucklandAS/fix-publish-timestamp
+  Add timestamp to all joy messages
+* Change error messages and set ps3 as default controller
+* Better handle device loss
+  Allow for loss and redetection of device with force feedback
+* Add basic force feedback over usb
+  Addresses `#89 <https://github.com/ros-drivers/joystick_drivers/issues/89>`_
+* Contributors: Chris Lalancette, Furushchev, Joshua Whitley, Lucas Buckland, Matthew, Matthew Bries
+
 1.12.0 (2018-06-11)
 -------------------
 * Update timestamp when using autorepeat_rate

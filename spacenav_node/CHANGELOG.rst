@@ -2,6 +2,9 @@
 Changelog for package spacenav_node
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.12.0 (2018-06-11)
 -------------------
 * Adding tested spacenav scaling
