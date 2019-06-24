@@ -14,10 +14,8 @@ notifications:
       - jwhitley@autonomoustuff.com
 env:
   matrix:
-    - ROS_DISTRO="indigo" ROS_REPO=ros DOCKER_BASE_IMAGE=ros:indigo-robot
     - ROS_DISTRO="kinetic" ROS_REPO=ros DOCKER_BASE_IMAGE=ros:kinetic-robot
     - ROS_DISTRO="kinetic" ROS_REPO=ros-shadow-fixed DOCKER_BASE_IMAGE=ros:kinetic-robot
-    - ROS_DISTRO="lunar" ROS_REPO=ros DOCKER_BASE_IMAGE=ros:lunar-robot
     - ROS_DISTRO="melodic" ROS_REPO=ros DOCKER_BASE_IMAGE=ros:melodic-robot
     - ROS_DISTRO="melodic" ROS_REPO=ros-shadow-fixed DOCKER_BASE_IMAGE=ros:melodic-robot
 
