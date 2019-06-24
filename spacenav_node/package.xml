@@ -1,6 +1,6 @@
 <package format="2">
   <name>spacenav_node</name>
-  <version>1.12.0</version>
+  <version>1.13.0</version>
   <license>BSD</license>
   <description>
     ROS interface to the 3Dconnexion SpaceNavigator 6DOF joystick.

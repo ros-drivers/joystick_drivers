@@ -2,8 +2,8 @@
 Changelog for package ps3joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.0 (2019-06-24)
+-------------------
 * Merge pull request `#128 <https://github.com/ros-drivers/joystick_drivers/issues/128>`_ from ros-drivers/fix/tab_errors
 * Cleaning up Python indentation.
 * Merge pull request `#123 <https://github.com/ros-drivers/joystick_drivers/issues/123>`_ from cclauss/modernize-python2-code

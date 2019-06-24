@@ -2,8 +2,8 @@
 Changelog for package wiimote
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.0 (2019-06-24)
+-------------------
 * Merge pull request `#132 <https://github.com/ros-drivers/joystick_drivers/issues/132>`_ from mistoll/clean_exit
 * return instead of shutdown
 * Merge pull request `#128 <https://github.com/ros-drivers/joystick_drivers/issues/128>`_ from ros-drivers/fix/tab_errors

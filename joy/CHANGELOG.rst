@@ -2,8 +2,8 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.0 (2019-06-24)
+-------------------
 * Merge pull request `#120 <https://github.com/ros-drivers/joystick_drivers/issues/120>`_ from furushchev/remap
   add joy_remap and its sample
 * Merge pull request `#128 <https://github.com/ros-drivers/joystick_drivers/issues/128>`_ from ros-drivers/fix/tab_errors
