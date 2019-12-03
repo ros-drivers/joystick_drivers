@@ -447,10 +447,10 @@ public:
 
               publish_soon = true;
               break;
-              default:
+            }
+            default:
               ROS_WARN("joy_node: Unknown event type. Please file a ticket. time=%u, value=%d, type=%Xh, number=%d", event.time, event.value, event.type, event.number);
               break;
-            }
           }
         }
         else if (tv_set) // Assume that the timer has expired.
