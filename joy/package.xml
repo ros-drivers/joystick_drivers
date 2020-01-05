@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+  <name>joy</name>
+  <version>2.3.2</version>
+
+  <description>
+    The joy package contains joy_node, a node that interfaces a
+    generic joystick to ROS 2. This node publishes a "Joy"
+    message, which contains the current state of each one of the
+    joystick's buttons and axes.
+  </description>
+
+  <maintainer email="clalancette@openrobotics.org">Chris Lalancette</maintainer>
+  <license>BSD</license>
+  <url type="repository">https://github.com/ros2/joystick_drivers</url>
+  <url type="bugtracker">https://github.com/ros2/joystick_drivers/issues</url>
+  <author>Mikael Arguedas</author>
+  <author>Morgan Quigley</author>
+  <author>Brian Gerkey</author>
+  <author>Kevin Watts</author>
+  <author>Blaise Gassend</author>
+  <author>Jonathan Bohren</author>
+
+  <buildtool_depend>ament_cmake_ros</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>sdl2_vendor</depend>
+  <depend>sensor_msgs</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
