@@ -1,36 +1,40 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
   <name>joy</name>
   <version>1.13.0</version>
-  <license>BSD</license>
-
   <description>
-    ROS driver for a generic Linux joystick.
+    ROS2 driver for a generic Linux joystick.
+    Will contain a MacOS and Windows version later.
     The joy package contains joy_node, a node that interfaces a
-    generic Linux joystick to ROS. This node publishes a "Joy"
+    generic Linux joystick to ROS2. This node publishes a "Joy"
     message, which contains the current state of each one of the
     joystick's buttons and axes.
   </description>
+  <maintainer email="maximus5684@gmail.com">Josh Whitley</maintainer>
+  <license>BSD</license>
 
-  <maintainer email="jbo@jhu.edu">Jonathan Bohren</maintainer>
+  <url type="website">http://www.ros.org/wiki/joy</url>
+  <url type="repository">https://github.com/ros-drivers/joystick_drivers</url>
+  <url type="bugtracker">https://github.com/ros-drivers/joystick_drivers/issues</url>
+
   <author>Morgan Quigley</author>
   <author>Brian Gerkey</author>
   <author>Kevin Watts</author>
   <author>Blaise Gassend</author>
+  <author>Josh Whitley</author>
 
-  <url type="website">http://www.ros.org/wiki/joy</url>
-  <url type="development">https://github.com/ros-drivers/joystick_drivers</url>
-  <url type="bugtracker">https://github.com/ros-drivers/joystick_drivers/issues</url>
-
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
   
-  <depend>roscpp</depend>
+  <depend>rclcpp</depend>
   <depend>diagnostic_updater</depend>
   <depend>sensor_msgs</depend>
   <depend>joystick</depend>
 
-  <test_depend>rosbag</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
 
   <export>
-    <rosbag migration_rule_file="migration_rules/Joy.bmr"/>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

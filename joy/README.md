@@ -1,4 +1,4 @@
-# ROS Driver for Generic Linux Joysticks
+# ROS 2 Driver for Generic Linux Joysticks
 
 The joy package contains joy_node, a node that interfaces a generic Linux joystick to ROS. This node publishes a "Joy" message, which contains the current state of each one of the joystick's buttons and axes.
 
@@ -8,7 +8,7 @@ This node should work with any joystick that is supported by Linux.
 
 ## Published Topics
 
-* joy ([sensor_msgs/Joy](http://docs.ros.org/api/sensor_msgs/html/msg/Joy.html)): outputs the joystick state.
+* joy ([sensor_msgs/Joy](https://github.com/ros2/common_interfaces/blob/master/sensor_msgs/msg/Joy.msg)): outputs the joystick state.
 
 ## Device Selection
 
@@ -50,4 +50,4 @@ Then the node can be started with the device name given in the list. For example
 
 ## Further Information
 
-For further information have a look at the [Wiki page](http://wiki.ros.org/joy).
+For further information have a look at the [ROS Index page](https://index.ros.org/p/joy/github-ros2-joystick_drivers/).
