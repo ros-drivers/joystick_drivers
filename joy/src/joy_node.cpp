@@ -319,7 +319,7 @@ public:
         diagnostic_.update();
       }
 
-      if (joy_dev_ff_.length())
+      if (!joy_dev_ff_.empty())
       {
         ff_fd_ = open(joy_dev_ff_.c_str(), O_RDWR);
 
