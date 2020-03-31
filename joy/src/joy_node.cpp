@@ -171,8 +171,8 @@ public:
       return;//we arent ready yet
     }
 
-    int size = msg->array.size();
-    for (int i = 0; i < size; i++)
+    size_t size = msg->array.size();
+    for (size_t i = 0; i < size; i++)
     {
       //process each feedback
       if (msg->array[i].type == 1 && ff_fd_ != -1)//TYPE_RUMBLE
@@ -415,11 +415,11 @@ public:
           case JS_EVENT_BUTTON | JS_EVENT_INIT:
             if (event.number >= joy_msg.buttons.size())
             {
-              int old_size = joy_msg.buttons.size();
+              size_t old_size = joy_msg.buttons.size();
               joy_msg.buttons.resize(event.number+1);
               last_published_joy_msg.buttons.resize(event.number+1);
               sticky_buttons_joy_msg.buttons.resize(event.number+1);
-              for (unsigned int i = old_size; i < joy_msg.buttons.size(); i++)
+              for (size_t i = old_size; i < joy_msg.buttons.size(); i++)
               {
                 joy_msg.buttons[i] = 0.0;
                 last_published_joy_msg.buttons[i] = 0.0;
@@ -443,11 +443,11 @@ public:
             val = event.value;
             if (event.number >= joy_msg.axes.size())
             {
-              int old_size = joy_msg.axes.size();
+              size_t old_size = joy_msg.axes.size();
               joy_msg.axes.resize(event.number+1);
               last_published_joy_msg.axes.resize(event.number+1);
               sticky_buttons_joy_msg.axes.resize(event.number+1);
-              for (unsigned int i = old_size; i < joy_msg.axes.size(); i++)
+              for (size_t i = old_size; i < joy_msg.axes.size(); i++)
               {
                 joy_msg.axes[i] = 0.0;
                 last_published_joy_msg.axes[i] = 0.0;
