@@ -56,7 +56,7 @@ private:
   bool default_trig_val_;
   std::string joy_dev_;
   std::string joy_dev_name_;
-  std::string joy_def_ff_;
+  std::string joy_dev_ff_;
   double deadzone_;
   double autorepeat_rate_;   // in Hz.  0 for no repeat.
   double coalesce_interval_; // Defaults to 100 Hz rate limit.
@@ -210,7 +210,7 @@ public:
     pub_ = nh_.advertise<sensor_msgs::Joy>("joy", 1);
     ros::Subscriber sub = nh_.subscribe("joy/set_feedback", 10, &Joystick::set_feedback, this);
     nh_param.param<std::string>("dev", joy_dev_, "/dev/input/js0");
-    nh_param.param<std::string>("dev_ff", joy_def_ff_, "/dev/input/by-id/usb-Sony_PLAYSTATION_R_3_Controller-event-joystick");
+    nh_param.param<std::string>("dev_ff", joy_dev_ff_, "/dev/input/by-id/usb-Sony_PLAYSTATION_R_3_Controller-event-joystick");
     nh_param.param<std::string>("dev_name", joy_dev_name_, "");
     nh_param.param<double>("deadzone", deadzone_, 0.05);
     nh_param.param<double>("autorepeat_rate", autorepeat_rate_, 0);
@@ -319,9 +319,9 @@ public:
         diagnostic_.update();
       }
 
-      if (joy_def_ff_.length())
+      if (joy_dev_ff_.length())
       {
-        ff_fd_ = open(joy_def_ff_.c_str(), O_RDWR);
+        ff_fd_ = open(joy_dev_ff_.c_str(), O_RDWR);
 
         /* Set the gain of the device*/
         int gain = 100;           /* between 0 and 100 */
