@@ -184,11 +184,11 @@ public:
         joy_effect_.type = FF_RUMBLE;
         if (msg->array[i].id == 0)
         {
-          joy_effect_.u.rumble.strong_magnitude = ((float)(1<<15))*msg->array[i].intensity;
+          joy_effect_.u.rumble.strong_magnitude = (static_cast<float>(1<<15))*msg->array[i].intensity;
         }
         else
         {
-          joy_effect_.u.rumble.weak_magnitude = ((float)(1<<15))*msg->array[i].intensity;
+          joy_effect_.u.rumble.weak_magnitude = (static_cast<float>(1<<15))*msg->array[i].intensity;
         }
 
         joy_effect_.replay.length = 1000;
