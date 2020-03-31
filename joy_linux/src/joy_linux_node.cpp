@@ -1,5 +1,5 @@
 /*
- * joy_node
+ * joy_linux_node
  * Copyright (c) 2009, Willow Garage, Inc.
  * All rights reserved.
  *
@@ -235,13 +235,13 @@ public:
 
     if (autorepeat_rate_ > 1 / coalesce_interval_)
     {
-      ROS_WARN("joy_node: autorepeat_rate (%f Hz) > 1/coalesce_interval (%f Hz) "
+      ROS_WARN("joy_linux_node: autorepeat_rate (%f Hz) > 1/coalesce_interval (%f Hz) "
         "does not make sense. Timing behavior is not well defined.", autorepeat_rate_, 1/coalesce_interval_);
     }
 
     if (deadzone_ >= 1)
     {
-      ROS_WARN("joy_node: deadzone greater than 1 was requested. The semantics of deadzone have changed. "
+      ROS_WARN("joy_linux_node: deadzone greater than 1 was requested. The semantics of deadzone have changed. "
         "It is now related to the range [-1:1] instead of [-32767:32767]. For now I am dividing your deadzone "
         "by 32767, but this behavior is deprecated so you need to update your launch file.");
       deadzone_ /= 32767;
@@ -249,25 +249,25 @@ public:
 
     if (deadzone_ > 0.9)
     {
-      ROS_WARN("joy_node: deadzone (%f) greater than 0.9, setting it to 0.9", deadzone_);
+      ROS_WARN("joy_linux_node: deadzone (%f) greater than 0.9, setting it to 0.9", deadzone_);
       deadzone_ = 0.9;
     }
 
     if (deadzone_ < 0)
     {
-      ROS_WARN("joy_node: deadzone_ (%f) less than 0, setting to 0.", deadzone_);
+      ROS_WARN("joy_linux_node: deadzone_ (%f) less than 0, setting to 0.", deadzone_);
       deadzone_ = 0;
     }
 
     if (autorepeat_rate_ < 0)
     {
-      ROS_WARN("joy_node: autorepeat_rate (%f) less than 0, setting to 0.", autorepeat_rate_);
+      ROS_WARN("joy_linux_node: autorepeat_rate (%f) less than 0, setting to 0.", autorepeat_rate_);
       autorepeat_rate_ = 0;
     }
 
     if (coalesce_interval_ < 0)
     {
-      ROS_WARN("joy_node: coalesce_interval (%f) less than 0, setting to 0.", coalesce_interval_);
+      ROS_WARN("joy_linux_node: coalesce_interval (%f) less than 0, setting to 0.", coalesce_interval_);
       coalesce_interval_ = 0;
     }
 
@@ -498,7 +498,7 @@ public:
               break;
             }
             default:
-              ROS_WARN("joy_node: Unknown event type. Please file a ticket. "
+              ROS_WARN("joy_linux_node: Unknown event type. Please file a ticket. "
                 "time=%u, value=%d, type=%Xh, number=%d", event.time, event.value, event.type, event.number);
               break;
           }
@@ -561,7 +561,7 @@ public:
     }
 
   cleanup:
-    ROS_INFO("joy_node shut down.");
+    ROS_INFO("joy_linux_node shut down.");
 
     return 0;
   }
@@ -569,7 +569,7 @@ public:
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "joy_node");
+  ros::init(argc, argv, "joy_linux_node");
   Joystick j;
   return j.main(argc, argv);
 }

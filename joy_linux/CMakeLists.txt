@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(joy)
+project(joy_linux)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -22,11 +22,11 @@ endif()
 
 if(HAVE_LINUX_JOYSTICK_H)
   include_directories(msg/cpp ${catkin_INCLUDE_DIRS})
-  add_executable(joy_node src/joy_node.cpp)
-  target_link_libraries(joy_node ${catkin_LIBRARIES})
+  add_executable(joy_linux_node src/joy_linux_node.cpp)
+  target_link_libraries(joy_linux_node ${catkin_LIBRARIES})
 
 # Install targets
-  install(TARGETS joy_node
+  install(TARGETS joy_linux_node
     ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
