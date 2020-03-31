@@ -358,8 +358,6 @@ public:
       tv.tv_usec = 0;
       sensor_msgs::Joy joy_msg; // Here because we want to reset it on device close.
       double val; //Temporary variable to hold event values
-      sensor_msgs::Joy last_published_joy_msg; // used for sticky buttons option
-      sensor_msgs::Joy sticky_buttons_joy_msg; // used for sticky buttons option
       while (nh_.ok())
       {
         ros::spinOnce();
@@ -419,16 +417,22 @@ public:
             {
               size_t old_size = joy_msg.buttons.size();
               joy_msg.buttons.resize(event.number+1);
-              last_published_joy_msg.buttons.resize(event.number+1);
-              sticky_buttons_joy_msg.buttons.resize(event.number+1);
               for (size_t i = old_size; i < joy_msg.buttons.size(); i++)
               {
                 joy_msg.buttons[i] = 0.0;
-                last_published_joy_msg.buttons[i] = 0.0;
-                sticky_buttons_joy_msg.buttons[i] = 0.0;
               }
             }
-            joy_msg.buttons[event.number] = (event.value ? 1 : 0);
+            if (sticky_buttons_)
+            {
+              if (event.value == 1)
+              {
+                joy_msg.buttons[event.number] = 1 - joy_msg.buttons[event.number];
+              }
+            }
+            else
+            {
+              joy_msg.buttons[event.number] = (event.value ? 1 : 0);
+            }
             // For initial events, wait a bit before sending to try to catch
             // all the initial events.
             if (!(event.type & JS_EVENT_INIT))
@@ -447,13 +451,9 @@ public:
             {
               size_t old_size = joy_msg.axes.size();
               joy_msg.axes.resize(event.number+1);
-              last_published_joy_msg.axes.resize(event.number+1);
-              sticky_buttons_joy_msg.axes.resize(event.number+1);
               for (size_t i = old_size; i < joy_msg.axes.size(); i++)
               {
                 joy_msg.axes[i] = 0.0;
-                last_published_joy_msg.axes[i] = 0.0;
-                sticky_buttons_joy_msg.axes[i] = 0.0;
               }
             }
             if (default_trig_val_)
@@ -516,38 +516,8 @@ public:
           // This should be the case as the kernel sends them along as soon as
           // the device opens.
           //ROS_INFO("Publish...");
-          if (sticky_buttons_ == true) {
-            // cycle through buttons
-            for (size_t i = 0; i < joy_msg.buttons.size(); i++)
-            {
-              // change button state only on transition from 0 to 1
-              if (joy_msg.buttons[i] == 1 && last_published_joy_msg.buttons[i] == 0)
-              {
-                sticky_buttons_joy_msg.buttons[i] = sticky_buttons_joy_msg.buttons[i] ? 0 : 1;
-              }
-              else
-              {
-                // do not change the message sate
-                //sticky_buttons_joy_msg.buttons[i] = sticky_buttons_joy_msg.buttons[i] ? 0 : 1;
-              }
-            }
-            // update last published message
-            last_published_joy_msg = joy_msg;
-            // fill rest of sticky_buttons_joy_msg (time stamps, axes, etc)
-            sticky_buttons_joy_msg.header.stamp.nsec = joy_msg.header.stamp.nsec;
-            sticky_buttons_joy_msg.header.stamp.sec  = joy_msg.header.stamp.sec;
-            sticky_buttons_joy_msg.header.frame_id   = joy_msg.header.frame_id;
-            for (size_t i = 0; i < joy_msg.axes.size(); i++)
-            {
-              sticky_buttons_joy_msg.axes[i] = joy_msg.axes[i];
-            }
-            pub_.publish(sticky_buttons_joy_msg);
-          }
-          else
-          {
-            joy_msg.header.stamp = ros::Time().now();
-            pub_.publish(joy_msg);
-          }
+          joy_msg.header.stamp = ros::Time().now();
+          pub_.publish(joy_msg);
 
           publish_now = false;
           tv_set = false;
