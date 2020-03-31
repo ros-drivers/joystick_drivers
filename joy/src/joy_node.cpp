@@ -109,13 +109,13 @@ private:
     struct stat stat_buf;
 
     DIR *dev_dir = opendir(path);
-    if (dev_dir == NULL)
+    if (dev_dir == nullptr)
     {
       ROS_ERROR("Couldn't open %s. Error %i: %s.", path, errno, strerror(errno));
       return "";
     }
 
-    while ((entry = readdir(dev_dir)) != NULL)
+    while ((entry = readdir(dev_dir)) != nullptr)
     {
       // filter entries
       if (strncmp(entry->d_name, "js", 2) != 0) // skip device if it's not a joystick
@@ -368,7 +368,7 @@ public:
         FD_SET(joy_fd, &set);
 
         //ROS_INFO("Select...");
-        int select_out = select(joy_fd+1, &set, NULL, NULL, &tv);
+        int select_out = select(joy_fd+1, &set, nullptr, nullptr, &tv);
         //ROS_INFO("Tick...");
         if (select_out == -1)
         {
