@@ -210,7 +210,7 @@ public:
     pub_ = nh_.advertise<sensor_msgs::Joy>("joy", 1);
     ros::Subscriber sub = nh_.subscribe("joy/set_feedback", 10, &Joystick::set_feedback, this);
     nh_param.param<std::string>("dev", joy_dev_, "/dev/input/js0");
-    nh_param.param<std::string>("dev_ff", joy_dev_ff_, "/dev/input/by-id/usb-Sony_PLAYSTATION_R_3_Controller-event-joystick");
+    nh_param.param<std::string>("dev_ff", joy_dev_ff_, "/dev/input/event0");
     nh_param.param<std::string>("dev_name", joy_dev_name_, "");
     nh_param.param<double>("deadzone", deadzone_, 0.05);
     nh_param.param<double>("autorepeat_rate", autorepeat_rate_, 0);
@@ -333,7 +333,7 @@ public:
 
         if (write(ff_fd_, &ie, sizeof(ie)) == -1)
         {
-          ROS_ERROR("Couldn't open joystick force feedback!");//perror("set gain");
+          ROS_WARN("Couldn't set gain on joystick force feedback: %s", strerror(errno));
         }
 
         joy_effect_.id = -1;//0;
