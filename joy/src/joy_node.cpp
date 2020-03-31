@@ -30,18 +30,20 @@
 
 //\author: Blaise Gassend
 
-#include <unistd.h>
-#include <math.h>
-#include <linux/joystick.h>
-#include <fcntl.h>
-#include <sys/stat.h>
+#include <string>
+
 #include <dirent.h>
+#include <fcntl.h>
+#include <linux/input.h>
+#include <linux/joystick.h>
+#include <math.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include <diagnostic_updater/diagnostic_updater.h>
-#include "ros/ros.h"
+#include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
 #include <sensor_msgs/JoyFeedbackArray.h>
-#include <linux/input.h>
-#include <unistd.h>
 
 
 ///\brief Opens, reads from and publishes joystick events
