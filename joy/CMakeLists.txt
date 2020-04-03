@@ -2,6 +2,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(joy)
 
+add_compile_options(-std=c++11)
+
 # Load catkin and all dependencies required for this package
 set(CATKIN_DEPS roscpp diagnostic_updater sensor_msgs)
 find_package(catkin REQUIRED ${CATKIN_DEPS})

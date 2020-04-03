@@ -2,6 +2,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(wiimote)
 
+add_compile_options(-std=c++11)
+
 # Save the command line compile commands in the build output
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 # View the makefile commands during build
