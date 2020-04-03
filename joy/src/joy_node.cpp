@@ -165,7 +165,7 @@ private:
 public:
   Joystick() : nh_(), diagnostic_(), ff_fd_(-1)
   {
-    ROS_INFO("test");
+    ROS_INFO("test2");
   }
 
   void set_feedback(const sensor_msgs::JoyFeedbackArray::ConstPtr& msg)
