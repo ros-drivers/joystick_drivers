@@ -20,7 +20,7 @@
 #
 # Comments and/or additions are welcome (send e-mail to:
 # strang@nmr.mgh.harvard.edu).
-#
+
 """
 pstat.py module
 
@@ -85,26 +85,26 @@ functions/methods.  Their inclusion here is for function name consistency.
 """
 from __future__ import print_function
 
-## CHANGE LOG:
-## ==========
-## 07-11-26 ... edited to work with numpy
-## 01-11-15 ... changed list2string() to accept a delimiter
-## 01-06-29 ... converted exec()'s to eval()'s to make compatible with Py2.1
-## 01-05-31 ... added duplicates() and aduplicates() functions
-## 00-12-28 ... license made GPL, docstring and import requirements
-## 99-11-01 ... changed version to 0.3
-## 99-08-30 ... removed get, getstrings, put, aget, aput (into io.py)
-## 03/27/99 ... added areplace function, made replace fcn recursive
-## 12/31/98 ... added writefc function for ouput to fixed column sizes
-## 12/07/98 ... fixed import problem (failed on collapse() fcn)
-##              added __version__ variable (now 0.2)
-## 12/05/98 ... updated doc-strings
-##              added features to collapse() function
-##              added flat() function for lists
-##              fixed a broken asortrows()
-## 11/16/98 ... fixed minor bug in aput for 1D arrays
-##
-## 11/08/98 ... fixed aput to output large arrays correctly
+# CHANGE LOG:
+# ==========
+# 07-11-26 ... edited to work with numpy
+# 01-11-15 ... changed list2string() to accept a delimiter
+# 01-06-29 ... converted exec()'s to eval()'s to make compatible with Py2.1
+# 01-05-31 ... added duplicates() and aduplicates() functions
+# 00-12-28 ... license made GPL, docstring and import requirements
+# 99-11-01 ... changed version to 0.3
+# 99-08-30 ... removed get, getstrings, put, aget, aput (into io.py)
+# 03/27/99 ... added areplace function, made replace fcn recursive
+# 12/31/98 ... added writefc function for ouput to fixed column sizes
+# 12/07/98 ... fixed import problem (failed on collapse() fcn)
+#              added __version__ variable (now 0.2)
+# 12/05/98 ... updated doc-strings
+#              added features to collapse() function
+#              added flat() function for lists
+#              fixed a broken asortrows()
+# 11/16/98 ... fixed minor bug in aput for 1D arrays
+#
+# 11/08/98 ... fixed aput to output large arrays correctly
 
 import stats  # required 3rd party module
 import string, copy
@@ -112,11 +112,11 @@ from types import *
 
 __version__ = 0.4
 
-###===========================  LIST FUNCTIONS  ==========================
-###
-### Here are the list functions, DEFINED FOR ALL SYSTEMS.
-### Array functions (for NumPy-enabled computers) appear below.
-###
+# ===========================  LIST FUNCTIONS  ==========================
+#
+# Here are the list functions, DEFINED FOR ALL SYSTEMS.
+# Array functions (for NumPy-enabled computers) appear below.
+#
 
 def abut (source,*args):
     """
@@ -166,7 +166,7 @@ Returns: a list of lists as long as the LONGEST list past, source on the
 
 
 def simpleabut (source, addon):
-    """
+"""
 Concatenates two lists as columns and returns the result.  '2D' lists
 are also accomodated for either argument (source or addon).  This DOES NOT
 repeat either list to make the 2 lists of equal length.  Beware of list pairs
@@ -175,7 +175,7 @@ FIRST list passed.
 
 Usage:   simpleabut(source,addon)  where source, addon=list (or list-of-lists)
 Returns: a list of lists as long as source, with source on the 'left' and
-                 addon on the 'right'
+         addon on the 'right'
 """
     if type(source) not in [ListType,TupleType]:
         source = [source]
@@ -686,7 +686,7 @@ Usage:   duplicates (inlist)
 
 
 def nonrepeats(inlist):
-    """
+"""
 Returns items that are NOT duplicated in the first dim of the passed list.
 
 Usage:   nonrepeats (inlist)
@@ -698,28 +698,11 @@ Usage:   nonrepeats (inlist)
     return nonrepeats
 
 
-#===================   PSTAT ARRAY FUNCTIONS  =====================
-#===================   PSTAT ARRAY FUNCTIONS  =====================
-#===================   PSTAT ARRAY FUNCTIONS  =====================
-#===================   PSTAT ARRAY FUNCTIONS  =====================
-#===================   PSTAT ARRAY FUNCTIONS  =====================
-#===================   PSTAT ARRAY FUNCTIONS  =====================
-#===================   PSTAT ARRAY FUNCTIONS  =====================
-#===================   PSTAT ARRAY FUNCTIONS  =====================
-#===================   PSTAT ARRAY FUNCTIONS  =====================
-#===================   PSTAT ARRAY FUNCTIONS  =====================
-#===================   PSTAT ARRAY FUNCTIONS  =====================
-#===================   PSTAT ARRAY FUNCTIONS  =====================
-#===================   PSTAT ARRAY FUNCTIONS  =====================
-#===================   PSTAT ARRAY FUNCTIONS  =====================
-#===================   PSTAT ARRAY FUNCTIONS  =====================
-#===================   PSTAT ARRAY FUNCTIONS  =====================
-
-try:                         # DEFINE THESE *ONLY* IF numpy IS AVAILABLE
+try:  # DEFINE THESE *ONLY* IF numpy IS AVAILABLE
     import numpy as N
 
     def aabut (source, *args):
-        """
+    """
     Like the |Stat abut command.  It concatenates two arrays column-wise
     and returns the result.  CAUTION:  If one array is shorter, it will be
     repeated until it is as long as the other.
@@ -748,7 +731,7 @@ try:                         # DEFINE THESE *ONLY* IF numpy IS AVAILABLE
 
 
     def acolex (a,indices,axis=1):
-        """
+    """
     Extracts specified indices (a list) from passed array, along passed
     axis (column extraction is default).  BEWARE: A 1D array is presumed to be a
     column-array (and that the whole array will be returned as a column).
@@ -766,7 +749,7 @@ try:                         # DEFINE THESE *ONLY* IF numpy IS AVAILABLE
 
 
     def acollapse (a,keepcols,collapsecols,fcn1=None,fcn2=None,cfcn=None):
-        """
+    """
     Averages data in collapsecol, keeping all unique items in keepcols
     (using unique, which keeps unique LISTS of column numbers), retaining
     the unique sets of values in keepcols, the mean for each.  If stderror or
@@ -838,7 +821,7 @@ try:                         # DEFINE THESE *ONLY* IF numpy IS AVAILABLE
 
 
     def adm (a,criterion):
-        """
+    """
     Returns rows from the passed list of lists that meet the criteria in
     the passed criterion expression (a string as a function of x).
 
@@ -861,7 +844,7 @@ try:                         # DEFINE THESE *ONLY* IF numpy IS AVAILABLE
 
 
     def alinexand (a,columnlist,valuelist):
-        """
+    """
     Returns the rows of an array where col (from columnlist) = val
     (from valuelist).  One value is required for each column in columnlist.
 
@@ -884,7 +867,7 @@ try:                         # DEFINE THESE *ONLY* IF numpy IS AVAILABLE
 
 
     def alinexor (a,columnlist,valuelist):
-        """
+    """
     Returns the rows of an array where col (from columnlist) = val (from
     valuelist).  One value is required for each column in columnlist.
     The exception is if either columnlist or valuelist has only 1 value,
@@ -914,7 +897,7 @@ try:                         # DEFINE THESE *ONLY* IF numpy IS AVAILABLE
 
 
     def areplace (a,oldval,newval):
-        """
+    """
     Replaces all occurrences of oldval with newval in array a.
 
     Usage:   areplace(a,oldval,newval)
@@ -923,7 +906,7 @@ try:                         # DEFINE THESE *ONLY* IF numpy IS AVAILABLE
 
 
     def arecode (a,listmap,col='all'):
-        """
+    """
     Remaps the values in an array to a new set of values (useful when
     you need to recode data from (e.g.) strings to numbers as most stats
     packages require.  Can work on SINGLE columns, or 'all' columns at once.
@@ -955,7 +938,7 @@ try:                         # DEFINE THESE *ONLY* IF numpy IS AVAILABLE
 
 
     def arowcompare(row1, row2):
-        """
+    """
     Compares two rows from an array, regardless of whether it is an
     array of numbers or of python objects (which requires the cmp function).
     @@@PURPOSE? 2007-11-26
@@ -973,7 +956,7 @@ try:                         # DEFINE THESE *ONLY* IF numpy IS AVAILABLE
 
 
     def arowsame(row1, row2):
-        """
+    """
     Compares two rows from an array, regardless of whether it is an
     array of numbers or of python objects (which requires the cmp function).
 
@@ -985,7 +968,7 @@ try:                         # DEFINE THESE *ONLY* IF numpy IS AVAILABLE
 
 
     def asortrows(a,axis=0):
-        """
+    """
     Sorts an array "by rows".  This differs from the Numeric.sort() function,
     which sorts elements WITHIN the given axis.  Instead, this function keeps
     the elements along the given axis intact, but shifts them 'up or down'
@@ -998,7 +981,7 @@ try:                         # DEFINE THESE *ONLY* IF numpy IS AVAILABLE
 
 
     def aunique(inarray):
-        """
+    """
     Returns unique items in the FIRST dimension of the passed array. Only
     works on arrays NOT including string items.
 
@@ -1039,7 +1022,7 @@ try:                         # DEFINE THESE *ONLY* IF numpy IS AVAILABLE
 
 
     def aduplicates(inarray):
-        """
+    """
     Returns duplicate items in the FIRST dimension of the passed array. Only
     works on arrays NOT including string items.
 
@@ -1062,6 +1045,7 @@ try:                         # DEFINE THESE *ONLY* IF numpy IS AVAILABLE
             dups = unique(dups)
             dups = N.array(dups)
         return dups
+
 
 except ImportError:    # IF NUMERIC ISN'T AVAILABLE, SKIP ALL arrayfuncs
     pass
