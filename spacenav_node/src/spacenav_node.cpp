@@ -31,11 +31,14 @@
  * Author: Stuart Glaser
  */
 
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
+
 #include "ros/node_handle.h"
 #include "ros/param.h"
-#include "spnav.h"
+
+#include "spnav.h"  // NOLINT
+
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Twist.h"
 #include "sensor_msgs/Joy.h"
@@ -96,12 +99,14 @@ int main(int argc, char **argv)
 
   if (!ensureThreeComponents(linear_scale))
   {
-    ROS_ERROR_STREAM("Parameter " << private_nh.getNamespace() << "/linear_scale must have either one or three components.");
+    ROS_ERROR_STREAM("Parameter " << private_nh.getNamespace()
+      << "/linear_scale must have either one or three components.");
     exit(EXIT_FAILURE);
   }
   if (!ensureThreeComponents(angular_scale))
   {
-    ROS_ERROR_STREAM("Parameter " << private_nh.getNamespace() << "/angular_scale must have either one or three components.");
+    ROS_ERROR_STREAM("Parameter " << private_nh.getNamespace()
+      << "/angular_scale must have either one or three components.");
     exit(EXIT_FAILURE);
   }
   ROS_DEBUG("linear_scale: %.3f %.3f %.3f", linear_scale[0], linear_scale[1], linear_scale[2]);
@@ -109,7 +114,8 @@ int main(int argc, char **argv)
 
   if (spnav_open() == -1)
   {
-    ROS_ERROR("Could not open the space navigator device.  Did you remember to run spacenavd (as root)?");
+    ROS_ERROR("Could not open the space navigator device. "
+      "Did you remember to run spacenavd (as root)?");
 
     return 1;
   }
@@ -117,16 +123,16 @@ int main(int argc, char **argv)
   // Parameters
   // The number of polls needed to be done before the device is considered "static"
   int static_count_threshold = 30;
-  ros::param::get("~/static_count_threshold",static_count_threshold);
+  ros::param::get("~/static_count_threshold", static_count_threshold);
 
   // If true, the node will zero the output when the device is "static"
   bool zero_when_static = true;
-  ros::param::get("~/zero_when_static",zero_when_static);
+  ros::param::get("~/zero_when_static", zero_when_static);
 
   // If the device is considered "static" and each trans, rot normed component
   // is below the deadband, it will output zeros in either rotation,
   // translation, or both.
-  double static_trans_deadband = 0.1; 
+  double static_trans_deadband = 0.1;
   double static_rot_deadband = 0.1;
   ros::param::get("~/static_trans_deadband", static_trans_deadband);
   ros::param::get("~/static_rot_deadband", static_rot_deadband);
@@ -134,7 +140,7 @@ int main(int argc, char **argv)
   sensor_msgs::Joy joystick_msg;
   joystick_msg.axes.resize(6);
   joystick_msg.buttons.resize(2);
-  
+
   spnav_event sev;
   int no_motion_count = 0;
   bool motion_stale = false;
@@ -144,24 +150,27 @@ int main(int argc, char **argv)
   double normed_wx = 0;
   double normed_wy = 0;
   double normed_wz = 0;
+
   while (node_handle.ok())
   {
     bool joy_stale = false;
     bool queue_empty = false;
-    
+
     // Sleep when the queue is empty.
     // If the queue is empty 30 times in a row output zeros.
     // Output changes each time a button event happens, or when a motion
     // event happens and the queue is empty.
     joystick_msg.header.stamp = ros::Time().now();
+
     switch (spnav_poll_event(&sev))
     {
       case 0:
         queue_empty = true;
+
         if (++no_motion_count > static_count_threshold)
         {
-          if ( zero_when_static || 
-              ( fabs(normed_vx) < static_trans_deadband &&
+          if (zero_when_static ||
+               (fabs(normed_vx) < static_trans_deadband &&
                 fabs(normed_vy) < static_trans_deadband &&
                 fabs(normed_vz) < static_trans_deadband)
              )
@@ -169,10 +178,10 @@ int main(int argc, char **argv)
             normed_vx = normed_vy = normed_vz = 0;
           }
 
-          if ( zero_when_static || 
-              ( fabs(normed_wx) < static_rot_deadband &&
+          if (zero_when_static ||
+               (fabs(normed_wx) < static_rot_deadband &&
                 fabs(normed_wy) < static_rot_deadband &&
-                fabs(normed_wz) < static_rot_deadband )
+                fabs(normed_wz) < static_rot_deadband)
              )
           {
             normed_wx = normed_wy = normed_wz = 0;
@@ -194,11 +203,9 @@ int main(int argc, char **argv)
 
         motion_stale = true;
         break;
-        
-      case SPNAV_EVENT_BUTTON:
-        //printf("type, press, bnum = <%d, %d, %d>\n", sev.button.type, sev.button.press, sev.button.bnum);
-        joystick_msg.buttons[sev.button.bnum] = sev.button.press;
 
+      case SPNAV_EVENT_BUTTON:
+        joystick_msg.buttons[sev.button.bnum] = sev.button.press;
         joy_stale = true;
         break;
 
@@ -206,7 +213,7 @@ int main(int argc, char **argv)
         ROS_WARN("Unknown message type in spacenav. This should never happen.");
         break;
     }
-  
+
     if (motion_stale && (queue_empty || joy_stale))
     {
       // The offset and rot_offset are scaled.
@@ -238,13 +245,14 @@ int main(int argc, char **argv)
       motion_stale = false;
       joy_stale = true;
     }
-  
+
     if (joy_stale)
     {
       joy_pub.publish(joystick_msg);
     }
 
-    if (queue_empty) {
+    if (queue_empty)
+    {
       usleep(1000);
     }
   }
