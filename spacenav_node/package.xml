@@ -15,12 +15,14 @@
   <author>Blaise Gassend</author>
 
   <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roslint</build_depend>
   
-  <depend>roscpp</depend> 
   <depend>geometry_msgs</depend> 
-  <depend>sensor_msgs</depend> 
   <depend>libspnav-dev</depend> 
   <depend>libx11-dev</depend>
+  <depend>roscpp</depend> 
+  <depend>sensor_msgs</depend> 
   
   <exec_depend>spacenavd</exec_depend> 
 </package>

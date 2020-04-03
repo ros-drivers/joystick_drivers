@@ -23,14 +23,15 @@
   <url type="bugtracker">https://github.com/ros-drivers/joystick_drivers/issues</url>
 
   <buildtool_depend>catkin</buildtool_depend>
-  
-  <depend>diagnostic_msgs</depend>
-  <depend>sensor_msgs</depend>
-  <depend>rospy</depend>
-  <depend>rosgraph</depend>
-  <depend>libusb-dev</depend>
-  <depend>joystick</depend>
-  <depend>bluez</depend>
-  <depend>python-bluez</depend>
 
+  <build_depend>roslint</build_depend>
+  
+  <depend>bluez</depend>
+  <depend>diagnostic_msgs</depend>
+  <depend>joystick</depend>
+  <depend>libusb-dev</depend>
+  <depend>python-bluez</depend>
+  <depend>rosgraph</depend>
+  <depend>rospy</depend>
+  <depend>sensor_msgs</depend>
 </package>
