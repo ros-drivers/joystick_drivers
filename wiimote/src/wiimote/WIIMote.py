@@ -39,10 +39,10 @@ from math import *
 import tempfile
 import os
 
-import cwiid
-import numpy as np
-
 import rospy
+
+import numpy as np
+import cwiid
 
 from wiiutils import *
 from wiimoteExceptions import *
