@@ -36,6 +36,7 @@ from bluetooth import *
 import select
 import fcntl
 import os
+import struct
 import time
 import sys
 import traceback
