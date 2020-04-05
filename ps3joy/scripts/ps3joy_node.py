@@ -38,6 +38,7 @@ from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 
 from bluetooth import *
 import select
+import struct
 import fcntl
 import os
 import time
