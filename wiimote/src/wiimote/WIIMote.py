@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-################################################################################
+# ###############################################################################
 #
 # File:         WIIMote.py
 # RCS:          $Header: $
@@ -12,7 +12,7 @@
 # Status:       Experimental (Do Not Distribute)
 #
 #
-################################################################################
+# ###############################################################################
 #
 # Revisions:
 #
@@ -29,11 +29,7 @@
 #  Enabled classic controller reports
 # Mon Nov 08 11:44:39 2010 (David Lu) davidlu@wustl.edu
 #  Added nunchuk calibration
-################################################################################
-
-# ROS-Related Imports
-
-# Python-Internal Imports
+# ###############################################################################
 
 import operator
 import time
@@ -43,39 +39,20 @@ from math import *
 import tempfile
 import os
 
-# Third party modules:
-
-import cwiid
-import numpy as np
-# ROS modules:
-
 import rospy
 
-# Wiimote modules:
+import numpy as np
+import cwiid
 
 from wiiutils import *
 from wiimoteExceptions import *
 from wiimoteConstants import *
 import wiistate
 
-#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#
-#    Global Constants
-#
-#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-# Note: the Wiimote object in _wm provides a dictionary
-#       of some Wiimote state:
-#      _wm.state: {'led': 0, 'rpt_mode': 2, 'ext_type': 4, 'buttons': 0, 'rumble': 0, 'error': 0, 'battery': 85}
-#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#
-#    Class WIIMote
-#
-#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 class WIIMote(object):
-    """Main class for Wiimote device interaction.
+    """
+    Main class for Wiimote device interaction.
 
     This class should be a singleton, or it should have
     only class members/methods.
@@ -90,20 +67,8 @@ class WIIMote(object):
 
     Public Methods:
 
-
     """
-
-    # Public constants:
-
     BATTERY_MAX = cwiid.BATTERY_MAX  # 208 a.k.a. 0xD0
-
-    # Public vars:
-
-
-    # Private constants:
-
-
-    # Private vars:
 
     _wm = None                 # WIIMote object
     _wiiCallbackStack = None   # Stack for directing Wii driver callbacks
@@ -115,25 +80,20 @@ class WIIMote(object):
     _accTotal = None           # Summed up acc readings in one AccReading instance
     _gyroTotal = None          # Summed up gyro readings in one AccReading instance
 
-
     _accNormal = None          # Readings of accelerometer at rest
     _gyroNormal = None         # Readings of gyro at rest
 
     _nunchukJoyOrig = None     # Initial Reading of the nunchuk's joystick
 
-    _LEDMasksOn = [LED1_ON, LED2_ON, LED3_ON, LED4_ON] # OR to turn on
-    _LEDMasksOff = [0 | LED2_ON | LED3_ON | LED4_ON, # AND to turn off
+    _LEDMasksOn = [LED1_ON, LED2_ON, LED3_ON, LED4_ON]  # OR to turn on
+    _LEDMasksOff = [0 | LED2_ON | LED3_ON | LED4_ON,    # AND to turn off
                     0 | LED1_ON | LED3_ON | LED4_ON,
                     0 | LED1_ON | LED2_ON | LED4_ON,
                     0 | LED1_ON | LED2_ON | LED3_ON]
 
-
-    #----------------------------------------
-    # __init__
-    #------------------
-
     def __init__(self, theSampleRate=0, wiiStateLock=None, gatherCalibrationStats=False):
-        """Instantiate a Wiimote driver instance, which controls one physical Wiimote device.
+        """
+        Instantiate a Wiimote driver instance, which controls one physical Wiimote device.
 
         Parameters:
             theSampleRate: How often to update the instance's wiiMoteState variable:
@@ -162,31 +122,32 @@ class WIIMote(object):
         self.wiiStateLock = threading.Lock()
         self.wiiMoteState = None        # Object holding a snapshot of the Wiimote state
         self.sampleRate = -1            # How often to update wiiMoteState
-                                   #    -1: Never
-                                   #     0: Everytime the underlying system offers state
-                                   #  else: (Possibly fractional) seconds between updates
+        #    -1: Never
+        #     0: Everytime the underlying system offers state
+        #  else: (Possibly fractional) seconds between updates
 
         # Mean x/y/z of most recent accelerometer zeroing in Gs and metric:
-        self.meanAcc = np.array([None, None, None],dtype=np.float64)
-        self.meanAccMetric = np.array([None, None, None],dtype=np.float64)
+        self.meanAcc = np.array([None, None, None], dtype=np.float64)
+        self.meanAccMetric = np.array([None, None, None], dtype=np.float64)
         # Stdev x/y/z of most recent accelerometer zeroing in Gs and metric:
-        self.stdevAcc = np.array([None, None, None],dtype=np.float64)
-        self.stdevAccMetric = np.array([None, None, None],dtype=np.float64)
+        self.stdevAcc = np.array([None, None, None], dtype=np.float64)
+        self.stdevAccMetric = np.array([None, None, None], dtype=np.float64)
         # Variance x/y/z of most recent accelerometer zeroing
-        self.varAcc = np.array([None, None, None],dtype=np.float64)
+        self.varAcc = np.array([None, None, None], dtype=np.float64)
 
         # Mean x/y/z of most recent gyro zeroing in Gs and metric:
-        self.meanGyro = np.array([None, None, None],dtype=np.float64)
-        self.meanGyroMetric = np.array([None, None, None],dtype=np.float64)
+        self.meanGyro = np.array([None, None, None], dtype=np.float64)
+        self.meanGyroMetric = np.array([None, None, None], dtype=np.float64)
         # Stdev x/y/z of most recent gyro zeroing in Gs and metric:
-        self.stdevGyro = np.array([None, None, None],dtype=np.float64)
-        self.stdevGyroMetric = np.array([None, None, None],dtype=np.float64)
+        self.stdevGyro = np.array([None, None, None], dtype=np.float64)
+        self.stdevGyroMetric = np.array([None, None, None], dtype=np.float64)
         # Variance x/y/z of most recent gyro zeroing
-        self.varGyroMetric = np.array([None, None, None],dtype=np.float64)
+        self.varGyroMetric = np.array([None, None, None], dtype=np.float64)
 
-        self.latestCalibrationSuccessful = False;
+        self.latestCalibrationSuccessful = False
 
-        promptUsr("Press buttons 1 and 2 together to pair (within 6 seconds).\n    (If no blinking lights, press power button for ~3 seconds.)")
+        promptUsr("Press buttons 1 and 2 together to pair (within 6 seconds).\n    "
+                  "(If no blinking lights, press power button for ~3 seconds.)")
 
         try:
             self._wm = cwiid.Wiimote()
@@ -203,19 +164,21 @@ class WIIMote(object):
             exit
 
         self.sampleRate = theSampleRate
-        self._startTime = getTimeStamp();
+        self._startTime = getTimeStamp()
 
         self._wiiCallbackStack = _WiiCallbackStack(self._wm)
 
         # Enable reports from the WII:
-        self._wm.rpt_mode = cwiid.RPT_ACC | cwiid.RPT_MOTIONPLUS | cwiid.RPT_BTN | cwiid.RPT_IR | cwiid.RPT_NUNCHUK | cwiid.RPT_CLASSIC
+        self._wm.rpt_mode = (cwiid.RPT_ACC | cwiid.RPT_MOTIONPLUS |
+                             cwiid.RPT_BTN | cwiid.RPT_IR |
+                             cwiid.RPT_NUNCHUK | cwiid.RPT_CLASSIC)
 
         # Set accelerometer calibration to factory defaults:
         (factoryZero, factoryOne) = self.getAccFactoryCalibrationSettings()
         self.setAccelerometerCalibration(factoryZero, factoryOne)
 
         # Initialize Gyro zeroing to do nothing:
-        self.setGyroCalibration([0,0,0])
+        self.setGyroCalibration([0, 0, 0])
 
         # Set nunchuk calibration to factory defaults.
         if (self._wm.state['ext_type'] == cwiid.EXT_NUNCHUK):
@@ -230,13 +193,7 @@ class WIIMote(object):
 
         rospy.loginfo("Wiimote activated.")
 
-
-    #----------------------------------------
-    # steadyStateCallback
-    #------------------
-
     def _steadyStateCallback(self, state, theTime):
-        #print state
         now = getTimeStamp()
         if now - self._startTime >= self.sampleRate:
                 # If this Wiimote driver is to synchronize write
@@ -246,7 +203,7 @@ class WIIMote(object):
             if self.wiiStateLock is not None:
                 self.wiiStateLock.acquire()
             try:
-                self.wiiMoteState = wiistate.WIIState(state, theTime, self.getRumble(), self._wm.state['buttons']);
+                self.wiiMoteState = wiistate.WIIState(state, theTime, self.getRumble(), self._wm.state['buttons'])
             except ValueError:
                 # A 'Wiimote is closed' error can occur as a race condition
                 # as threads close down after a Cnt-C. Catch those and
@@ -255,10 +212,6 @@ class WIIMote(object):
             if self.wiiStateLock is not None:
                 self.wiiStateLock.release()
             self._startTime = now
-
-    #----------------------------------------
-    # _calibrationCallback
-    #---------------------
 
     def _calibrationCallback(self, state, theTime):
         """Wii's callback destination while zeroing the device."""
@@ -291,12 +244,9 @@ class WIIMote(object):
 
         return
 
-    #----------------------------------------
-    # zero
-    #------------------
-
     def zeroDevice(self):
-        """Find the at-rest values of the accelerometer and the gyro.
+        """
+        Find the at-rest values of the accelerometer and the gyro.
 
         Collect NUM_ZEROING_READINGS readings of acc and gyro. Average them.
         If the standard deviation of any of the six axes exceeds a threshold
@@ -333,8 +283,8 @@ class WIIMote(object):
 
             # Wipe out previous calibration correction data
             # while we gather raw samples:
-            wiistate.WIIState.setGyroCalibration([0,0,0])
-            wiistate.WIIState.setAccelerometerCalibration([0,0,0], [0,0,0])
+            wiistate.WIIState.setGyroCalibration([0, 0, 0])
+            wiistate.WIIState.setAccelerometerCalibration([0, 0, 0], [0, 0, 0])
 
             while (self._readingsCnt < NUM_ZEROING_READINGS) or (self._warmupCnt < NUM_WARMUP_READINGS):
                 time.sleep(.1)
@@ -354,7 +304,7 @@ class WIIMote(object):
             if accWiiReading is not None:
                 oneAccReading = accWiiReading.tuple()
                 accArrays.append(oneAccReading)
-        accArrays = np.reshape(accArrays, (-1,3))
+        accArrays = np.reshape(accArrays, (-1, 3))
 
         # Extract the gyro reading triplets from the list of WIIReading()s:
         if (self.motionPlusPresent()):
@@ -364,7 +314,7 @@ class WIIMote(object):
                     gyroArrays.append(oneGyroReading)
 
         if (self.motionPlusPresent()):
-            gyroArrays = np.reshape(gyroArrays, (-1,3))
+            gyroArrays = np.reshape(gyroArrays, (-1, 3))
 
             # We now have:
             # [[accX1, accZ1, accZ1]
@@ -410,7 +360,7 @@ class WIIMote(object):
         self.setAccelerometerCalibration(accCalibrationOrig[0], accCalibrationOrig[1])
 
         if (isBadCalibration):
-            self.latestCalibrationSuccessful = False;
+            self.latestCalibrationSuccessful = False
             # We can calibrate the Wiimote anyway, if the preference
             # constant in wiimoteConstants.py is set accordingly:
             if (CALIBRATE_WITH_FAILED_CALIBRATION_DATA and self.motionPlusPresent()):
@@ -425,87 +375,49 @@ class WIIMote(object):
                     rospy.loginfo("Failed calibration; running without calibration now.")
             return False
 
-        # Tell the WIIState factory that all WIIMote state instance creations
-        # should correct accelerometer readings automatically, using the
-        # Nintendo-factory-set values:
-
-
         # Do WIIState's gyro zero reading, so that future
         # readings can be corrected when a WIIState is created:
         wiistate.WIIState.setGyroCalibration(self.meanGyro)
 
         self.lastZeroingTime = getTimeStamp()
         rospy.loginfo("Calibration successful.")
-        self.latestCalibrationSuccessful = True;
-        return True;
-
-    #----------------------------------------
-    # getWiimoteState
-    #------------------
+        self.latestCalibrationSuccessful = True
+        return True
 
     def getWiimoteState(self):
         """Returns the most recent Wiistate instance. Provides proper locking."""
 
         return self._getInstanceVarCriticalSection("wiimoteState")
 
-    #----------------------------------------
-    # getMeanAccelerator
-    #------------------
-
     def getMeanAccelerator(self):
         """Accessor that provides locking."""
 
         return self._getInstanceVarCriticalSection("meanAcc")
-
-    #----------------------------------------
-    # getStdevAccelerator
-    #------------------
 
     def getStdevAccelerator(self):
         """Accessor that provides locking."""
 
         return self._getInstanceVarCriticalSection("stdevAcc")
 
-    #----------------------------------------
-    # getVarianceAccelerator
-    #------------------
-
     def getVarianceAccelerator(self):
         """Accessor that provides locking."""
 
         return self._getInstanceVarCriticalSection("varAcc")
-
-    #----------------------------------------
-    # getMeanGyro
-    #------------------
 
     def getMeanGyro(self):
         """Accessor that provides locking."""
 
         return self._getInstanceVarCriticalSection("meanGyro")
 
-    #----------------------------------------
-    # getStdevGyro
-    #------------------
-
     def getStdevGyro(self):
         """Accessor that provides locking."""
 
         return self._getInstanceVarCriticalSection("stdevGyro")
 
-    #----------------------------------------
-    # getVarianceGyro
-    #------------------
-
     def getVarianceGyro(self):
         """Accessor that provides locking."""
 
         return self._getInstanceVarCriticalSection("varGyro")
-
-
-    #----------------------------------------
-    # _getInstanceVarCriticalSection
-    #------------------
 
     def _getInstanceVarCriticalSection(self, varName):
         """Return the value of the given instance variable, providing locking service."""
@@ -528,24 +440,15 @@ class WIIMote(object):
             elif varName == "varGyro":
                 res = self.varGyroMetric
             else:
-                raise ValueError("Instance variable name " + str(varName) + "is not under lock control." )
+                raise ValueError("Instance variable name " + str(varName) + "is not under lock control.")
 
         finally:
             self.wiiStateLock.release()
             return res
 
-    #----------------------------------------
-    # setRumble
-    #------------------
-
     def setRumble(self, switchPos):
         """Start of stop rumble (i.e. vibration). 1: start; 0: stop"""
         self._wm.rumble = switchPos
-
-
-    #----------------------------------------
-    # getRumble
-    #------------------
 
     def getRumble(self):
         # Protect against reading exception from reading
@@ -554,10 +457,6 @@ class WIIMote(object):
             return self._wm.state['rumble']
         except ValueError:
             pass
-
-    #----------------------------------------
-    # setLEDs
-    #------------------
 
     def setLEDs(self, statusList):
         """Set the four Wii LEDs according to statusList
@@ -579,11 +478,6 @@ class WIIMote(object):
             elif statusList[LED] is not None:
                 currLEDs = currLEDs & self._LEDMasksOff[LED]
         self._wm.led = currLEDs
-
-
-    #----------------------------------------
-    # getLEDs
-    #------------------
 
     def getLEDs(self, asInt=False):
         """Get the status of the four Wii LEDs.
@@ -623,10 +517,6 @@ class WIIMote(object):
 
         return res
 
-    #----------------------------------------
-    # getBattery
-    #------------------
-
     def getBattery(self):
         """Obtain battery state from Wiimote.
 
@@ -635,10 +525,6 @@ class WIIMote(object):
 
         return self._wm.state['battery']
 
-    #----------------------------------------
-    # getAccelerometerCalibration
-    #----------
-
     def getAccelerometerCalibration(self):
         """Returns currently operative accelerometer calibration.
 
@@ -646,10 +532,6 @@ class WIIMote(object):
         calibration or a '1' reading.
        """
         return wiistate.WIIState.getAccelerometerCalibration()
-
-    #----------------------------------------
-    # getAccFactoryCalibrationSettings
-    #------------------
 
     def getAccFactoryCalibrationSettings(self):
         """Obtain calibration data from accelerometer.
@@ -663,13 +545,9 @@ class WIIMote(object):
         # Parameter is the Wiimote extension from which
         # the calibration is to be retrieved.
 
-        factoryCalNums = self._wm.get_acc_cal(cwiid.EXT_NONE);
+        factoryCalNums = self._wm.get_acc_cal(cwiid.EXT_NONE)
 
         return (factoryCalNums[0], factoryCalNums[1])
-
-    #----------------------------------------
-    # getNunchukFactoryCalibrationSettings
-    #------------------
 
     def getNunchukFactoryCalibrationSettings(self):
         """Obtain calibration data from nunchuk accelerometer.
@@ -679,12 +557,8 @@ class WIIMote(object):
         with the calibration numbers for zero and one:
 
         """
-        factoryCalNums = self._wm.get_acc_cal(cwiid.EXT_NUNCHUK);
+        factoryCalNums = self._wm.get_acc_cal(cwiid.EXT_NUNCHUK)
         return (factoryCalNums[0], factoryCalNums[1])
-
-    #----------------------------------------
-    # setAccelerometerCalibration
-    #----------
 
     def setAccelerometerCalibration(self, zeroReadingList, oneReadingList):
         wiistate.WIIState.setAccelerometerCalibration(np.array(zeroReadingList), np.array(oneReadingList))
@@ -692,31 +566,15 @@ class WIIMote(object):
     def setAccelerometerCalibration(self, zeroReadingNPArray, oneReadingNPArray):
         wiistate.WIIState.setAccelerometerCalibration(zeroReadingNPArray, oneReadingNPArray)
 
-    #----------------------------------------
-    # getGyroCalibration
-    #------------------
-
     def getGyroCalibration(self):
         """Return current Gyro zeroing offsets as list x/y/z."""
         return wiistate.WIIState.getGyroCalibration()
 
-    #----------------------------------------
-    # setGyroCalibration
-    #------------------
-
     def setGyroCalibration(self, gyroTriplet):
         wiistate.WIIState.setGyroCalibration(gyroTriplet)
 
-    #----------------------------------------
-    # setNunchukAccelerometerCalibration
-    #----------
-
     def setNunchukAccelerometerCalibration(self, zeroReadingList, oneReadingList):
         wiistate.WIIState.setNunchukAccelerometerCalibration(np.array(zeroReadingList), np.array(oneReadingList))
-
-    #----------------------------------------
-    # motionPlusPresent
-    #------------------
 
     def motionPlusPresent(self):
         """Return True/False to indicate whether a Wiimotion Plus is detected.
@@ -731,10 +589,6 @@ class WIIMote(object):
         else:
             return False
 
-    #----------------------------------------
-    # nunchukPresent
-    #------------------
-
     def nunchukPresent(self):
         """Return True/False to indicate whether a Nunchuk is detected.
 
@@ -748,15 +602,11 @@ class WIIMote(object):
         else:
             return False
 
-    #----------------------------------------
-    # computeAccStatistics
-    #------------------
-
     def computeAccStatistics(self):
         """Compute mean and stdev for accelerometer data list self._accList in both Gs and metric m/sec^2"""
 
         accArrays = []
-        self.maxAccReading = np.array([0,0,0], dtype=None, copy=1, order=None, subok=0, ndmin=0)
+        self.maxAccReading = np.array([0, 0, 0], dtype=None, copy=1, order=None, subok=0, ndmin=0)
         for accWiiReading in self._accList:
             if accWiiReading is not None:
                 oneAccReading = accWiiReading.tuple()
@@ -776,15 +626,10 @@ class WIIMote(object):
         self.stdevAccMetric = self.stdevAcc * EARTH_GRAVITY
         self.varAcc = np.square(self.stdevAccMetric)
 
-
-    #----------------------------------------
-    # computeGyroStatistics
-    #------------------
-
     def computeGyroStatistics(self):
         """Compute mean and stdev for gyro data list self._gyroList in both Gs and metric m/sec^2"""
         gyroArrays = []
-        self.maxGyroReading = np.array([0,0,0],dtype=np.float64)
+        self.maxGyroReading = np.array([0, 0, 0], dtype=np.float64)
         for gyroReading in self._gyroList:
             if (gyroReading is not None):
                 oneGyroReading = gyroReading.tuple()
@@ -800,31 +645,16 @@ class WIIMote(object):
             self.stdevGyroMetric = self.stdevGyro * GYRO_SCALE_FACTOR
             self.varGyroMetric = np.square(self.stdevGyroMetric)
 
-
-    #----------------------------------------
-    # printState
-    #------------------
-
     def printState(self):
         log(self.wiiMoteState)
-
-
-    #----------------------------------------
-    # shutdown
-    #------------------
 
     def shutdown(self):
         self._wm.close()
 
-#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#
-#    Class WiiCallbackStack
-#
-#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 class _WiiCallbackStack(object):
-    """Class organizes installation and removal/restoration
+    """
+    Class organizes installation and removal/restoration
     of callback functions for the Wii driver to use.
     Only one instance of this class is allowed. Additional
     instantiations generate a CallbackStackMultInstError.
@@ -845,17 +675,11 @@ class _WiiCallbackStack(object):
                                        # a no-op
 
     """
-
     _functionStack = []
     _singletonInstance = None  # No instance exists yet.
     _paused = False
 
-    _wm = None                 # The Wii remote driver instance
-
-
-    #----------------------------------------
-    # __init__
-    #------------------
+    _wm = None  # The Wii remote driver instance
 
     def __init__(self, wiiDriver, sloppy=True):
 
@@ -866,10 +690,6 @@ class _WiiCallbackStack(object):
         self._singletonInstance = self
         self._wm = wiiDriver
 
-    #----------------------------------------
-    # push
-    #------------------
-
     def push(self, func):
         """Given function becomes the new WIImote callback function, shadowing
         the function that is currently on the stack
@@ -877,10 +697,6 @@ class _WiiCallbackStack(object):
 
         self._functionStack.append(func)
         self.setcallback(func)
-
-    #----------------------------------------
-    # pop
-    #------------------
 
     def pop(self):
         """Wiimote callback function is popped off the stack. New top of stack
@@ -894,19 +710,11 @@ class _WiiCallbackStack(object):
         self.setcallback(self._functionStack[-1])
         return func
 
-    #----------------------------------------
-    # pause
-    #------------------
-
     def pause(self):
         """WIIMote callbacks are temporarily stopped."""
 
         self._wm.disable(cwiid.FLAG_MESG_IFC)
         self._paused = True
-
-    #----------------------------------------
-    # resume
-    #------------------
 
     def resume(self, sloppy=True):
         """Resume the (presumably) previously paused WIIMote callback functions.
@@ -926,11 +734,6 @@ class _WiiCallbackStack(object):
 
         self._wiiCallbackStack(_functionStack.index[-1])
 
-
-    #----------------------------------------
-    # setcallback
-    #------------------
-
     def setcallback(self, f):
         """Tell WIIMote which function to call when reporting status."""
 
@@ -941,9 +744,9 @@ class _WiiCallbackStack(object):
 class CalibrationMeasurements():
 
     def __init__(self):
-                 # runNum, meanAcc, maxAcc, stdevAcc, meanGyro, maxGyro, stdevGyro,
-                 # accVal, devAccVal, stdevFractionAccVal, isOutlierAcc,
-                 # gyroVal, devGyroVal, stdevFractionGyroVal, isOutlierGyro):
+        # runNum, meanAcc, maxAcc, stdevAcc, meanGyro, maxGyro, stdevGyro,
+        # accVal, devAccVal, stdevFractionAccVal, isOutlierAcc,
+        # gyroVal, devGyroVal, stdevFractionGyroVal, isOutlierGyro):
 
         pass
 
@@ -958,7 +761,6 @@ class CalibrationMeasurements():
 
     def setMaxAcc(self, maxArray):
         self.maxAcc = maxArray
-
 
     def setGyroData(self, gyroArray):
         self.gyroVal = gyroArray

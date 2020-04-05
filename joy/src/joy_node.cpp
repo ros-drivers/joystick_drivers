@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-//\author: Blaise Gassend
+// \author: Blaise Gassend
 
 #include <string>
 
@@ -46,7 +46,7 @@
 #include <sensor_msgs/JoyFeedbackArray.h>
 
 
-///\brief Opens, reads from and publishes joystick events
+/// \brief Opens, reads from and publishes joystick events
 class Joystick
 {
 private:
@@ -58,8 +58,8 @@ private:
   std::string joy_dev_name_;
   std::string joy_dev_ff_;
   double deadzone_;
-  double autorepeat_rate_;   // in Hz.  0 for no repeat.
-  double coalesce_interval_; // Defaults to 100 Hz rate limit.
+  double autorepeat_rate_;    // in Hz.  0 for no repeat.
+  double coalesce_interval_;  // Defaults to 100 Hz rate limit.
   int event_count_;
   int pub_count_;
   ros::Publisher pub_;
@@ -71,7 +71,7 @@ private:
 
   diagnostic_updater::Updater diagnostic_;
 
-  ///\brief Publishes diagnostics and status
+  /// \brief Publishes diagnostics and status
   void diagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat)
   {
     double now = ros::Time::now().toSec();
@@ -106,7 +106,7 @@ private:
    */
   std::string get_dev_by_joy_name(const std::string& joy_name)
   {
-    const char path[] = "/dev/input"; // no trailing / here
+    const char path[] = "/dev/input";  // no trailing / here
     struct dirent *entry;
     struct stat stat_buf;
 
@@ -120,7 +120,7 @@ private:
     while ((entry = readdir(dev_dir)) != nullptr)
     {
       // filter entries
-      if (strncmp(entry->d_name, "js", 2) != 0) // skip device if it's not a joystick
+      if (strncmp(entry->d_name, "js", 2) != 0)  // skip device if it's not a joystick
       {
         continue;
       }
@@ -129,7 +129,7 @@ private:
       {
         continue;
       }
-      if (!S_ISCHR(stat_buf.st_mode)) // input devices are character devices, skip other
+      if (!S_ISCHR(stat_buf.st_mode))  // input devices are character devices, skip other
       {
         continue;
       }
@@ -170,17 +170,17 @@ public:
   {
     if (ff_fd_ == -1)
     {
-      return;//we arent ready yet
+      return;  // we arent ready yet
     }
 
     size_t size = msg->array.size();
     for (size_t i = 0; i < size; i++)
     {
-      //process each feedback
-      if (msg->array[i].type == 1 && ff_fd_ != -1)//TYPE_RUMBLE
+      // process each feedback
+      if (msg->array[i].type == 1 && ff_fd_ != -1)  // TYPE_RUMBLE
       {
-        //if id is zero, thats low freq, 1 is high
-        joy_effect_.direction = 0;//down
+        // if id is zero, thats low freq, 1 is high
+        joy_effect_.direction = 0;  // down
         joy_effect_.type = FF_RUMBLE;
         if (msg->array[i].id == 0)
         {
@@ -199,7 +199,7 @@ public:
     }
   }
 
-  ///\brief Opens joystick port, reads from port and publishes while node is active
+  /// \brief Opens joystick port, reads from port and publishes while node is active
   int main(int argc, char **argv)
   {
     diagnostic_.add("Joystick Driver Status", this, &Joystick::diagnostics);
@@ -235,12 +235,15 @@ public:
 
     if (autorepeat_rate_ > 1 / coalesce_interval_)
     {
-      ROS_WARN("joy_node: autorepeat_rate (%f Hz) > 1/coalesce_interval (%f Hz) does not make sense. Timing behavior is not well defined.", autorepeat_rate_, 1/coalesce_interval_);
+      ROS_WARN("joy_node: autorepeat_rate (%f Hz) > 1/coalesce_interval (%f Hz) "
+        "does not make sense. Timing behavior is not well defined.", autorepeat_rate_, 1/coalesce_interval_);
     }
 
     if (deadzone_ >= 1)
     {
-      ROS_WARN("joy_node: deadzone greater than 1 was requested. The semantics of deadzone have changed. It is now related to the range [-1:1] instead of [-32767:32767]. For now I am dividing your deadzone by 32767, but this behavior is deprecated so you need to update your launch file.");
+      ROS_WARN("joy_node: deadzone greater than 1 was requested. The semantics of deadzone have changed. "
+        "It is now related to the range [-1:1] instead of [-32767:32767]. For now I am dividing your deadzone "
+        "by 32767, but this behavior is deprecated so you need to update your launch file.");
       deadzone_ /= 32767;
     }
 
@@ -336,15 +339,15 @@ public:
           ROS_WARN("Couldn't set gain on joystick force feedback: %s", strerror(errno));
         }
 
-        joy_effect_.id = -1;//0;
-        joy_effect_.direction = 0;//down
+        joy_effect_.id = -1;
+        joy_effect_.direction = 0;  // down
         joy_effect_.type = FF_RUMBLE;
         joy_effect_.u.rumble.strong_magnitude = 0;
         joy_effect_.u.rumble.weak_magnitude = 0;
         joy_effect_.replay.length = 1000;
         joy_effect_.replay.delay = 0;
 
-        //upload the effect
+        // upload the effect
         int ret = ioctl(ff_fd_, EVIOCSFF, &joy_effect_);
       }
 
@@ -356,8 +359,8 @@ public:
       bool publication_pending = false;
       tv.tv_sec = 1;
       tv.tv_usec = 0;
-      sensor_msgs::Joy joy_msg; // Here because we want to reset it on device close.
-      double val; //Temporary variable to hold event values
+      sensor_msgs::Joy joy_msg;  // Here because we want to reset it on device close.
+      double val;  // Temporary variable to hold event values
       while (nh_.ok())
       {
         ros::spinOnce();
@@ -367,31 +370,27 @@ public:
         FD_ZERO(&set);
         FD_SET(joy_fd, &set);
 
-        //ROS_INFO("Select...");
         int select_out = select(joy_fd+1, &set, nullptr, nullptr, &tv);
-        //ROS_INFO("Tick...");
         if (select_out == -1)
         {
           tv.tv_sec = 0;
           tv.tv_usec = 0;
-          //ROS_INFO("Select returned negative. %i", ros::isShuttingDown());
           continue;
-          //break; // Joystick is probably closed. Not sure if this case is useful.
         }
 
-        //play the rumble effect (can probably do this at lower rate later)
+        // play the rumble effect (can probably do this at lower rate later)
         if (ff_fd_ != -1)
         {
           struct input_event start;
           start.type = EV_FF;
           start.code = joy_effect_.id;
-		      start.value = 3;
+          start.value = 3;
           if (write(ff_fd_, (const void*) &start, sizeof(start)) == -1)
           {
-            break;//fd closed
+            break;  // fd closed
           }
 
-          //upload the effect
+          // upload the effect
           if (update_feedback_ == true)
           {
             int ret = ioctl(ff_fd_, EVIOCSFF, &joy_effect_);
@@ -403,10 +402,9 @@ public:
         {
           if (read(joy_fd, &event, sizeof(js_event)) == -1 && errno != EAGAIN)
           {
-            break; // Joystick is probably closed. Definitely occurs.
+            break;  // Joystick is probably closed. Definitely occurs.
           }
 
-          //ROS_INFO("Read data...");
           joy_msg.header.stamp = ros::Time().now();
           event_count_++;
           switch (event.type)
@@ -500,11 +498,12 @@ public:
               break;
             }
             default:
-              ROS_WARN("joy_node: Unknown event type. Please file a ticket. time=%u, value=%d, type=%Xh, number=%d", event.time, event.value, event.type, event.number);
+              ROS_WARN("joy_node: Unknown event type. Please file a ticket. "
+                "time=%u, value=%d, type=%Xh, number=%d", event.time, event.value, event.type, event.number);
               break;
           }
         }
-        else if (tv_set) // Assume that the timer has expired.
+        else if (tv_set)  // Assume that the timer has expired.
         {
           joy_msg.header.stamp = ros::Time().now();
           publish_now = true;
@@ -515,7 +514,6 @@ public:
           // Assume that all the JS_EVENT_INIT messages have arrived already.
           // This should be the case as the kernel sends them along as soon as
           // the device opens.
-          //ROS_INFO("Publish...");
           joy_msg.header.stamp = ros::Time().now();
           pub_.publish(joy_msg);
 
@@ -534,7 +532,6 @@ public:
           tv.tv_usec = (coalesce_interval_ - tv.tv_sec) * 1e6;
           publication_pending = true;
           tv_set = true;
-          //ROS_INFO("Pub pending...");
         }
 
         // If nothing is going on, start a timer to do autorepeat.
@@ -543,7 +540,6 @@ public:
           tv.tv_sec = trunc(autorepeat_interval);
           tv.tv_usec = (autorepeat_interval - tv.tv_sec) * 1e6;
           tv_set = true;
-          //ROS_INFO("Autorepeat pending... %li %li", tv.tv_sec, tv.tv_usec);
         }
 
         if (!tv_set)
@@ -553,7 +549,7 @@ public:
         }
 
         diagnostic_.update();
-      } // End of joystick open loop.
+      }  // End of joystick open loop.
 
       close(ff_fd_);
       close(joy_fd);

@@ -26,20 +26,21 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>cwiid-dev</build_depend>  
+  <build_depend>message_generation</build_depend>
   <build_depend>roslint</build_depend>
   
-  <depend>genmsg</depend>
   <depend>geometry_msgs</depend>
-  <depend>sensor_msgs</depend>
   <depend>python-cwiid</depend>
   <depend>python-numpy</depend>
+  <depend>roscpp</depend>
   <depend>roslib</depend>
   <depend>rospy</depend>
-  <depend>roscpp</depend>
+  <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   
   <exec_depend>cwiid</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
 
   <export>
     <architecture_independent/>

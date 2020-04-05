@@ -1,4 +1,4 @@
-################################################################################
+# ###############################################################################
 #
 # File:         wiimoteExceptions.py
 # RCS:          $Header: $
@@ -10,9 +10,8 @@
 # Package:      N/A
 # Status:       Experimental (Do Not Distribute)
 #
-#
-#
-################################################################################
+# ###############################################################################
+
 
 class WiimoteError(Exception):
     """Mother of all Wiimote exceptions"""
@@ -37,8 +36,10 @@ class WiimoteEnableError(WiimoteError):
 class CallbackStackMultInstError(WiimoteError):
     """Code attempted to create a second callback stack instance."""
 
+
 class ResumeNonPausedError(WiimoteError):
     """Code attempted to resume callbacks without first pausing."""
+
 
 class CallbackStackEmptyError(WiimoteError):
     """Attemp to operate on an empty callback stack."""

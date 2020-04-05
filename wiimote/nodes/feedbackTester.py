@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('wiimote')
+import roslib
 import rospy
 from sensor_msgs.msg import JoyFeedbackArray
 from sensor_msgs.msg import JoyFeedback
 
-# Test the wiimote package LED control. Expect the following LED
-# patterns of INTER_PATTERN_SLEEP_DURATION seconds duration each:
-
+roslib.load_manifest('wiimote')
 
 INTER_PATTERN_SLEEP_DURATION = 0.2
+
 
 def talker():
     pub = rospy.Publisher('/joy/set_feedback', JoyFeedbackArray, queue_size=1)
@@ -31,9 +30,7 @@ def talker():
     rum.type = JoyFeedback.TYPE_RUMBLE
     rum.id = 0
 
-
     while not rospy.is_shutdown():
-
         msg = JoyFeedbackArray()
         msg.array = [led0, led1, led2, led3, rum]
 

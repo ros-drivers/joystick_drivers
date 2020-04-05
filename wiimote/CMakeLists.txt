@@ -1,6 +1,8 @@
-# http://ros.org/doc/groovy/api/catkin/html/user_guide/supposed.html
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(wiimote)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Save the command line compile commands in the build output
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
@@ -8,15 +10,15 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 #set(CMAKE_VERBOSE_MAKEFILE on)
 
 # Set compile flags
-set(CMAKE_CXX_FLAGS "-fPIE -fPIC -std=c++11 -O2 -D_FORTIFY_SOURCE=2 -fstack-protector -Wformat -Wformat-security -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-fPIE -fPIC -O2 -D_FORTIFY_SOURCE=2 -fstack-protector -Wformat -Wformat-security -Wall ${CMAKE_CXX_FLAGS}")
 # Flags executables
 set(CMAKE_EXE_LINKER_FLAGS "-pie -z noexecstack -z relro -z now")
 # Flags shared libraries
 set(CMAKE_SHARED_LINKER_FLAGS "-z noexecstack -z relro -z now ${CMAKE_SHARED_LINKER_FLAGS}")
 
 # Load catkin and all dependencies required for this package
-set(CATKIN_DEPS geometry_msgs sensor_msgs std_msgs std_srvs rospy roscpp roslib genmsg)
-find_package(catkin REQUIRED ${CATKIN_DEPS} roslint)
+set(CATKIN_DEPS geometry_msgs sensor_msgs std_msgs std_srvs rospy roscpp roslib genmsg roslint)
+find_package(catkin REQUIRED ${CATKIN_DEPS})
 
 catkin_python_setup()
 
@@ -26,14 +28,14 @@ add_message_files(
   FILES
   IrSourceInfo.msg
   State.msg
-  TimedSwitch.msg)
+  TimedSwitch.msg
+)
 
 generate_messages(DEPENDENCIES geometry_msgs std_msgs sensor_msgs)
 
 # ROS Lint the code
 roslint_cpp()
-#roslint_python()  # TODO(jbohren): ROS Lint the Python code
-roslint_add_test()
+roslint_python()
 
 ###################################
 ## catkin specific configuration ##
@@ -46,7 +48,11 @@ roslint_add_test()
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS ${CATKIN_DEPS}
+  CATKIN_DEPENDS
+    geometry_msgs
+    sensor_msgs
+    std_msgs
+    std_srvs
 )
 
 ## Specify additional locations of header files
@@ -66,6 +72,10 @@ add_executable(teleop_wiimote src/teleop_wiimote.cpp)
 target_link_libraries(teleop_wiimote ${catkin_LIBRARIES})
 add_dependencies(teleop_wiimote wiimote_generate_messages_cpp)
 ## End C++ Teleop for Wiimote Node
+
+if(CATKIN_ENABLE_TESTING)
+  roslint_add_test()
+endif()
 
 # Install launch files
 install(DIRECTORY launch/
