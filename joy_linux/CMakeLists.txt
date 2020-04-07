@@ -28,6 +28,13 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
       "rclcpp"
       "sensor_msgs")
     install(TARGETS joy_linux_node DESTINATION lib/${PROJECT_NAME})
+
+    if(BUILD_TESTING)
+      find_package(ament_lint_auto REQUIRED)
+      set(ament_cmake_copyright_FOUND TRUE)
+      ament_lint_auto_find_test_dependencies()
+    endif()
+
   else()
     message(FATAL_ERROR "no <linux/joystick.h>; can't build joy node")
   endif()
