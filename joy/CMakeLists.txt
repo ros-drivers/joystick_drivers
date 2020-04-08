@@ -38,6 +38,14 @@ rclcpp_components_register_node(joy
   PLUGIN "joy::Joy"
   EXECUTABLE joy_node)
 
+add_executable(joy_enumerate_devices
+  src/joy_enumerate_devices.cpp)
+target_link_libraries(joy_enumerate_devices
+  SDL2::SDL2)
+
+install(TARGETS joy_enumerate_devices
+  DESTINATION lib/${PROJECT_NAME})
+
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION include/${PROJECT_NAME}
 )
