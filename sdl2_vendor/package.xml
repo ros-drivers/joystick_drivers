@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+  <name>sdl2_vendor</name>
+  <version>0.7.0</version>
+  <description>Vendor library for SDL2.</description>
+  <maintainer email="clalancette@openrobotics.org">Chris Lalancette</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>sdl2</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
