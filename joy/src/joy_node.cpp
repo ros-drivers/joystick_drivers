@@ -515,6 +515,7 @@ public:
           // This should be the case as the kernel sends them along as soon as
           // the device opens.
           joy_msg.header.stamp = ros::Time().now();
+          joy_msg.header.frame_id = joy_dev_.c_str();
           pub_.publish(joy_msg);
 
           publish_now = false;
