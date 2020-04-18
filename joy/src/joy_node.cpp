@@ -34,6 +34,7 @@
 
 #include <dirent.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <linux/input.h>
 #include <linux/joystick.h>
 #include <math.h>
@@ -160,6 +161,96 @@ private:
 
     closedir(dev_dir);
     return "";
+  }
+
+  /*! \brief Autodetection of the force feedback device. If autodetection fails,
+   *         returns empty string.
+   * \param joy_dev A nonempty path to the joy device we search force feedback for.
+   */
+  std::string get_ff_dev(const std::string& joy_dev)
+  {
+    const char path[] = "/dev/input/by-id";  // no trailing / here
+    struct dirent *entry;
+
+    // the selected joy can be a symlink, but we want the canonical /dev/input/jsX
+    char realpath_buf[PATH_MAX];
+    char *res = realpath(joy_dev.c_str(), realpath_buf);
+    if (res == nullptr)
+    {
+      return "";
+    }
+
+    DIR *dev_dir = opendir(path);
+    if (dev_dir == nullptr)
+    {
+      ROS_ERROR("Couldn't open %s. Error %i: %s.", path, errno, strerror(errno));
+      return "";
+    }
+
+    const std::string joy_dev_real(realpath_buf);
+    std::string joy_dev_id;
+
+    // first, find the device in /dev/input/by-id that corresponds to the selected joy,
+    // i.e. its realpath is the same as the selected joy's one
+
+    while ((entry = readdir(dev_dir)) != nullptr)
+    {
+      res = strstr(entry->d_name, "-joystick");
+      // filter entries
+      if (res == nullptr)  // skip device if it's not a joystick
+      {
+        continue;
+      }
+
+      const auto current_path = std::string(path) + "/" + entry->d_name;
+      res = realpath(current_path.c_str(), realpath_buf);
+      if (res == nullptr)
+      {
+        continue;
+      }
+
+      const std::string dev_real(realpath_buf);
+      if (dev_real == joy_dev_real)
+      {
+        // we found the ID device which maps to the selected joy
+        joy_dev_id = current_path;
+        break;
+      }
+    }
+
+    closedir(dev_dir);
+
+    // if no corresponding ID device was found, the autodetection won't work
+    if (joy_dev_id.empty())
+    {
+      return "";
+    }
+
+    const auto joy_dev_id_prefix = joy_dev_id.substr(0, joy_dev_id.length() - strlen("-joystick"));
+    std::string event_dev;
+
+    // iterate through the by-id dir once more, this time finding the -event-joystick file with the
+    // same prefix as the ID device we've already found
+    dev_dir = opendir(path);
+    while ((entry = readdir(dev_dir)) != nullptr)
+    {
+      res = strstr(entry->d_name, "-event-joystick");
+      if (res == nullptr)  // skip device if it's not an event joystick
+      {
+        continue;
+      }
+
+      const auto current_path = std::string(path) + "/" + entry->d_name;
+      if (current_path.find(joy_dev_id_prefix) != std::string::npos)
+      {
+        ROS_INFO("Found force feedback event device %s", current_path.c_str());
+        event_dev = current_path;
+        break;
+      }
+    }
+    closedir(dev_dir);
+
+    return event_dev;
   }
 
 public:
@@ -322,9 +413,15 @@ public:
         diagnostic_.update();
       }
 
-      if (!joy_dev_ff_.empty())
+      auto dev_ff = joy_dev_ff_;
+      if (joy_dev_ff_.empty())
       {
-        ff_fd_ = open(joy_dev_ff_.c_str(), O_RDWR);
+        dev_ff = get_ff_dev(joy_dev_);
+      }
+
+      if (!dev_ff.empty())
+      {
+        ff_fd_ = open(dev_ff.c_str(), O_RDWR);
 
         /* Set the gain of the device*/
         int gain = 100;           /* between 0 and 100 */
