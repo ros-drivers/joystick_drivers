@@ -2,6 +2,11 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Cross platform joystick support for ROS 2 (`#157 <https://github.com/ros-drivers/joystick_drivers/issues/157>`_)
+* Contributors: Chris Lalancette
+
 1.13.0 (2019-06-24)
 -------------------
 * Merge pull request `#120 <https://github.com/ros-drivers/joystick_drivers/issues/120>`_ from furushchev/remap

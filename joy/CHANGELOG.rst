@@ -1,0 +1,21 @@
+^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package joy
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Forthcoming
+-----------
+* Cross platform joystick support for ROS 2 (`#157 <https://github.com/ros-drivers/joystick_drivers/issues/157>`_)
+* roslint and Generic Clean-Up (`#161 <https://github.com/ros-drivers/joystick_drivers/issues/161>`_)
+* Merge pull request `#158 <https://github.com/ros-drivers/joystick_drivers/issues/158>`_ from clalancette/ros1-cleanups
+* Greatly simplify the sticky_buttons support.
+* Small fixes to rumble support.
+* Use C++ style casts.
+* Use empty instead of length.
+* joy_def_ff -> joy_dev_ff
+* Cleanup header includes.
+* Use size_t appropriately.
+* NULL -> nullptr everywhere.
+* Style cleanup in joy_node.cpp.
+* Merge pull request `#154 <https://github.com/ros-drivers/joystick_drivers/issues/154>`_ from zchen24/master
+* Minor: moved default to right indent level
+* Contributors: Chris Lalancette, Joshua Whitley, Zihan Chen
