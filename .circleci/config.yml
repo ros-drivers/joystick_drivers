@@ -33,7 +33,7 @@ jobs:
 
   foxy:
     docker:
-      - image: jwhitleywork/ros:foxy-base-focal
+      - image: jwhitleywork/ros:foxy-ros-base-focal
     steps:
       - checkout
       - run:
