@@ -2,8 +2,8 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.4.1 (2020-05-13)
+------------------
 * Small fixes for uncrustify on Foxy. (`#171 <https://github.com/ros-drivers/joystick_drivers/issues/171>`_)
 * Contributors: Chris Lalancette
 
