@@ -234,13 +234,15 @@ public:
     }
 
     if (autorepeat_rate_ > 1 / coalesce_interval_) {
-      RCLCPP_WARN(node->get_logger(), "joy_linux_node: autorepeat_rate (%f Hz) > "
+      RCLCPP_WARN(
+        node->get_logger(), "joy_linux_node: autorepeat_rate (%f Hz) > "
         "1/coalesce_interval (%f Hz) does not make sense. Timing behavior is not well defined.",
         autorepeat_rate_, 1 / coalesce_interval_);
     }
 
     if (deadzone_ >= 1) {
-      RCLCPP_WARN(node->get_logger(), "joy_linux_node: deadzone greater than 1 was requested. "
+      RCLCPP_WARN(
+        node->get_logger(), "joy_linux_node: deadzone greater than 1 was requested. "
         "The semantics of deadzone have changed. It is now related to the range [-1:1] instead "
         "of [-32767:32767]. For now I am dividing your deadzone by 32767, but this behavior is "
         "deprecated so you need to update your launch file.");
@@ -248,25 +250,28 @@ public:
     }
 
     if (deadzone_ > 0.9) {
-      RCLCPP_WARN(node->get_logger(), "joy_node: deadzone (%f) greater than 0.9, setting it to 0.9",
+      RCLCPP_WARN(
+        node->get_logger(), "joy_node: deadzone (%f) greater than 0.9, setting it to 0.9",
         deadzone_);
       deadzone_ = 0.9;
     }
 
     if (deadzone_ < 0) {
-      RCLCPP_WARN(node->get_logger(), "joy_node: deadzone_ (%f) less than 0, setting to 0.",
-        deadzone_);
+      RCLCPP_WARN(
+        node->get_logger(), "joy_node: deadzone_ (%f) less than 0, setting to 0.", deadzone_);
       deadzone_ = 0;
     }
 
     if (autorepeat_rate_ < 0) {
-      RCLCPP_WARN(node->get_logger(), "joy_node: autorepeat_rate (%f) less than 0, setting to 0.",
+      RCLCPP_WARN(
+        node->get_logger(), "joy_node: autorepeat_rate (%f) less than 0, setting to 0.",
         autorepeat_rate_);
       autorepeat_rate_ = 0;
     }
 
     if (coalesce_interval_ < 0) {
-      RCLCPP_WARN(node->get_logger(), "joy_node: coalesce_interval (%f) less than 0, setting to 0.",
+      RCLCPP_WARN(
+        node->get_logger(), "joy_node: coalesce_interval (%f) less than 0, setting to 0.",
         coalesce_interval_);
       coalesce_interval_ = 0;
     }
@@ -324,7 +329,8 @@ public:
           break;
         }
         if (first_fault) {
-          RCLCPP_ERROR(node->get_logger(), "Couldn't open joystick %s. Will retry every second.",
+          RCLCPP_ERROR(
+            node->get_logger(), "Couldn't open joystick %s. Will retry every second.",
             joy_dev_.c_str());
           first_fault = false;
         }
@@ -343,8 +349,8 @@ public:
         ie.value = 0xFFFFUL * gain / 100;
 
         if (write(ff_fd_, &ie, sizeof(ie)) == -1) {
-          RCLCPP_ERROR(node->get_logger(), "Couldn't open joystick force feedback: %s",
-            strerror(errno));
+          RCLCPP_ERROR(
+            node->get_logger(), "Couldn't open joystick force feedback: %s", strerror(errno));
         }
 
         joy_effect_.id = -1;
@@ -360,8 +366,8 @@ public:
         ioctl(ff_fd_, EVIOCSFF, &joy_effect_);
       }
 
-      RCLCPP_INFO(node->get_logger(), "Opened joystick: %s. deadzone_: %f.",
-        joy_dev_.c_str(), deadzone_);
+      RCLCPP_INFO(
+        node->get_logger(), "Opened joystick: %s. deadzone_: %f.", joy_dev_.c_str(), deadzone_);
       open_ = true;
       // diagnostic_.force_update();
 
@@ -480,7 +486,8 @@ public:
                 break;
               }
             default:
-              RCLCPP_WARN(node->get_logger(), "joy_linux_node: Unknown event type. "
+              RCLCPP_WARN(
+                node->get_logger(), "joy_linux_node: Unknown event type. "
                 "Please file a ticket. time=%u, value=%d, type=%Xh, number=%d",
                 event.time, event.value, event.type, event.number);
               break;
@@ -532,8 +539,8 @@ public:
       close(joy_fd);
       rclcpp::spin_some(node);
       if (rclcpp::ok()) {
-        RCLCPP_ERROR(node->get_logger(), "Connection to joystick device lost unexpectedly. "
-          "Will reopen.");
+        RCLCPP_ERROR(
+          node->get_logger(), "Connection to joystick device lost unexpectedly. Will reopen.");
       }
     }
 
