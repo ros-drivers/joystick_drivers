@@ -98,8 +98,10 @@ Joy::Joy(const rclcpp::NodeOptions & options)
 
   pub_ = create_publisher<sensor_msgs::msg::Joy>("joy", 10);
 
-  feedback_sub_ = this->create_subscription<sensor_msgs::msg::JoyFeedback>("joy/set_feedback",
-      rclcpp::QoS(10), std::bind(&Joy::feedbackCb, this, std::placeholders::_1));
+  feedback_sub_ = this->create_subscription<sensor_msgs::msg::JoyFeedback>(
+    "joy/set_feedback", rclcpp::QoS(10), std::bind(
+      &Joy::feedbackCb, this,
+      std::placeholders::_1));
 
   future_ = exit_signal_.get_future();
 
@@ -384,7 +386,8 @@ void Joy::handleJoyDeviceAdded(const SDL_Event & e)
     RCLCPP_INFO(get_logger(), "No haptic (rumble) available, skipping initialization");
   }
 
-  RCLCPP_INFO(get_logger(), "Opened joystick: %s.  deadzone: %f",
+  RCLCPP_INFO(
+    get_logger(), "Opened joystick: %s.  deadzone: %f",
     SDL_JoystickName(joystick_), scaled_deadzone_);
 }
 
