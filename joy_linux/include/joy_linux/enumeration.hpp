@@ -30,8 +30,9 @@
 #ifndef JOY_LINUX__ENUMERATION_HPP_
 #define JOY_LINUX__ENUMERATION_HPP_
 
-#include <iostream>
 #include <rclcpp/logger.hpp>
+
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -49,4 +50,4 @@ bool fillJoystickData(const std::string &device_path, JoystickData &data, rclcpp
 
 std::vector<JoystickData> getJoysticks(rclcpp::Logger logger);
 
-#endif // JOY_LINUX__ENUMERATION_HPP_
+#endif  // JOY_LINUX__ENUMERATION_HPP_

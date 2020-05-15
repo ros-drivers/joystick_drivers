@@ -32,10 +32,12 @@
 
 #include <joy_linux/configuration.hpp>
 #include <joy_linux/feedback.hpp>
-#include <list>
-#include <memory>
+
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joy.hpp>
+
+#include <list>
+#include <memory>
 
 class Joystick
 {
@@ -47,7 +49,7 @@ public:
 private:
   bool open(bool first_fault);
   void close();
-  bool handleEvents(double max_wait_time); // returns false on I/O error
+  bool handleEvents(double max_wait_time);  // returns false on I/O error
   void processJoystickEvent(const js_event &event);
   void checkInitEvents();
   void updateButton(size_t button, int32_t value);
@@ -72,4 +74,4 @@ private:
   bool publish_soon_;
 };
 
-#endif // JOY_LINUX__JOYSTICK_HPP_
+#endif  // JOY_LINUX__JOYSTICK_HPP_

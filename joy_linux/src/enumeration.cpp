@@ -29,17 +29,20 @@
 
 #include <joy_linux/enumeration.hpp>
 
-#include <cstring>
 #include <dirent.h>
 #include <fcntl.h>
-#include <functional>
 #include <linux/joystick.h>
 #include <rclcpp/logging.hpp>
-#include <sstream>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <functional>
+#include <cstring>
+#include <sstream>
+#include <string>
+#include <vector>
 
 std::ostream& operator<<(std::ostream& os, const JoystickData& joystick)
 {
@@ -53,7 +56,7 @@ std::ostream& operator<<(std::ostream& os, const JoystickData& joystick)
 class Defer
 {
 public:
-  Defer(std::function<void (void)> f) : f_(f) {}
+  explicit Defer(std::function<void (void)> f) : f_(f) {}
   ~Defer() { f_(); }
 private:
   std::function<void (void)> f_;
@@ -63,7 +66,7 @@ bool isCharacterDeviceFile(const std::string &path)
 {
   struct stat statbuf;
   if (::stat(path.c_str(), &statbuf) == 0) {
-    return S_ISCHR(statbuf.st_mode); // input devices are character devices
+    return S_ISCHR(statbuf.st_mode);  // input devices are character devices
   }
   return false;
 }
@@ -106,7 +109,7 @@ bool fillJoystickData(const std::string &device_path, JoystickData &data, rclcpp
   // get joystick name
   char joystick_name[128];
   ioctl_result = ::ioctl(fd, JSIOCGNAME(sizeof(joystick_name)), joystick_name);
-  // TODO: ioctl_result seems to be the length of joystick_name including the trailing zero.
+  // ioctl_result seems to be the length of joystick_name including the trailing zero.
   // Could it be used to detect if the provided buffer was too small to hold the full name?
   // (The return value for JSIOCGNAME is not documented, maybe this is driver specific.)
   if (ioctl_result == -1) {

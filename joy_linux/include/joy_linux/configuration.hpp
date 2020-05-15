@@ -30,8 +30,9 @@
 #ifndef JOY_LINUX__CONFIGURATION_HPP_
 #define JOY_LINUX__CONFIGURATION_HPP_
 
-#include <memory>
 #include <rclcpp/node.hpp>
+
+#include <memory>
 #include <string>
 
 struct JoystickConfiguration
@@ -43,11 +44,11 @@ struct JoystickConfiguration
     double deadzone_scale;
     double unscaled_deadzone;
     double scale;
-    double autorepeat_rate; // [Hz], 0 for no repeat
-    double coalesce_interval; // [s], 0 for no coalescence (changes are published immediately)
+    double autorepeat_rate;  // [Hz], 0 for no repeat
+    double coalesce_interval;  // [s], 0 for no coalescence (changes are published immediately)
     bool sticky_buttons;
 };
 
 JoystickConfiguration loadConfiguration(std::shared_ptr<rclcpp::Node> node);
 
-#endif // JOY_LINUX__CONFIGURATION_HPP_
+#endif  // JOY_LINUX__CONFIGURATION_HPP_

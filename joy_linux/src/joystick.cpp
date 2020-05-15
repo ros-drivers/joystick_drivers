@@ -28,12 +28,15 @@
  */
 
 #include <joy_linux/joystick.hpp>
+#include <joy_linux/enumeration.hpp>
 
+#include <fcntl.h>
+#include <unistd.h>
+
+#include <algorithm>
 #include <chrono>
 #include <cmath>
-#include <fcntl.h>
-#include <joy_linux/enumeration.hpp>
-#include <unistd.h>
+#include <memory>
 
 Joystick::Joystick()
   : node_(std::make_shared<rclcpp::Node>("joy_node"))
@@ -120,12 +123,12 @@ bool Joystick::handleEvents(double max_wait_time)
   timeout.tv_usec = (max_wait_time - timeout.tv_sec) * 1e6;
 
   int select_result = ::select(fd_ + 1, &set, nullptr, nullptr, &timeout);
-  if (select_result > 0 && FD_ISSET(fd_, &set)) { // the file descriptor has data to read
+  if (select_result > 0 && FD_ISSET(fd_, &set)) {  // the file descriptor has data to read
     js_event event;
     if (::read(fd_, &event, sizeof(event)) == -1) {
-      if (errno == EAGAIN) { // read would block
-        return true; // try again
-      } else if (errno == EINTR) { // read was interrupted by a signal
+      if (errno == EAGAIN) {  // read would block
+        return true;  // try again
+      } else if (errno == EINTR) {  // read was interrupted by a signal
         return false;
       }
       RCLCPP_ERROR_STREAM(
@@ -135,10 +138,10 @@ bool Joystick::handleEvents(double max_wait_time)
     }
 
     processJoystickEvent(event);
-  } else if (select_result == 0) { // a timeout occured
-    return true; // try again
-  } else if (select_result < 0) { // an error occured
-    if (errno == EINTR) { // select was interrupted by a signal
+  } else if (select_result == 0) {  // a timeout occured
+    return true;  // try again
+  } else if (select_result < 0) {  // an error occured
+    if (errno == EINTR) {  // select was interrupted by a signal
       return false;
     }
     RCLCPP_ERROR_STREAM(
@@ -210,7 +213,7 @@ void Joystick::updateAxis(size_t axis, float value)
 void Joystick::checkInitEvents()
 {
   if (pending_axis_init_events_.empty() && pending_button_init_events_.empty()) {
-    //RCLCPP_INFO(node_->get_logger(), "All init events received");
+    // RCLCPP_INFO(node_->get_logger(), "All init events received");
     initialisation_done_ = true;
     publish_now_ = true;
   }
@@ -272,7 +275,7 @@ int Joystick::run()
       // play the rumble effect (can probably do this at lower rate later)
       feedback_device_.uploadEffect();
 
-      double max_wait_time = 1.0; // [s]
+      double max_wait_time = 1.0;  // [s]
       if (t_publish_next != NO_NEXT) {
         max_wait_time = std::chrono::duration_cast<std::chrono::microseconds>(
           t_publish_next - std::chrono::steady_clock::now()).count() * 1e-6;
@@ -282,8 +285,7 @@ int Joystick::run()
         break;
       }
 
-      // If an axis event occurred, start a timer to combine with other
-      // events.
+      // If an axis event occurred, start a timer to combine with other events.
       if (publish_soon_) {
         std::chrono::steady_clock::time_point t = std::chrono::steady_clock::now() +
           std::chrono::microseconds(static_cast<int>(config_.coalesce_interval * 1e6));

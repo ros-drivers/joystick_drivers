@@ -31,6 +31,9 @@
 #include <joy_linux/enumeration.hpp>
 
 #include <algorithm>
+#include <memory>
+#include <string>
+#include <vector>
 
 JoystickConfiguration loadConfiguration(std::shared_ptr<rclcpp::Node> node)
 {
@@ -56,7 +59,7 @@ JoystickConfiguration loadConfiguration(std::shared_ptr<rclcpp::Node> node)
         [&device_name](const JoystickData &data) {
           return data.device_name == device_name; });
 
-      if (joystick_it != joysticks.end()) { // found a joystick matching device_name
+      if (joystick_it != joysticks.end()) {  // found a joystick matching device_name
         config.device = joystick_it->device_path;
         RCLCPP_INFO_STREAM(node->get_logger(), "Will use device: " << config.device);
       } else {

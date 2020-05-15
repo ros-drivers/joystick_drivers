@@ -30,9 +30,12 @@
 #include <joy_linux/feedback.hpp>
 
 #include <fcntl.h>
-#include <functional>
 #include <sys/ioctl.h>
 #include <unistd.h>
+
+#include <functional>
+#include <memory>
+#include <string>
 
 FeedbackDevice::FeedbackDevice(std::shared_ptr<rclcpp::Node> node, std::string device)
   : node_(node)

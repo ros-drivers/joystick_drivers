@@ -31,9 +31,10 @@
 #define JOY_LINUX__FEEDBACK_HPP_
 
 #include <linux/joystick.h>
-#include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joy_feedback_array.hpp>
+
+#include <memory>
 #include <string>
 
 class FeedbackDevice
@@ -61,4 +62,4 @@ private:
   std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::JoyFeedbackArray>> feedback_sub_;
 };
 
-#endif // JOY_LINUX__FEEDBACK_HPP_
+#endif  // JOY_LINUX__FEEDBACK_HPP_
