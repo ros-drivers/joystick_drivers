@@ -79,8 +79,9 @@ bool fillJoystickData(const std::string & device_path, JoystickData & data, rclc
 
   int fd = ::open(device_path.c_str(), O_RDONLY);
   if (fd == -1) {
-    RCLCPP_ERROR_STREAM(logger, "Cannot open " << device_path <<
-      ". Error " << errno << ": " << strerror(errno));
+    RCLCPP_ERROR_STREAM(
+      logger, "Cannot open " << device_path <<
+        ". Error " << errno << ": " << strerror(errno));
     return false;
   }
   Defer deferred_close([&] {::close(fd);});
@@ -92,8 +93,9 @@ bool fillJoystickData(const std::string & device_path, JoystickData & data, rclc
   char number_of_axes;
   ioctl_result = ::ioctl(fd, JSIOCGAXES, &number_of_axes);
   if (ioctl_result == -1) {
-    RCLCPP_ERROR_STREAM(logger, "Cannot get number of axes from " << device_path <<
-      ". Error " << errno << ": " << strerror(errno));
+    RCLCPP_ERROR_STREAM(
+      logger, "Cannot get number of axes from " << device_path <<
+        ". Error " << errno << ": " << strerror(errno));
     return false;
   }
   data.number_of_axes = number_of_axes;
@@ -102,8 +104,9 @@ bool fillJoystickData(const std::string & device_path, JoystickData & data, rclc
   char number_of_buttons;
   ioctl_result = ::ioctl(fd, JSIOCGBUTTONS, &number_of_buttons);
   if (ioctl_result == -1) {
-    RCLCPP_ERROR_STREAM(logger, "Cannot get number of buttons from " << device_path <<
-      ". Error " << errno << ": " << strerror(errno));
+    RCLCPP_ERROR_STREAM(
+      logger, "Cannot get number of buttons from " << device_path <<
+        ". Error " << errno << ": " << strerror(errno));
     return false;
   }
   data.number_of_buttons = number_of_buttons;
@@ -115,8 +118,9 @@ bool fillJoystickData(const std::string & device_path, JoystickData & data, rclc
   // Could it be used to detect if the provided buffer was too small to hold the full name?
   // (The return value for JSIOCGNAME is not documented, maybe this is driver specific.)
   if (ioctl_result == -1) {
-    RCLCPP_ERROR_STREAM(logger, "Cannot get device name from " << device_path <<
-      ". Error " << errno << ": " << strerror(errno));
+    RCLCPP_ERROR_STREAM(
+      logger, "Cannot get device name from " << device_path <<
+        ". Error " << errno << ": " << strerror(errno));
     return false;
   }
   data.device_name = joystick_name;
@@ -132,8 +136,9 @@ std::vector<JoystickData> getJoysticks(rclcpp::Logger logger)
 
   DIR * dev_dir = ::opendir(path.c_str());
   if (dev_dir == NULL) {
-    RCLCPP_ERROR_STREAM(logger, "Cannot open " << path <<
-      ". Error " << errno << ": " << strerror(errno));
+    RCLCPP_ERROR_STREAM(
+      logger, "Cannot open " << path <<
+        ". Error " << errno << ": " << strerror(errno));
     return joysticks;
   }
   Defer deffered_close_dir([&] {::closedir(dev_dir);});

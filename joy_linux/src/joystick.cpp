@@ -59,8 +59,9 @@ bool Joystick::open(bool first_fault)
   int temp_fd = ::open(config_.device.c_str(), O_RDONLY);
   if (temp_fd == -1) {
     if (first_fault) {
-      RCLCPP_ERROR_STREAM(node_->get_logger(), "Cannot open " << config_.device <<
-        ". Error " << errno << ": " << strerror(errno));
+      RCLCPP_ERROR_STREAM(
+        node_->get_logger(), "Cannot open " << config_.device <<
+          ". Error " << errno << ": " << strerror(errno));
     }
     return false;
   }
@@ -91,8 +92,9 @@ bool Joystick::open(bool first_fault)
 
   fd_ = ::open(config_.device.c_str(), O_RDONLY);
   if (fd_ == -1) {
-    RCLCPP_ERROR_STREAM(node_->get_logger(), "Cannot open " << config_.device <<
-      ". Error " << errno << ": " << strerror(errno));
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(), "Cannot open " << config_.device <<
+        ". Error " << errno << ": " << strerror(errno));
     return false;
   }
 

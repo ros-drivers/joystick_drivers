@@ -48,25 +48,28 @@ JoystickConfiguration loadConfiguration(std::shared_ptr<rclcpp::Node> node)
     std::string device_name = node->declare_parameter("dev_name", std::string(""));
     if (device_name.empty()) {
       config.device = DEFAULT_DEVICE;
-      RCLCPP_WARN_STREAM(node->get_logger(), "Neither dev nor dev_name were specified."
+      RCLCPP_WARN_STREAM(
+        node->get_logger(), "Neither dev nor dev_name were specified."
         " Will use default device: " << config.device);
     } else {
       // enumerate all joysticks and check if one matches device_name
       RCLCPP_INFO_STREAM(node->get_logger(), "Looking for joystick with name: " << device_name);
       std::vector<JoystickData> joysticks = getJoysticks(node->get_logger());
 
-      auto joystick_it = std::find_if(joysticks.begin(), joysticks.end(),
-          [&device_name](const JoystickData & data) {
-            return data.device_name == device_name;
-          });
+      auto joystick_it = std::find_if(
+        joysticks.begin(), joysticks.end(),
+        [&device_name](const JoystickData & data) {
+          return data.device_name == device_name;
+        });
 
       if (joystick_it != joysticks.end()) {  // found a joystick matching device_name
         config.device = joystick_it->device_path;
         RCLCPP_INFO_STREAM(node->get_logger(), "Will use device: " << config.device);
       } else {
         config.device = DEFAULT_DEVICE;
-        RCLCPP_WARN_STREAM(node->get_logger(), "Joystick with name " << device_name <<
-          " not found, will use default device: " << config.device);
+        RCLCPP_WARN_STREAM(
+          node->get_logger(), "Joystick with name " << device_name <<
+            " not found, will use default device: " << config.device);
       }
     }
   }
