@@ -38,15 +38,15 @@
 
 struct JoystickData
 {
-    std::string device_path;
-    std::string device_name;
-    unsigned number_of_axes;
-    unsigned number_of_buttons;
+  std::string device_path;
+  std::string device_name;
+  unsigned number_of_axes;
+  unsigned number_of_buttons;
 };
 
-std::ostream& operator<<(std::ostream& os, const JoystickData& joystick);
+std::ostream & operator<<(std::ostream& os, const JoystickData& joystick);
 
-bool fillJoystickData(const std::string &device_path, JoystickData &data, rclcpp::Logger logger);
+bool fillJoystickData(const std::string & device_path, JoystickData & data, rclcpp::Logger logger);
 
 std::vector<JoystickData> getJoysticks(rclcpp::Logger logger);
 

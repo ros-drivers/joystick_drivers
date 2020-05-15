@@ -50,7 +50,7 @@ private:
   bool open(bool first_fault);
   void close();
   bool handleEvents(double max_wait_time);  // returns false on I/O error
-  void processJoystickEvent(const js_event &event);
+  void processJoystickEvent(const js_event & event);
   void checkInitEvents();
   void updateButton(size_t button, int32_t value);
   void updateAxis(size_t axis, float value);

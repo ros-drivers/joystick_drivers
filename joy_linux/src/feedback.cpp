@@ -38,15 +38,15 @@
 #include <string>
 
 FeedbackDevice::FeedbackDevice(std::shared_ptr<rclcpp::Node> node, std::string device)
-  : node_(node)
-  , device_(device)
-  , fd_(-1)
-  , update_feedback_(false)
-  , feedback_sub_(node_->create_subscription<sensor_msgs::msg::JoyFeedbackArray>(
-                    "joy/set_feedback",
-                    rclcpp::QoS(10),
-                    std::bind(&FeedbackDevice::setFeedback, this,
-                              std::placeholders::_1)))
+: node_(node),
+  device_(device),
+  fd_(-1),
+  update_feedback_(false),
+  feedback_sub_(node_->create_subscription<sensor_msgs::msg::JoyFeedbackArray>(
+      "joy/set_feedback",
+      rclcpp::QoS(10),
+      std::bind(&FeedbackDevice::setFeedback, this,
+      std::placeholders::_1)))
 {}
 
 FeedbackDevice::~FeedbackDevice()
@@ -150,4 +150,3 @@ void FeedbackDevice::setFeedback(const std::shared_ptr<sensor_msgs::msg::JoyFeed
     }
   }
 }
-

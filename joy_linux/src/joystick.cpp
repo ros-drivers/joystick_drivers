@@ -39,11 +39,11 @@
 #include <memory>
 
 Joystick::Joystick()
-  : node_(std::make_shared<rclcpp::Node>("joy_node"))
-  , config_(loadConfiguration(node_))
-  , fd_(-1)
-  , feedback_device_(node_, config_.feedback_device)
-  , joy_pub_(node_->create_publisher<sensor_msgs::msg::Joy>("joy", 10))
+: node_(std::make_shared<rclcpp::Node>("joy_node")),
+  config_(loadConfiguration(node_)),
+  fd_(-1),
+  feedback_device_(node_, config_.feedback_device),
+  joy_pub_(node_->create_publisher<sensor_msgs::msg::Joy>("joy", 10))
 {
   joy_msg_.header.frame_id = "joy";
 }
@@ -59,8 +59,8 @@ bool Joystick::open(bool first_fault)
   int temp_fd = ::open(config_.device.c_str(), O_RDONLY);
   if (temp_fd == -1) {
     if (first_fault) {
-      RCLCPP_ERROR_STREAM(node_->get_logger(), "Cannot open " << config_.device
-                          << ". Error " << errno << ": " << strerror(errno));
+      RCLCPP_ERROR_STREAM(node_->get_logger(), "Cannot open " << config_.device <<
+        ". Error " << errno << ": " << strerror(errno));
     }
     return false;
   }
@@ -91,14 +91,14 @@ bool Joystick::open(bool first_fault)
 
   fd_ = ::open(config_.device.c_str(), O_RDONLY);
   if (fd_ == -1) {
-    RCLCPP_ERROR_STREAM(node_->get_logger(), "Cannot open " << config_.device
-                        << ". Error " << errno << ": " << strerror(errno));
+    RCLCPP_ERROR_STREAM(node_->get_logger(), "Cannot open " << config_.device <<
+      ". Error " << errno << ": " << strerror(errno));
     return false;
   }
 
   RCLCPP_INFO_STREAM(
-    node_->get_logger(), "Opened joystick: " << config_.device
-      << " (" << joystick_data.device_name << "). deadzone: " << config_.deadzone);
+    node_->get_logger(), "Opened joystick: " << config_.device <<
+      " (" << joystick_data.device_name << "). deadzone: " << config_.deadzone);
 
   return true;
 }
@@ -132,8 +132,8 @@ bool Joystick::handleEvents(double max_wait_time)
         return false;
       }
       RCLCPP_ERROR_STREAM(
-        node_->get_logger(), "Error " << errno << " while reading from joystick device: "
-        << strerror(errno));
+        node_->get_logger(), "Error " << errno << " while reading from joystick device: " <<
+          strerror(errno));
       return false;
     }
 
@@ -145,15 +145,15 @@ bool Joystick::handleEvents(double max_wait_time)
       return false;
     }
     RCLCPP_ERROR_STREAM(
-      node_->get_logger(), "Error " << errno << " while waiting for joystick device: "
-      << strerror(errno));
+      node_->get_logger(), "Error " << errno << " while waiting for joystick device: " <<
+        strerror(errno));
     return false;
   }
 
   return true;
 }
 
-void Joystick::processJoystickEvent(const js_event &event)
+void Joystick::processJoystickEvent(const js_event & event)
 {
   switch (event.type) {
     case JS_EVENT_AXIS:
@@ -255,8 +255,8 @@ int Joystick::run()
       }
       if (first_fault) {
         RCLCPP_ERROR_STREAM(
-          node_->get_logger(), "Couldn't open joystick " << config_.device
-            << ". Will retry every second.");
+          node_->get_logger(), "Couldn't open joystick " << config_.device <<
+            ". Will retry every second.");
         first_fault = false;
       }
     }
@@ -289,8 +289,9 @@ int Joystick::run()
       if (publish_soon_) {
         std::chrono::steady_clock::time_point t = std::chrono::steady_clock::now() +
           std::chrono::microseconds(static_cast<int>(config_.coalesce_interval * 1e6));
-        if (t < t_publish_next || t_publish_next == NO_NEXT)
+        if (t < t_publish_next || t_publish_next == NO_NEXT) {
           t_publish_next = t;
+        }
       }
 
       if (std::chrono::steady_clock::now() >= t_publish_next && t_publish_next != NO_NEXT) {
@@ -298,8 +299,9 @@ int Joystick::run()
       }
 
       if (publish_now_) {
-        if (initialisation_done_ || config_.default_trig_val)
+        if (initialisation_done_ || config_.default_trig_val) {
           publish();
+        }
 
         // do autorepeat (if nothing else will happen)
         if (config_.autorepeat_rate > 0) {

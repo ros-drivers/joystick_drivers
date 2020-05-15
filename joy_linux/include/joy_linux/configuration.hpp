@@ -37,16 +37,16 @@
 
 struct JoystickConfiguration
 {
-    std::string device;
-    std::string feedback_device;
-    bool default_trig_val;
-    double deadzone;
-    double deadzone_scale;
-    double unscaled_deadzone;
-    double scale;
-    double autorepeat_rate;  // [Hz], 0 for no repeat
-    double coalesce_interval;  // [s], 0 for no coalescence (changes are published immediately)
-    bool sticky_buttons;
+  std::string device;
+  std::string feedback_device;
+  bool default_trig_val;
+  double deadzone;
+  double deadzone_scale;
+  double unscaled_deadzone;
+  double scale;
+  double autorepeat_rate;  // [Hz], 0 for no repeat
+  double coalesce_interval;  // [s], 0 for no coalescence (changes are published immediately)
+  bool sticky_buttons;
 };
 
 JoystickConfiguration loadConfiguration(std::shared_ptr<rclcpp::Node> node);
