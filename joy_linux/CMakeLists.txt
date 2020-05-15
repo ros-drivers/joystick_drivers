@@ -22,8 +22,14 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   check_include_files(linux/joystick.h HAVE_LINUX_JOYSTICK_H)
 
   if(HAVE_LINUX_JOYSTICK_H)
-    include_directories(msg/cpp ${catkin_INCLUDE_DIRS})
-    add_executable(joy_linux_node src/joy_linux_node.cpp)
+    include_directories(msg/cpp include ${catkin_INCLUDE_DIRS})
+    add_executable(joy_linux_node
+      src/configuration.cpp
+      src/enumeration.cpp
+      src/feedback.cpp
+      src/joy_linux_node.cpp
+      src/joystick.cpp
+    )
     ament_target_dependencies(joy_linux_node
       "rclcpp"
       "sensor_msgs")

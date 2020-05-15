@@ -1,6 +1,5 @@
 /*
- * joy_linux_node
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2020, Bundesanstalt für Materialforschung und -prüfung (BAM).
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -11,7 +10,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <ORGANIZATION> nor the names of its
+ *     * Neither the name of the copyright holder nor the names of its
  *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
  *
@@ -28,14 +27,26 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-// \author: Blaise Gassend
+#ifndef JOY_LINUX__ENUMERATION_HPP_
+#define JOY_LINUX__ENUMERATION_HPP_
 
-#include <joy_linux/joystick.hpp>
-#include <rclcpp/rclcpp.hpp>
+#include <iostream>
+#include <rclcpp/logger.hpp>
+#include <string>
+#include <vector>
 
-int main(int argc, char ** argv)
+struct JoystickData
 {
-  rclcpp::init(argc, argv);
-  Joystick j;
-  return j.run();
-}
+    std::string device_path;
+    std::string device_name;
+    unsigned number_of_axes;
+    unsigned number_of_buttons;
+};
+
+std::ostream& operator<<(std::ostream& os, const JoystickData& joystick);
+
+bool fillJoystickData(const std::string &device_path, JoystickData &data, rclcpp::Logger logger);
+
+std::vector<JoystickData> getJoysticks(rclcpp::Logger logger);
+
+#endif // JOY_LINUX__ENUMERATION_HPP_

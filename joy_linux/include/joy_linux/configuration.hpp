@@ -1,6 +1,5 @@
 /*
- * joy_linux_node
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2020, Bundesanstalt für Materialforschung und -prüfung (BAM).
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -11,7 +10,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <ORGANIZATION> nor the names of its
+ *     * Neither the name of the copyright holder nor the names of its
  *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
  *
@@ -28,14 +27,27 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-// \author: Blaise Gassend
+#ifndef JOY_LINUX__CONFIGURATION_HPP_
+#define JOY_LINUX__CONFIGURATION_HPP_
 
-#include <joy_linux/joystick.hpp>
-#include <rclcpp/rclcpp.hpp>
+#include <memory>
+#include <rclcpp/node.hpp>
+#include <string>
 
-int main(int argc, char ** argv)
+struct JoystickConfiguration
 {
-  rclcpp::init(argc, argv);
-  Joystick j;
-  return j.run();
-}
+    std::string device;
+    std::string feedback_device;
+    bool default_trig_val;
+    double deadzone;
+    double deadzone_scale;
+    double unscaled_deadzone;
+    double scale;
+    double autorepeat_rate; // [Hz], 0 for no repeat
+    double coalesce_interval; // [s], 0 for no coalescence (changes are published immediately)
+    bool sticky_buttons;
+};
+
+JoystickConfiguration loadConfiguration(std::shared_ptr<rclcpp::Node> node);
+
+#endif // JOY_LINUX__CONFIGURATION_HPP_

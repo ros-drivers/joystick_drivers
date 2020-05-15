@@ -1,6 +1,5 @@
 /*
- * joy_linux_node
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2020, Bundesanstalt für Materialforschung und -prüfung (BAM).
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -11,7 +10,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <ORGANIZATION> nor the names of its
+ *     * Neither the name of the copyright holder nor the names of its
  *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
  *
@@ -28,14 +27,38 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-// \author: Blaise Gassend
+#ifndef JOY_LINUX__FEEDBACK_HPP_
+#define JOY_LINUX__FEEDBACK_HPP_
 
-#include <joy_linux/joystick.hpp>
+#include <linux/joystick.h>
+#include <memory>
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/joy_feedback_array.hpp>
+#include <string>
 
-int main(int argc, char ** argv)
+class FeedbackDevice
 {
-  rclcpp::init(argc, argv);
-  Joystick j;
-  return j.run();
-}
+public:
+  FeedbackDevice(std::shared_ptr<rclcpp::Node> node, std::string device);
+  ~FeedbackDevice();
+
+  void open();
+  void close();
+
+  void uploadEffect();
+
+  void setFeedback(const std::shared_ptr<sensor_msgs::msg::JoyFeedbackArray> msg);
+
+private:
+  std::shared_ptr<rclcpp::Node> node_;
+
+  std::string device_;
+  int fd_;
+
+  struct ff_effect joy_effect_;
+  bool update_feedback_;
+
+  std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::JoyFeedbackArray>> feedback_sub_;
+};
+
+#endif // JOY_LINUX__FEEDBACK_HPP_

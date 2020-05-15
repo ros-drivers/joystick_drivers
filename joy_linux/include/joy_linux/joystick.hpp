@@ -1,6 +1,5 @@
 /*
- * joy_linux_node
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2020, Bundesanstalt für Materialforschung und -prüfung (BAM).
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -11,7 +10,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <ORGANIZATION> nor the names of its
+ *     * Neither the name of the copyright holder nor the names of its
  *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
  *
@@ -28,14 +27,49 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-// \author: Blaise Gassend
+#ifndef JOY_LINUX__JOYSTICK_HPP_
+#define JOY_LINUX__JOYSTICK_HPP_
 
-#include <joy_linux/joystick.hpp>
+#include <joy_linux/configuration.hpp>
+#include <joy_linux/feedback.hpp>
+#include <list>
+#include <memory>
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/joy.hpp>
 
-int main(int argc, char ** argv)
+class Joystick
 {
-  rclcpp::init(argc, argv);
-  Joystick j;
-  return j.run();
-}
+public:
+  Joystick();
+
+  int run();
+
+private:
+  bool open(bool first_fault);
+  void close();
+  bool handleEvents(double max_wait_time); // returns false on I/O error
+  void processJoystickEvent(const js_event &event);
+  void checkInitEvents();
+  void updateButton(size_t button, int32_t value);
+  void updateAxis(size_t axis, float value);
+  void publish();
+
+  std::shared_ptr<rclcpp::Node> node_;
+  JoystickConfiguration config_;
+  int fd_;
+
+  FeedbackDevice feedback_device_;
+
+  // initial events
+  std::list<unsigned> pending_axis_init_events_;
+  std::list<unsigned> pending_button_init_events_;
+  bool initialisation_done_;
+
+  // publishing
+  sensor_msgs::msg::Joy joy_msg_;
+  std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::Joy>> joy_pub_;
+  bool publish_now_;
+  bool publish_soon_;
+};
+
+#endif // JOY_LINUX__JOYSTICK_HPP_
