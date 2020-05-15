@@ -44,7 +44,7 @@
 #include <string>
 #include <vector>
 
-std::ostream & operator<<(std::ostream& os, const JoystickData& joystick)
+std::ostream & operator<<(std::ostream & os, const JoystickData & joystick)
 {
   os << "device=" << joystick.device_path <<
     " name=" << joystick.device_name <<
@@ -56,9 +56,9 @@ std::ostream & operator<<(std::ostream& os, const JoystickData& joystick)
 class Defer
 {
 public:
-  explicit Defer(std::function<void (void)> f)
+  explicit Defer(std::function<void(void)> f)
   : f_(f) {}
-  ~Defer() { f_(); }
+  ~Defer() {f_();}
 
 private:
   std::function<void(void)> f_;

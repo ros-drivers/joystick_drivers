@@ -44,7 +44,7 @@ struct JoystickData
   unsigned number_of_buttons;
 };
 
-std::ostream & operator<<(std::ostream& os, const JoystickData& joystick);
+std::ostream & operator<<(std::ostream & os, const JoystickData & joystick);
 
 bool fillJoystickData(const std::string & device_path, JoystickData & data, rclcpp::Logger logger);
 

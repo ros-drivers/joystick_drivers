@@ -56,7 +56,7 @@ JoystickConfiguration loadConfiguration(std::shared_ptr<rclcpp::Node> node)
       std::vector<JoystickData> joysticks = getJoysticks(node->get_logger());
 
       auto joystick_it = std::find_if(joysticks.begin(), joysticks.end(),
-          [&device_name](const JoystickData &data) {
+          [&device_name](const JoystickData & data) {
             return data.device_name == device_name;
           });
 
