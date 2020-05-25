@@ -6,7 +6,7 @@
 # a 'source magnitude' (ir_size). If the x dimension
 # is set to INVALID_FLOAT, then no light was detected for 
 # the respective light. The Wiimote handles up to
-# four light sources, and the wiimote_node.py software
+# four light sources, and the wiimote_controller software
 # is written to that limit as well.
 #
 # I am unsure what the 'ir_size' values represent. 

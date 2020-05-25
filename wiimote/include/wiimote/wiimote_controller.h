@@ -1,6 +1,6 @@
 /*
  * ROS Node for interfacing with a wiimote control unit.
- * Copyright (c) 2016, Intel Corporation.
+ * Copyright (c) 2020, Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -38,12 +38,14 @@
 #ifndef WIIMOTE_WIIMOTE_CONTROLLER_H
 #define WIIMOTE_WIIMOTE_CONTROLLER_H
 
-#include "ros/ros.h"
-#include "sensor_msgs/JoyFeedbackArray.h"
-#include "std_srvs/Empty.h"
-#include "sensor_msgs/Imu.h"
-
-#include "wiimote/stat_vector_3d.h"
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/joy.hpp>
+#include <sensor_msgs/msg/joy_feedback_array.hpp>
+#include <std_msgs/msg/bool.hpp>
+#include <std_srvs/srv/empty.hpp>
+#include <wiimote_msgs/msg/state.hpp>
 
 // We need to link against these
 #include <bluetooth/bluetooth.h>  // libbluetooth.so
@@ -52,103 +54,120 @@ namespace wiimote_c
 #include <cwiid.h>  // libcwiid.so
 }
 
-#define zeroedByCal(raw, zero, one) \
-  (((raw - zero) * 1.0) / ((one - zero) * 1.0))
+#include "wiimote/stat_vector_3d.h"
 
-class WiimoteNode
+#define zeroedByCal(raw, zero, one) (((raw - zero) * 1.0) / ((one - zero) * 1.0))
+
+class WiimoteNode : public rclcpp_lifecycle::LifecycleNode
 {
 public:
-  WiimoteNode();
-  ~WiimoteNode();
-  char *getBluetoothAddr();
-  void setBluetoothAddr(const char *bt_str);
-  bool pairWiimote(int flags, int timeout);
-  int unpairWiimote();
+  /**
+   * \brief rclcpp component-compatible constructor
+   * \param options
+   */
+  WiimoteNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+
+  CallbackReturn on_configure(const rclcpp_lifecycle::State & previous_state) override;
+  CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
+  CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
+  CallbackReturn on_cleanup(const rclcpp_lifecycle::State & previous_state) override;
+  CallbackReturn on_shutdown(const rclcpp_lifecycle::State & previous_state) override;
+  CallbackReturn on_error(const rclcpp_lifecycle::State & previous_state) override;
+
+  char * get_bluetooth_addr();
+  void set_bluetooth_addr(const char * bt_str);
+  bool pair_wiimote(int flags, int timeout);
+  int unpair_wiimote();
 
   void publish();
-  void checkConnection();
-  void timerCallback(const ros::TimerEvent&);
+  bool wiimote_is_connected();
+  void check_connection();
 
-  void setLedState(uint8_t led_state);
-  void setRumbleState(uint8_t rumble);
+  void set_led_state(uint8_t led_state);
+  void set_rumble_state(uint8_t rumble);
 
 private:
-  void setReportMode(uint8_t rpt_mode);
-  void checkFactoryCalibrationData();
-  void resetMotionPlusState();
-  void resetNunchukState();
-  void resetClassicState();
+  void set_report_mode(uint8_t rpt_mode);
+  void check_factory_calibration_data();
+  void reset_motion_plus_state();
+  void reset_nunchuck_state();
+  void reset_classic_state();
 
-  ros::NodeHandle nh_;
+  static wiimote_c::cwiid_err_t cwiid_error_callback;
 
-  static wiimote_c::cwiid_err_t cwiidErrorCallback;
+  /**
+    Node [/wiimote_controller]
+    Publications:
+     * /joy [sensor_msgs/Joy]
+     * /wiimote/state [wiimote/State]
+     * /wiimote/nunchuk [sensor_msgs/Joy]
+     * /wiimote/classic [sensor_msgs/Joy]
+     * /imu/is_calibrated [std_msgs/Bool]
+     * /imu/data [sensor_msgs/Imu]
 
-/**
-  Node [/wiimote_controller]
-  Publications:
-   * /joy [sensor_msgs/Joy]
-   * /wiimote/state [wiimote/State]
-   * /wiimote/nunchuk [sensor_msgs/Joy]
-   * /wiimote/classic [sensor_msgs/Joy]
-   * /imu/is_calibrated [std_msgs/Bool]
-   * /imu/data [sensor_msgs/Imu]
+    Subscriptions:
+     * /joy/set_feedback [sensor_msgs/JoyFeedbackArray]
 
-  Subscriptions:
-   * /joy/set_feedback [sensor_msgs/JoyFeedbackArray]
+    Services:
+     * /imu/calibrate
+  **/
+  void joy_set_feedback_callback(sensor_msgs::msg::JoyFeedbackArray::ConstSharedPtr feedback);
+  bool service_imu_calibrate_callback(
+    std_srvs::srv::Empty::Request::SharedPtr, std_srvs::srv::Empty::Response::SharedPtr);
 
-  Services:
-   * /imu/calibrate
-**/
-  void joySetFeedbackCallback(const sensor_msgs::JoyFeedbackArray::ConstPtr& feedback);
-  bool serviceImuCalibrateCallback(std_srvs::Empty::Request&, std_srvs::Empty::Response&);
+  bool is_collecting_wiimote();
+  bool is_collecting_nunchuk();
+  bool is_collecting_classic();
+  bool is_collecting_motionplus();
 
-  bool isCollectingWiimote();
-  bool isCollectingNunchuk();
-  bool isCollectingClassic();
-  bool isCollectingMotionplus();
+  bool is_present_nunchuk();
+  bool is_present_classic();
+  bool is_present_motionplus();
 
-  bool isPresentNunchuk();
-  bool isPresentClassic();
-  bool isPresentMotionplus();
+  bool calibrate_joystick(uint8_t * stick, uint8_t (&center)[2], const char * name);
+  void update_joystick_min_max(
+    uint8_t * stick, uint8_t (&stick_min)[2], uint8_t (&stick_max)[2], const char * name);
+  void calculate_joystick_axis_xy(
+    uint8_t * stick_current, uint8_t * stick_min, uint8_t * stick_max, uint8_t * stick_center,
+    double (&stick)[2]);
 
-  bool calibrateJoystick(uint8_t stick[2], uint8_t (&center)[2], const char *name);
-  void updateJoystickMinMax(uint8_t stick[2], uint8_t (&stick_min)[2],
-      uint8_t (&stick_max)[2], const char *name);
-  void calculateJoystickAxisXY(uint8_t stick_current[2], uint8_t stick_min[2],
-      uint8_t stick_max[2], uint8_t stick_center[2], double (&stick)[2]);
+  void publish_joy();
+  void publish_imu_data();
+  void publish_wiimote_state();
+  bool publish_wiimote_nunchuk_common();
+  void publish_wiimote_nunchuk();
+  void publish_wiimote_classic();
 
-  void publishJoy();
-  void publishImuData();
-  void publishWiimoteState();
-  bool publishWiimoteNunchukCommon();
-  void publishWiimoteNunchuk();
-  void publishWiimoteClassic();
+  void initialize_wiimote_state();
+  bool get_state_sample();
 
-  bool getStateSample();
+  void set_led_bit(uint8_t led, bool on);
+  void set_rumble_bit(bool on);
 
-  void setLEDBit(uint8_t led, bool on);
-  void setRumbleBit(bool on);
+  rclcpp::Logger logger_;
 
-  ros::Publisher joy_pub_;
-  ros::Publisher imu_data_pub_;
-  ros::Publisher wiimote_state_pub_;
-  ros::Publisher wiimote_nunchuk_pub_;
-  ros::Publisher wiimote_classic_pub_;
-  ros::Publisher imu_is_calibrated_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Joy>::SharedPtr joy_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Imu>::SharedPtr imu_data_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<wiimote_msgs::msg::State>::SharedPtr wiimote_state_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Joy>::SharedPtr wiimote_nunchuk_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Joy>::SharedPtr wiimote_classic_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Bool>::SharedPtr imu_is_calibrated_pub_;
 
-  ros::Subscriber joy_set_feedback_sub_;
+  rclcpp::Subscription<sensor_msgs::msg::JoyFeedbackArray>::SharedPtr joy_set_feedback_sub_;
 
-  ros::ServiceServer imu_calibrate_srv_;
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr imu_calibrate_srv_;
+
+  rclcpp::TimerBase::SharedPtr check_connection_timer_;
+  rclcpp::TimerBase::SharedPtr publish_timer_;
 
   // bluetooth device address
   bdaddr_t bt_device_addr_;
 
   // wiimote handle
-  wiimote_c::cwiid_wiimote_t *wiimote_;
+  wiimote_c::cwiid_wiimote_t * wiimote_;
 
   // Last state of the Wiimote
   struct wiimote_c::cwiid_state wiimote_state_;
-  void initializeWiimoteState();
   // Time last state sample was taken
   uint32_t state_secs_;
   uint32_t state_nsecs_;
@@ -159,13 +178,14 @@ private:
   // Calibration status Wiimote
   struct wiimote_c::acc_cal wiimote_cal_;  // wiimote acceleration factory calibration
   bool wiimote_calibrated_;
-  ros::Time calibration_time_;
+
+  rclcpp::Time calibration_time_;
 
   // Joystick related constants
-  const uint8_t JOYSTICK_NUNCHUK_DEFAULT_CENTER_ = 127;       // Theoretical center
+  const uint8_t JOYSTICK_NUNCHUK_DEFAULT_CENTER_ = 127;  // Theoretical center
   const uint8_t JOYSTICK_NUNCHUK_20PERCENT_MAX_ = 205;
   const uint8_t JOYSTICK_NUNCHUK_20PERCENT_MIN_ = 50;
-  const uint8_t JOYSTICK_CLASSIC_LEFT_DEFAULT_CENTER_ = 31;   // Theoretical center
+  const uint8_t JOYSTICK_CLASSIC_LEFT_DEFAULT_CENTER_ = 31;  // Theoretical center
   const uint8_t JOYSTICK_CLASSIC_LEFT_20PERCENT_MAX_ = 50;
   const uint8_t JOYSTICK_CLASSIC_LEFT_20PERCENT_MIN_ = 13;
   const uint8_t JOYSTICK_CLASSIC_RIGHT_DEFAULT_CENTER_ = 15;  // Theoretical center
@@ -182,7 +202,7 @@ private:
   uint8_t nunchuk_stick_min_[2];  // Minimums x,y
 
   // Calibration status Classic Controller
-  uint8_t classic_stick_left_center_[2];   // nunchuk stick center position
+  uint8_t classic_stick_left_center_[2];  // nunchuk stick center position
   bool classic_stick_left_calibrated_;
   uint8_t classic_stick_left_max_[2];
   uint8_t classic_stick_left_min_[2];
@@ -195,8 +215,8 @@ private:
   const int COVARIANCE_DATA_POINTS_ = 100;
   StatVector3d linear_acceleration_stat_;
   StatVector3d angular_velocity_stat_;
-  boost::array<double, 9> linear_acceleration_covariance_;
-  boost::array<double, 9> angular_velocity_covariance_;
+  std::array<double, 9> linear_acceleration_covariance_;
+  std::array<double, 9> angular_velocity_covariance_;
 
   uint8_t led_state_ = 0;
   uint8_t rumble_ = 0;

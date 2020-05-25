@@ -1,7 +1,7 @@
 /*
  * Three dimensional statistic vector for use with the
  * for ROS Node which interfaces with a wiimote control unit.
- * Copyright (c) 2016, Intel Corporation.
+ * Copyright (c) 2020, Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,

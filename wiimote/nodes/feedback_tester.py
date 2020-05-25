@@ -1,18 +1,31 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import roslib
-import rospy
+# Copyright (c) 2020, Intel Corporation.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms and conditions of the GNU General Public License,
+# version 2, as published by the Free Software Foundation.
+#
+# This program is distributed in the hope it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+
+
+import rclpy
+import rclpy.exceptions
 from sensor_msgs.msg import JoyFeedbackArray
 from sensor_msgs.msg import JoyFeedback
-
-roslib.load_manifest('wiimote')
+import time
 
 INTER_PATTERN_SLEEP_DURATION = 0.2
 
 
-def talker():
-    pub = rospy.Publisher('/joy/set_feedback', JoyFeedbackArray, queue_size=1)
-    rospy.init_node('ledControlTester', anonymous=True)
+def main(args=None):
+    rclpy.init(args=args)
+
+    node = rclpy.create_node(node_name='ledControlTester')
+    pub = node.create_publisher(msg_type=JoyFeedbackArray, topic='/joy/set_feedback', qos_profile=1)
 
     led0 = JoyFeedback()
     led0.type = JoyFeedback.TYPE_LED
@@ -30,7 +43,7 @@ def talker():
     rum.type = JoyFeedback.TYPE_RUMBLE
     rum.id = 0
 
-    while not rospy.is_shutdown():
+    while rclpy.ok():
         msg = JoyFeedbackArray()
         msg.array = [led0, led1, led2, led3, rum]
 
@@ -39,53 +52,53 @@ def talker():
         rum.intensity = 0.49
 
         if msg is not None:
-            rospy.logdebug("Msg: " + str(msg))
+            node.get_logger().debug("Msg: " + str(msg))
             pub.publish(msg)
-            rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
+            time.sleep(INTER_PATTERN_SLEEP_DURATION)
 
         led0.intensity = 1.0
         rum.intensity = 0.51
 
         if msg is not None:
-            rospy.logdebug("Msg: " + str(msg))
+            node.get_logger().debug("Msg: " + str(msg))
             pub.publish(msg)
-            rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
+            time.sleep(INTER_PATTERN_SLEEP_DURATION)
 
         led0.intensity = 0.0
         led1.intensity = 1.0
         rum.intensity = 0.0
 
         if msg is not None:
-            rospy.logdebug("Msg: " + str(msg))
+            node.get_logger().debug("Msg: " + str(msg))
             pub.publish(msg)
-            rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
+            time.sleep(INTER_PATTERN_SLEEP_DURATION)
 
         led1.intensity = 0.0
         led2.intensity = 1.0
         rum.intensity = 0.7
 
         if msg is not None:
-            rospy.logdebug("Msg: " + str(msg))
+            node.get_logger().debug("Msg: " + str(msg))
             pub.publish(msg)
-            rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
+            time.sleep(INTER_PATTERN_SLEEP_DURATION)
 
         led2.intensity = 0.0
         led3.intensity = 1.0
         rum.intensity = 0.49
 
         if msg is not None:
-            rospy.logdebug("Msg: " + str(msg))
+            node.get_logger().debug("Msg: " + str(msg))
             pub.publish(msg)
-            rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
+            time.sleep(INTER_PATTERN_SLEEP_DURATION)
 
         led1.intensity = 1.0
         led2.intensity = 1.0
         rum.intensity = 1.0
 
         if msg is not None:
-            rospy.logdebug("Msg: " + str(msg))
+            node.get_logger().debug("Msg: " + str(msg))
             pub.publish(msg)
-            rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
+            time.sleep(INTER_PATTERN_SLEEP_DURATION)
 
         led0.intensity = 1.0
         led1.intensity = 0.4
@@ -94,9 +107,9 @@ def talker():
         msg.array = [led0, led1, led2]
 
         if msg is not None:
-            rospy.logdebug("Msg: " + str(msg))
+            node.get_logger().debug("Msg: " + str(msg))
             pub.publish(msg)
-            rospy.sleep(INTER_PATTERN_SLEEP_DURATION)
+            time.sleep(INTER_PATTERN_SLEEP_DURATION)
 
 
 if __name__ == '__main__':
@@ -112,6 +125,6 @@ if __name__ == '__main__':
     print("[off, on,  on,  on ]")
     print("[on,  off, off, on ]")
     try:
-        talker()
-    except rospy.ROSInterruptException:
+        main()
+    except rclpy.exceptions.ROSInterruptException:
         pass
