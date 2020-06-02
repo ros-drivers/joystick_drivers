@@ -18,6 +18,7 @@ jobs:
       - run:
           name: Build
           command: |
+            source `find /opt/ros -name setup.bash | sort | head -1`
             cd ..
             catkin_make
       - run:
