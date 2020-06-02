@@ -116,16 +116,14 @@ class WiimoteNode():
 
             rospy.spin()
 
-        except:
-            rospy.loginfo("Error in startup")
-            rospy.loginfo(sys.exc_info()[0])
+        # except:
+        #     rospy.loginfo("Error in startup")
+        #     rospy.loginfo(sys.exc_info()[0])
         finally:
             try:
                 wiimoteDevice.setRumble(False)
                 wiimoteDevice.setLEDs([False, False, False, False])
                 wiimoteDevice.shutdown()
-            except:
-                pass
 
     def shutdown(self):
         try:
@@ -134,8 +132,6 @@ class WiimoteNode():
             WiiSender.stop
             NunSender.stop
             WiimoteListener.stop
-        except:
-            pass
 
 
 class WiimoteDataSender(threading.Thread):
@@ -743,7 +739,7 @@ class WiimoteListeners(threading.Thread):
                             self.ledCommands[fb.id] = True
                         else:
                             self.ledCommands[fb.id] = False
-                    except:
+                    except IndexError:
                         rospy.logwarn("LED ID out of bounds, ignoring!")
                 elif fb.type == JoyFeedback.TYPE_RUMBLE:
                     if fb.id == 0:
@@ -751,7 +747,7 @@ class WiimoteListeners(threading.Thread):
                             self.rumbleCommand = True
                         else:
                             self.rumbleCommand = False
-                    else:
+                    else IndexError:
                         rospy.logwarn("RUMBLE ID out of bounds, ignoring!")
 
             self.wiiMote.setLEDs(self.ledCommands)
@@ -812,9 +808,6 @@ if __name__ == '__main__':
     except CallbackStackEmptyError, e:
         rospy.logfatal(str(e))
 
-    except:
-        excType, excValue, excTraceback = sys.exc_info()[:3]
-        traceback.print_exception(excType, excValue, excTraceback)
     finally:
         if (wiimoteNode is not None):
             wiimoteNode.shutdown()

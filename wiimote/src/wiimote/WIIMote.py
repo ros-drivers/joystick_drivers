@@ -185,8 +185,6 @@ class WIIMote(object):
             try:
                 (factoryZero, factoryOne) = self.getNunchukFactoryCalibrationSettings()
                 self.setNunchukAccelerometerCalibration(factoryZero, factoryOne)
-            except:
-                pass
 
         time.sleep(0.2)
         self._wiiCallbackStack.push(self._steadyStateCallback)
@@ -196,10 +194,10 @@ class WIIMote(object):
     def _steadyStateCallback(self, state, theTime):
         now = getTimeStamp()
         if now - self._startTime >= self.sampleRate:
-                # If this Wiimote driver is to synchronize write
-                # access to the wii state variable (which is read from
-                # outside), then acquire the lock that was provided
-                # by the instantiator of this instance:
+            # If this Wiimote driver is to synchronize write
+            # access to the wii state variable (which is read from
+            # outside), then acquire the lock that was provided
+            # by the instantiator of this instance:
             if self.wiiStateLock is not None:
                 self.wiiStateLock.acquire()
             try:
