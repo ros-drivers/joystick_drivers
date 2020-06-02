@@ -181,10 +181,7 @@ class decoder:
     step_error = 3
 
     def init_ros(self):
-        try:
-            rospy.init_node('ps3joy', anonymous=True, disable_signals=True)
-        except:
-            print("rosnode init failed")
+        rospy.init_node('ps3joy', anonymous=True, disable_signals=True)
         rospy.Subscriber("joy/set_feedback", sensor_msgs.msg.JoyFeedbackArray, self.set_feedback)
         self.diagnostics = Diagnostics()
         self.led_values = [1, 0, 0, 0]
