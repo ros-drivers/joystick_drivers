@@ -25,13 +25,12 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>cwiid-dev</build_depend>  
   <build_depend>message_generation</build_depend>
   <build_depend>roslint</build_depend>
   
+  <depend>cwiid-dev</depend>
   <depend>geometry_msgs</depend>
-  <depend>python-cwiid</depend>
-  <depend>python-numpy</depend>
+  <depend>python3-numpy</depend>
   <depend>roscpp</depend>
   <depend>roslib</depend>
   <depend>rospy</depend>
@@ -39,7 +38,6 @@
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   
-  <exec_depend>cwiid</exec_depend>
   <exec_depend>message_runtime</exec_depend>
 
   <export>
