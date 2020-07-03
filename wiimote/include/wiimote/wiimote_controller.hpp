@@ -1,15 +1,19 @@
+// Copyright 2020 Intel Corporation
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 /*
  * ROS Node for interfacing with a wiimote control unit.
- * Copyright (c) 2020, Intel Corporation.
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms and conditions of the GNU General Public License,
- * version 2, as published by the Free Software Foundation.
- *
- * This program is distributed in the hope it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
  */
 
 /*
@@ -35,8 +39,8 @@
  */
 
 #pragma once
-#ifndef WIIMOTE_WIIMOTE_CONTROLLER_H
-#define WIIMOTE_WIIMOTE_CONTROLLER_H
+#ifndef WIIMOTE__WIIMOTE_CONTROLLER_HPP_
+#define WIIMOTE__WIIMOTE_CONTROLLER_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
@@ -54,7 +58,7 @@ namespace wiimote_c
 #include <cwiid.h>  // libcwiid.so
 }
 
-#include "wiimote/stat_vector_3d.h"
+#include "wiimote/stat_vector_3d.hpp"
 
 #define zeroedByCal(raw, zero, one) (((raw - zero) * 1.0) / ((one - zero) * 1.0))
 
@@ -65,7 +69,7 @@ public:
    * \brief rclcpp component-compatible constructor
    * \param options
    */
-  WiimoteNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  explicit WiimoteNode(const rclcpp::NodeOptions & options);
 
   CallbackReturn on_configure(const rclcpp_lifecycle::State & previous_state) override;
   CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
@@ -124,12 +128,12 @@ private:
   bool is_present_classic();
   bool is_present_motionplus();
 
-  bool calibrate_joystick(uint8_t * stick, uint8_t (&center)[2], const char * name);
+  bool calibrate_joystick(uint8_t * stick, uint8_t(&center)[2], const char * name);
   void update_joystick_min_max(
-    uint8_t * stick, uint8_t (&stick_min)[2], uint8_t (&stick_max)[2], const char * name);
+    uint8_t * stick, uint8_t(&stick_min)[2], uint8_t(&stick_max)[2], const char * name);
   void calculate_joystick_axis_xy(
     uint8_t * stick_current, uint8_t * stick_min, uint8_t * stick_max, uint8_t * stick_center,
-    double (&stick)[2]);
+    double (& stick)[2]);
 
   void publish_joy();
   void publish_imu_data();
@@ -250,4 +254,4 @@ private:
   const double GYRO_SCALE_FACTOR_ = 0.001055997;
 };
 
-#endif  // WIIMOTE_WIIMOTE_CONTROLLER_H
+#endif  // WIIMOTE__WIIMOTE_CONTROLLER_HPP_

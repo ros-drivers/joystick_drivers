@@ -29,37 +29,32 @@ else()
   message(FATAL_ERROR "cwiid library not found.")
 endif()
 
+
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rclcpp_components REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(std_srvs REQUIRED)
-find_package(wiimote_msgs REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
 
-## C++ Wiimote Lib
-set(wiimote_lib_HEADERS
-  include/wiimote/wiimote_controller.h
-  include/wiimote/stat_vector_3d.h)
-
-set(wiimote_lib_SOURCES
-  src/wiimote_controller.cpp
-  src/stat_vector_3d.cpp)
-
-add_library(wiimote_lib SHARED ${wiimote_lib_HEADERS} ${wiimote_lib_SOURCES})
-ament_target_dependencies(wiimote_lib
-  geometry_msgs
+ament_auto_find_build_dependencies(
+  REQUIRED
   rclcpp
   rclcpp_components
   rclcpp_lifecycle
   sensor_msgs
   std_srvs
-  wiimote_msgs)
-target_link_libraries(wiimote_lib bluetooth cwiid)
-target_include_directories(wiimote_lib PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
+  wiimote_msgs
 )
+
+## C++ Wiimote Lib
+set(wiimote_lib_HEADERS
+  include/wiimote/wiimote_controller.hpp
+  include/wiimote/stat_vector_3d.hpp)
+
+set(wiimote_lib_SOURCES
+  src/wiimote_controller.cpp
+  src/stat_vector_3d.cpp)
+
+ament_auto_add_library(wiimote_lib SHARED ${wiimote_lib_HEADERS} ${wiimote_lib_SOURCES})
+target_link_libraries(wiimote_lib bluetooth cwiid)
+
 rclcpp_components_register_node(
   wiimote_lib
   PLUGIN "WiimoteNode"
@@ -68,19 +63,10 @@ rclcpp_components_register_node(
 ## End C++ Wiimote Lib
 
 # C++ Teleop for Wiimote Node: Declare cpp executables
-set(teleop_wiimote_HEADERS include/wiimote/teleop_wiimote.h)
+set(teleop_wiimote_HEADERS include/wiimote/teleop_wiimote.hpp)
 set(teleop_wiimote_SOURCES src/teleop_wiimote.cpp)
-add_library(teleop_wiimote SHARED ${teleop_wiimote_HEADERS} ${teleop_wiimote_SOURCES})
-ament_target_dependencies(teleop_wiimote
-  rclcpp
-  rclcpp_components
-  rclcpp_lifecycle
-  sensor_msgs
-  wiimote_msgs)
-target_include_directories(teleop_wiimote PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-)
+ament_auto_add_library(teleop_wiimote SHARED ${teleop_wiimote_HEADERS} ${teleop_wiimote_SOURCES})
+
 rclcpp_components_register_node(
   teleop_wiimote
   PLUGIN "TeleopWiimote"
