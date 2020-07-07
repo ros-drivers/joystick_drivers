@@ -2,8 +2,8 @@
 Changelog for package ps3joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.14.0 (2020-07-07)
+-------------------
 * Fixing linter errors for Noetic. (`#174 <https://github.com/ros-drivers/joystick_drivers/issues/174>`_)
 * Make sure to import struct where it is used. (`#162 <https://github.com/ros-drivers/joystick_drivers/issues/162>`_)
 * roslint and Generic Clean-Up (`#161 <https://github.com/ros-drivers/joystick_drivers/issues/161>`_)

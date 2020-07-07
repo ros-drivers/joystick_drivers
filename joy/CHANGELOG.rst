@@ -2,8 +2,8 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.14.0 (2020-07-07)
+-------------------
 * frame_id in the header of the joystick msg (`#166 <https://github.com/ros-drivers/joystick_drivers/issues/166>`_)
 * roslint and Generic Clean-Up (`#161 <https://github.com/ros-drivers/joystick_drivers/issues/161>`_)
 * Merge pull request `#158 <https://github.com/ros-drivers/joystick_drivers/issues/158>`_ from clalancette/ros1-cleanups

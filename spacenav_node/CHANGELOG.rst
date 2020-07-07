@@ -2,8 +2,8 @@
 Changelog for package spacenav_node
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.14.0 (2020-07-07)
+-------------------
 * roslint and Generic Clean-Up (`#161 <https://github.com/ros-drivers/joystick_drivers/issues/161>`_)
 * Contributors: Joshua Whitley
 
