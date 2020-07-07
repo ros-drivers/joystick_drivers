@@ -2,6 +2,11 @@
 Changelog for package joystick_drivers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* roslint and Generic Clean-Up (`#161 <https://github.com/ros-drivers/joystick_drivers/issues/161>`_)
+* Contributors: Joshua Whitley
+
 1.13.0 (2019-06-24)
 -------------------
 
