@@ -1,7 +1,10 @@
-<package format="2">
+<?xml version="1.0"?>
+<?xml-model
+    href="http://download.ros.org/schema/package_format3.xsd"
+    schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>wiimote</name>
-  <version>2.0.0</version>
-  <license>GPL</license>
+  <version>3.0.0</version>
   <description>
     The wiimote package allows ROS nodes to communicate with a Nintendo Wiimote
     and its related peripherals, including the Nunchuk, Motion Plus, and
@@ -13,36 +16,37 @@
     Wiimote operator. LEDs and vibration may be switched on and off, or made to
     operate according to a timed pattern.
   </description>
+  <maintainer email="jbo@jhu.edu">Jonathan Bohren</maintainer>
+  <license>GPL</license>
 
   <url type="website">http://www.ros.org/wiki/wiimote</url>
-  <url type="development">https://github.com/ros-drivers/joystick_drivers</url>
+  <url type="repository">https://github.com/ros-drivers/joystick_drivers</url>
   <url type="bugtracker">https://github.com/ros-drivers/joystick_drivers/issues</url>
 
-  <maintainer email="jbo@jhu.edu">Jonathan Bohren</maintainer>
   <author>Andreas Paepcke</author>
   <author>Melonee Wise</author>
   <author email="mark.d.horn@intel.com">Mark Horn</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
-  <build_depend>cwiid-dev</build_depend>  
-  <build_depend>message_generation</build_depend>
-  <build_depend>roslint</build_depend>
-  
-  <depend>geometry_msgs</depend>
-  <depend>python-cwiid</depend>
-  <depend>python-numpy</depend>
-  <depend>roscpp</depend>
-  <depend>roslib</depend>
-  <depend>rospy</depend>
-  <depend>sensor_msgs</depend>
-  <depend>std_msgs</depend>
-  <depend>std_srvs</depend>
-  
+  <build_depend>libbluetooth-dev</build_depend>
+  <exec_depend>libbluetooth</exec_depend>
+  <build_depend>cwiid-dev</build_depend>
   <exec_depend>cwiid</exec_depend>
-  <exec_depend>message_runtime</exec_depend>
+
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>rclcpp_lifecycle</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>wiimote_msgs</depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
 
   <export>
-    <architecture_independent/>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

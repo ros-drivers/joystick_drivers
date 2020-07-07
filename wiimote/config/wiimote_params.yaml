@@ -1,0 +1,9 @@
+/**:
+  ros__parameters:
+    bluetooth_addr: "00:00:00:00:00:00"
+    pair_timeout: -1
+    check_connection_interval: 1.0
+    publish_interval: .2
+    require_nunchuk: true
+    require_classic: false
+    require_motionplus: false

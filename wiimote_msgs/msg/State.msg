@@ -43,7 +43,7 @@ int8 MSG_CLASSIC_BTN_ZR      = 14
 # Header
 #----------------------
 
-Header header
+std_msgs/Header header
 
 #----------------------
 # Gyro reading
@@ -92,7 +92,7 @@ bool[2] nunchuk_buttons
 # Wiimote LED states:
 #-----------------------------
 
-bool[4] LEDs
+bool[4] leds
 
 #----------------------
 # Wiimote Rumble
@@ -105,12 +105,12 @@ bool rumble
 # IR Light sensor (Camera)
 #-----------------------------
 # The Wiimote handles up to four light sources, 
-# and the wiimote_node.py software is written to 
+# and the wiimote_controller software is written to
 # that limit as well. For future expansion
 # we make the following array extensible, rather
 # than locking its length down to four:
 
-wiimote/IrSourceInfo[] ir_tracking
+wiimote_msgs/IrSourceInfo[] ir_tracking
 
 #----------------------
 # Wiimote battery
@@ -127,7 +127,7 @@ float32 percent_battery
 # Time of most recent zeroing:
 #-----------------------------
 
-time zeroing_time
+builtin_interfaces/Time zeroing_time
 
 #----------------------
 # Error vector

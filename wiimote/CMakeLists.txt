@@ -1,94 +1,101 @@
 cmake_minimum_required(VERSION 3.5)
 project(wiimote)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# Save the command line compile commands in the build output
-set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
-# View the makefile commands during build
-#set(CMAKE_VERBOSE_MAKEFILE on)
-
-# Set compile flags
-set(CMAKE_CXX_FLAGS "-fPIE -fPIC -O2 -D_FORTIFY_SOURCE=2 -fstack-protector -Wformat -Wformat-security -Wall ${CMAKE_CXX_FLAGS}")
-# Flags executables
-set(CMAKE_EXE_LINKER_FLAGS "-pie -z noexecstack -z relro -z now")
-# Flags shared libraries
-set(CMAKE_SHARED_LINKER_FLAGS "-z noexecstack -z relro -z now ${CMAKE_SHARED_LINKER_FLAGS}")
-
-# Load catkin and all dependencies required for this package
-set(CATKIN_DEPS geometry_msgs sensor_msgs std_msgs std_srvs rospy roscpp roslib genmsg roslint)
-find_package(catkin REQUIRED ${CATKIN_DEPS})
-
-catkin_python_setup()
-
-# generate the messages
-add_message_files(
-  DIRECTORY msg
-  FILES
-  IrSourceInfo.msg
-  State.msg
-  TimedSwitch.msg
-)
-
-generate_messages(DEPENDENCIES geometry_msgs std_msgs sensor_msgs)
-
-# ROS Lint the code
-roslint_cpp()
-roslint_python()
-
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-  INCLUDE_DIRS include
-  CATKIN_DEPENDS
-    geometry_msgs
-    sensor_msgs
-    std_msgs
-    std_srvs
-)
-
-## Specify additional locations of header files
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-)
-
-## C++ Wiimote Node: Declare cpp executables
-add_executable(wiimote_node src/wiimote_controller.cpp src/stat_vector_3d.cpp)
-target_link_libraries(wiimote_node ${catkin_LIBRARIES} bluetooth cwiid)
-add_dependencies(wiimote_node wiimote_generate_messages_cpp)
-## End of C++ Wiimote Node
-
-## C++ Teleop for Wiimote Node: Declare cpp executables
-add_executable(teleop_wiimote src/teleop_wiimote.cpp)
-target_link_libraries(teleop_wiimote ${catkin_LIBRARIES})
-add_dependencies(teleop_wiimote wiimote_generate_messages_cpp)
-## End C++ Teleop for Wiimote Node
-
-if(CATKIN_ENABLE_TESTING)
-  roslint_add_test()
+# Default to C99
+if(NOT CMAKE_C_STANDARD)
+  set(CMAKE_C_STANDARD 99)
 endif()
 
-# Install launch files
-install(DIRECTORY launch/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+find_library(BLUETOOTH_LIB bluetooth)
+if(BLUETOOTH_LIB)
+  message(STATUS "Found bluetooth library.")
+else()
+  message(FATAL_ERROR "bluetooth library not found.")
+endif()
+
+find_library(CWIID_LIB cwiid)
+if(CWIID_LIB)
+  message(STATUS "Found cwiid library.")
+else()
+  message(FATAL_ERROR "cwiid library not found.")
+endif()
+
+
+find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
+
+ament_auto_find_build_dependencies(
+  REQUIRED
+  rclcpp
+  rclcpp_components
+  rclcpp_lifecycle
+  sensor_msgs
+  std_srvs
+  wiimote_msgs
 )
 
-# Install targets
-install(PROGRAMS nodes/feedbackTester.py  nodes/wiimote_node.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  )
-## Mark executables and/or libraries for installation
-install(TARGETS wiimote_node
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+## C++ Wiimote Lib
+set(wiimote_lib_HEADERS
+  include/wiimote/wiimote_controller.hpp
+  include/wiimote/stat_vector_3d.hpp)
+
+set(wiimote_lib_SOURCES
+  src/wiimote_controller.cpp
+  src/stat_vector_3d.cpp)
+
+ament_auto_add_library(wiimote_lib SHARED ${wiimote_lib_HEADERS} ${wiimote_lib_SOURCES})
+target_link_libraries(wiimote_lib bluetooth cwiid)
+
+rclcpp_components_register_node(
+  wiimote_lib
+  PLUGIN "WiimoteNode"
+  EXECUTABLE wiimote_node
 )
+## End C++ Wiimote Lib
+
+# C++ Teleop for Wiimote Node: Declare cpp executables
+set(teleop_wiimote_HEADERS include/wiimote/teleop_wiimote.hpp)
+set(teleop_wiimote_SOURCES src/teleop_wiimote.cpp)
+ament_auto_add_library(teleop_wiimote SHARED ${teleop_wiimote_HEADERS} ${teleop_wiimote_SOURCES})
+
+rclcpp_components_register_node(
+  teleop_wiimote
+  PLUGIN "TeleopWiimote"
+  EXECUTABLE teleop_wiimote_node
+)
+# End C++ Teleop for Wiimote Node
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+endif()
+
+# Install lib
+install(TARGETS wiimote_lib teleop_wiimote
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin)
+install(DIRECTORY include/ DESTINATION include)
+
+# Install launch and config files
+install(DIRECTORY launch config
+  DESTINATION share/${PROJECT_NAME})
+
+# Install Executables
+install(TARGETS wiimote_node
+  DESTINATION lib/${PROJECT_NAME})
+
+install(PROGRAMS nodes/feedback_tester.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+ament_package()
