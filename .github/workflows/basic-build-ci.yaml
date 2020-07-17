@@ -10,24 +10,29 @@ jobs:
     strategy:
       fail-fast: false
     container:
-      image: rostooling/setup-ros-docker:ubuntu-bionic-ros-melodic-ros-base-latest
+      image: ros:melodic-perception
     steps:
-    - name: Fix Bugs in ros-tooling/action-ros-ci
-      run: sudo chown -R rosbuild:rosbuild "$HOME" .
+    - name: Checkout repo
+      uses: actions/checkout@v2
+    - name: Create Workspace
+      run: |
+        mkdir src_tmp
+        mv `find -maxdepth 1 -not -name . -not -name src_tmp` src_tmp/
+        mv src_tmp/ src/
+        cd src
+        bash -c 'source /opt/ros/$ROS_DISTRO/setup.bash; \
+        catkin_init_workspace'
+    - name: Install Prerequisites
+      run: |
+        bash -c 'source /opt/ros/$ROS_DISTRO/setup.bash; \
+        apt-get update && rosdep update; \
+        rosdep install --from-paths src --ignore-src -y'
+    - name: Build Workspace
+      run: |
+        bash -c 'source /opt/ros/$ROS_DISTRO/setup.bash; \
+        catkin_make'
     - name: Run Tests
-      uses: ros-tooling/action-ros-ci@0.0.17
-      with:
-        package-name: |
-          joy
-          joystick_drivers
-          ps3joy
-          spacenav_node
-          wiimote
-        source-ros-binary-installation: melodic
-        vcs-repo-file-url: ""
-    - name: Upload logs
-      uses: actions/upload-artifact@v1
-      with:
-        name: colcon-logs
-        path: ros_ws/log
-      if: always()
+      run: |
+        bash -c 'source /opt/ros/$ROS_DISTRO/setup.bash; \
+        catkin_make run_tests; \
+        catkin_test_results --verbose'
