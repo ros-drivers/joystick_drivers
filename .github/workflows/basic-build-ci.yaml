@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
     container:
-      image: rostooling/setup-ros-docker:ubuntu-focal-ros-foxy-ros-base-latest
+      image: rostooling/setup-ros-docker:ubuntu-focal-ros-foxy-ros-base-testing-latest
     steps:
     - name: Fix Bugs in ros-tooling/action-ros-ci
       run: sudo chown -R rosbuild:rosbuild "$HOME" .
