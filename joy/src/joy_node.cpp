@@ -30,6 +30,7 @@
 
 // \author: Blaise Gassend
 
+#include <memory>
 #include <string>
 
 #include <dirent.h>
@@ -45,6 +46,14 @@
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
 #include <sensor_msgs/JoyFeedbackArray.h>
+
+
+int closedir_cb(DIR *dir)
+{
+  if (dir)
+    return closedir(dir);
+  return 0;
+}
 
 
 /// \brief Opens, reads from and publishes joystick events
@@ -71,6 +80,8 @@ private:
   bool update_feedback_;
 
   diagnostic_updater::Updater diagnostic_;
+
+  typedef std::unique_ptr<DIR, decltype(&closedir)> dir_ptr;
 
   /// \brief Publishes diagnostics and status
   void diagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat)
@@ -111,14 +122,14 @@ private:
     struct dirent *entry;
     struct stat stat_buf;
 
-    DIR *dev_dir = opendir(path);
+    dir_ptr dev_dir(opendir(path), &closedir_cb);
     if (dev_dir == nullptr)
     {
       ROS_ERROR("Couldn't open %s. Error %i: %s.", path, errno, strerror(errno));
       return "";
     }
 
-    while ((entry = readdir(dev_dir)) != nullptr)
+    while ((entry = readdir(dev_dir.get())) != nullptr)
     {
       // filter entries
       if (strncmp(entry->d_name, "js", 2) != 0)  // skip device if it's not a joystick
@@ -154,12 +165,10 @@ private:
 
       if (strcmp(current_joy_name, joy_name.c_str()) == 0)
       {
-        closedir(dev_dir);
         return current_path;
       }
     }
 
-    closedir(dev_dir);
     return "";
   }
 
@@ -180,7 +189,7 @@ private:
       return "";
     }
 
-    DIR *dev_dir = opendir(path);
+    dir_ptr dev_dir(opendir(path), &closedir_cb);
     if (dev_dir == nullptr)
     {
       ROS_ERROR("Couldn't open %s. Error %i: %s.", path, errno, strerror(errno));
@@ -193,7 +202,7 @@ private:
     // first, find the device in /dev/input/by-id that corresponds to the selected joy,
     // i.e. its realpath is the same as the selected joy's one
 
-    while ((entry = readdir(dev_dir)) != nullptr)
+    while ((entry = readdir(dev_dir.get())) != nullptr)
     {
       res = strstr(entry->d_name, "-joystick");
       // filter entries
@@ -218,8 +227,6 @@ private:
       }
     }
 
-    closedir(dev_dir);
-
     // if no corresponding ID device was found, the autodetection won't work
     if (joy_dev_id.empty())
     {
@@ -231,8 +238,8 @@ private:
 
     // iterate through the by-id dir once more, this time finding the -event-joystick file with the
     // same prefix as the ID device we've already found
-    dev_dir = opendir(path);
-    while ((entry = readdir(dev_dir)) != nullptr)
+    dev_dir = dir_ptr(opendir(path), &closedir_cb);
+    while ((entry = readdir(dev_dir.get())) != nullptr)
     {
       res = strstr(entry->d_name, "-event-joystick");
       if (res == nullptr)  // skip device if it's not an event joystick
@@ -248,7 +255,6 @@ private:
         break;
       }
     }
-    closedir(dev_dir);
 
     return event_dev;
   }
