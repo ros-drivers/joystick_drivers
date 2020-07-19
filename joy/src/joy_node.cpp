@@ -351,7 +351,13 @@ public:
         int ret = ioctl(ff_fd_, EVIOCSFF, &joy_effect_);
       }
 
-      ROS_INFO("Opened joystick: %s. deadzone_: %f.", joy_dev_.c_str(), deadzone_);
+      char current_joy_name[128];
+      if (ioctl(joy_fd, JSIOCGNAME(sizeof(current_joy_name)), current_joy_name) < 0)
+      {
+        strncpy(current_joy_name, "Unknown", sizeof(current_joy_name));
+      }
+
+      ROS_INFO("Opened joystick: %s (%s). deadzone_: %f.", joy_dev_.c_str(), current_joy_name, deadzone_);
       open_ = true;
       diagnostic_.force_update();
 
