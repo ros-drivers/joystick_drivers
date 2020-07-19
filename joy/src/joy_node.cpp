@@ -184,11 +184,11 @@ public:
         joy_effect_.type = FF_RUMBLE;
         if (msg->array[i].id == 0)
         {
-          joy_effect_.u.rumble.strong_magnitude = (static_cast<float>(1<<15))*msg->array[i].intensity;
+          joy_effect_.u.rumble.strong_magnitude = (static_cast<float>(0xFFFFU))*msg->array[i].intensity;
         }
         else
         {
-          joy_effect_.u.rumble.weak_magnitude = (static_cast<float>(1<<15))*msg->array[i].intensity;
+          joy_effect_.u.rumble.weak_magnitude = (static_cast<float>(0xFFFFU))*msg->array[i].intensity;
         }
 
         joy_effect_.replay.length = 1000;
@@ -339,6 +339,7 @@ public:
           ROS_WARN("Couldn't set gain on joystick force feedback: %s", strerror(errno));
         }
 
+        memset(&joy_effect_, 0, sizeof(joy_effect_));
         joy_effect_.id = -1;
         joy_effect_.direction = 0;  // down
         joy_effect_.type = FF_RUMBLE;
@@ -390,7 +391,7 @@ public:
           struct input_event start;
           start.type = EV_FF;
           start.code = joy_effect_.id;
-          start.value = 3;
+          start.value = 1;
           if (write(ff_fd_, (const void*) &start, sizeof(start)) == -1)
           {
             break;  // fd closed
