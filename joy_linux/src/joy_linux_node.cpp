@@ -38,7 +38,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-// #include <diagnostic_updater/diagnostic_updater.h>
+#include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joy.hpp>
 #include <sensor_msgs/msg/joy_feedback_array.hpp>
@@ -65,45 +65,41 @@ private:
   int event_count_;
   int pub_count_;
   rclcpp::Publisher<sensor_msgs::msg::Joy>::SharedPtr pub_;
+  rclcpp::Node::SharedPtr node_;
   double lastDiagTime_;
 
   int ff_fd_;
   struct ff_effect joy_effect_;
   bool update_feedback_;
 
-  // TODO(mikaelarguedas) commenting out diagnostic logic for now
+  std::shared_ptr<diagnostic_updater::Updater> diagnostic_;
 
-  // diagnostic_updater::Updater diagnostic_;
+  // /\brief Publishes diagnostics and status
+  void diagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat)
+  {
+    double now = node_->now().seconds();
+    double interval = now - lastDiagTime_;
+    if (open_) {
+      stat.summary(0, "OK");
+    } else {
+      stat.summary(2, "Joystick not open.");
+    }
 
-  // ///\brief Publishes diagnostics and status
-  // void diagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat)
-  // {
-  //   double now = ros::Time::now().toSec();
-  //   double interval = now - lastDiagTime_;
-  //   if (open_)
-  //   {
-  //     stat.summary(0, "OK");
-  //   }
-  //   else
-  //   {
-  //     stat.summary(2, "Joystick not open.");
-  //   }
-
-  //   stat.add("topic", pub_.getTopic());
-  //   stat.add("device", joy_dev_);
-  //   stat.add("device name", joy_dev_name_);
-  //   stat.add("dead zone", deadzone_);
-  //   stat.add("autorepeat rate (Hz)", autorepeat_rate_);
-  //   stat.add("coalesce interval (s)", coalesce_interval_);
-  //   stat.add("recent joystick event rate (Hz)", event_count_ / interval);
-  //   stat.add("recent publication rate (Hz)", pub_count_ / interval);
-  //   stat.add("subscribers", pub_.getNumSubscribers());
-  //   stat.add("default trig val", default_trig_val_);
-  //   stat.add("sticky buttons", sticky_buttons_);
-  //   event_count_ = 0;
-  //   pub_count_ = 0;
-  //   lastDiagTime_ = now;
-  // }
+    stat.add("topic", pub_->get_topic_name());
+    stat.add("device", joy_dev_);
+    stat.add("device name", joy_dev_name_);
+    stat.add("dead zone", deadzone_);
+    stat.add("autorepeat rate (Hz)", autorepeat_rate_);
+    stat.add("coalesce interval (s)", coalesce_interval_);
+    stat.add("recent joystick event rate (Hz)", event_count_ / interval);
+    stat.add("recent publication rate (Hz)", pub_count_ / interval);
+    stat.add("subscribers", pub_->get_subscription_count());
+    stat.add("default trig val", default_trig_val_);
+    stat.add("sticky buttons", sticky_buttons_);
+    event_count_ = 0;
+    pub_count_ = 0;
+    lastDiagTime_ = now;
+  }
 
   /*! \brief Returns the device path of the first joystick that matches joy_name.
    *         If no match is found, an empty string is returned.
@@ -192,57 +188,59 @@ public:
     }
   }
 
-  /// \brief Opens joystick port, reads from port and publishes while node is active
+  /// \brief Opens joystick port, reads from port and publishes while node_ is active
   int main(int argc, char ** argv)
   {
-    // diagnostic_.add("Joystick Driver Status", this, &Joystick::diagnostics);
-    // diagnostic_.setHardwareID("none");
     (void)argc;
     (void)argv;
 
-    auto node = std::make_shared<rclcpp::Node>("joy_node");
+    node_ = std::make_shared<rclcpp::Node>("joy_node");
+
+    diagnostic_ = std::make_shared<diagnostic_updater::Updater>(node_);
+    diagnostic_->add("Joystick Driver Status", this, &Joystick::diagnostics);
+    diagnostic_->setHardwareID("none");
 
     // Parameters
-    pub_ = node->create_publisher<sensor_msgs::msg::Joy>("joy", 10);
+    pub_ = node_->create_publisher<sensor_msgs::msg::Joy>("joy", 10);
     rclcpp::Subscription<sensor_msgs::msg::JoyFeedbackArray>::SharedPtr sub_ =
-      node->create_subscription<sensor_msgs::msg::JoyFeedbackArray>(
+      node_->create_subscription<sensor_msgs::msg::JoyFeedbackArray>(
       "joy/set_feedback",
       rclcpp::QoS(10),
       std::bind(&Joystick::set_feedback, this, std::placeholders::_1));
 
-    joy_dev_ = node->declare_parameter("dev", std::string("/dev/input/js0"));
-    joy_dev_name_ = node->declare_parameter("dev_name", std::string(""));
-    joy_dev_ff_ = node->declare_parameter("dev_ff", "/dev/input/event0");
-    deadzone_ = node->declare_parameter("deadzone", 0.05);
-    autorepeat_rate_ = node->declare_parameter("autorepeat_rate", 20.0);
-    coalesce_interval_ = node->declare_parameter("coalesce_interval", 0.001);
-    default_trig_val_ = node->declare_parameter("default_trig_val", false);
-    sticky_buttons_ = node->declare_parameter("sticky_buttons", false);
+    joy_dev_ = node_->declare_parameter("dev", std::string("/dev/input/js0"));
+    joy_dev_name_ = node_->declare_parameter("dev_name", std::string(""));
+    joy_dev_ff_ = node_->declare_parameter("dev_ff", "/dev/input/event0");
+    deadzone_ = node_->declare_parameter("deadzone", 0.05);
+    autorepeat_rate_ = node_->declare_parameter("autorepeat_rate", 20.0);
+    coalesce_interval_ = node_->declare_parameter("coalesce_interval", 0.001);
+    default_trig_val_ = node_->declare_parameter("default_trig_val", false);
+    sticky_buttons_ = node_->declare_parameter("sticky_buttons", false);
 
     // Checks on parameters
     if (!joy_dev_name_.empty()) {
-      std::string joy_dev_path = get_dev_by_joy_name(joy_dev_name_, node->get_logger());
+      std::string joy_dev_path = get_dev_by_joy_name(joy_dev_name_, node_->get_logger());
       if (joy_dev_path.empty()) {
         RCLCPP_ERROR(
-          node->get_logger(), "Couldn't find a joystick with name %s. "
+          node_->get_logger(), "Couldn't find a joystick with name %s. "
           "Falling back to default device.",
           joy_dev_name_.c_str());
       } else {
-        RCLCPP_INFO(node->get_logger(), "Using %s as joystick device.", joy_dev_path.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Using %s as joystick device.", joy_dev_path.c_str());
         joy_dev_ = joy_dev_path;
       }
     }
 
     if (autorepeat_rate_ > 1 / coalesce_interval_) {
       RCLCPP_WARN(
-        node->get_logger(), "joy_linux_node: autorepeat_rate (%f Hz) > "
+        node_->get_logger(), "joy_linux_node: autorepeat_rate (%f Hz) > "
         "1/coalesce_interval (%f Hz) does not make sense. Timing behavior is not well defined.",
         autorepeat_rate_, 1 / coalesce_interval_);
     }
 
     if (deadzone_ >= 1) {
       RCLCPP_WARN(
-        node->get_logger(), "joy_linux_node: deadzone greater than 1 was requested. "
+        node_->get_logger(), "joy_linux_node: deadzone greater than 1 was requested. "
         "The semantics of deadzone have changed. It is now related to the range [-1:1] instead "
         "of [-32767:32767]. For now I am dividing your deadzone by 32767, but this behavior is "
         "deprecated so you need to update your launch file.");
@@ -251,27 +249,27 @@ public:
 
     if (deadzone_ > 0.9) {
       RCLCPP_WARN(
-        node->get_logger(), "joy_node: deadzone (%f) greater than 0.9, setting it to 0.9",
+        node_->get_logger(), "joy_node: deadzone (%f) greater than 0.9, setting it to 0.9",
         deadzone_);
       deadzone_ = 0.9;
     }
 
     if (deadzone_ < 0) {
       RCLCPP_WARN(
-        node->get_logger(), "joy_node: deadzone_ (%f) less than 0, setting to 0.", deadzone_);
+        node_->get_logger(), "joy_node: deadzone_ (%f) less than 0, setting to 0.", deadzone_);
       deadzone_ = 0;
     }
 
     if (autorepeat_rate_ < 0) {
       RCLCPP_WARN(
-        node->get_logger(), "joy_node: autorepeat_rate (%f) less than 0, setting to 0.",
+        node_->get_logger(), "joy_node: autorepeat_rate (%f) less than 0, setting to 0.",
         autorepeat_rate_);
       autorepeat_rate_ = 0;
     }
 
     if (coalesce_interval_ < 0) {
       RCLCPP_WARN(
-        node->get_logger(), "joy_node: coalesce_interval (%f) less than 0, setting to 0.",
+        node_->get_logger(), "joy_node: coalesce_interval (%f) less than 0, setting to 0.",
         coalesce_interval_);
       coalesce_interval_ = 0;
     }
@@ -288,12 +286,12 @@ public:
 
     event_count_ = 0;
     pub_count_ = 0;
-    lastDiagTime_ = node->now().seconds();
+    lastDiagTime_ = node_->now().seconds();
 
     // Big while loop opens, publishes
     while (rclcpp::ok()) {
       open_ = false;
-      // diagnostic_.force_update();
+      diagnostic_->force_update();
       bool first_fault = true;
       while (true) {
         // In the first iteration of this loop, first_fault is true so we just
@@ -310,7 +308,7 @@ public:
         } else {
           timeout = std::chrono::milliseconds(1000);
         }
-        rclcpp::spin_until_future_complete(node, dummy_future, timeout);
+        rclcpp::spin_until_future_complete(node_, dummy_future, timeout);
         if (!rclcpp::ok()) {
           goto cleanup;
         }
@@ -330,11 +328,10 @@ public:
         }
         if (first_fault) {
           RCLCPP_ERROR(
-            node->get_logger(), "Couldn't open joystick %s. Will retry every second.",
+            node_->get_logger(), "Couldn't open joystick %s. Will retry every second.",
             joy_dev_.c_str());
           first_fault = false;
         }
-        // diagnostic_.update();
       }
 
       if (!joy_dev_ff_.empty()) {
@@ -350,7 +347,7 @@ public:
 
         if (write(ff_fd_, &ie, sizeof(ie)) == -1) {
           RCLCPP_ERROR(
-            node->get_logger(), "Couldn't open joystick force feedback: %s", strerror(errno));
+            node_->get_logger(), "Couldn't open joystick force feedback: %s", strerror(errno));
         }
 
         joy_effect_.id = -1;
@@ -367,9 +364,9 @@ public:
       }
 
       RCLCPP_INFO(
-        node->get_logger(), "Opened joystick: %s. deadzone_: %f.", joy_dev_.c_str(), deadzone_);
+        node_->get_logger(), "Opened joystick: %s. deadzone_: %f.", joy_dev_.c_str(), deadzone_);
       open_ = true;
-      // diagnostic_.force_update();
+      diagnostic_->force_update();
 
       bool tv_set = false;
       bool publication_pending = false;
@@ -382,7 +379,7 @@ public:
       joy_msg->header.frame_id = "joy";
 
       while (rclcpp::ok()) {
-        rclcpp::spin_some(node);
+        rclcpp::spin_some(node_);
 
         bool publish_now = false;
         bool publish_soon = false;
@@ -419,7 +416,7 @@ public:
             break;  // Joystick is probably closed. Definitely occurs.
           }
 
-          joy_msg->header.stamp = node->now();
+          joy_msg->header.stamp = node_->now();
           event_count_++;
           switch (event.type) {
             case JS_EVENT_BUTTON:
@@ -487,13 +484,13 @@ public:
               }
             default:
               RCLCPP_WARN(
-                node->get_logger(), "joy_linux_node: Unknown event type. "
+                node_->get_logger(), "joy_linux_node: Unknown event type. "
                 "Please file a ticket. time=%u, value=%d, type=%Xh, number=%d",
                 event.time, event.value, event.type, event.number);
               break;
           }
         } else if (tv_set) {  // Assume that the timer has expired.
-          joy_msg->header.stamp = node->now();
+          joy_msg->header.stamp = node_->now();
           publish_now = true;
         }
 
@@ -501,7 +498,7 @@ public:
           // Assume that all the JS_EVENT_INIT messages have arrived already.
           // This should be the case as the kernel sends them along as soon as
           // the device opens.
-          joy_msg->header.stamp = node->now();
+          joy_msg->header.stamp = node_->now();
           pub_->publish(*joy_msg);
 
           publish_now = false;
@@ -531,21 +528,19 @@ public:
           tv.tv_sec = 1;
           tv.tv_usec = 0;
         }
-
-        // diagnostic_.update();
       }  // End of joystick open loop.
 
       close(ff_fd_);
       close(joy_fd);
-      rclcpp::spin_some(node);
+      rclcpp::spin_some(node_);
       if (rclcpp::ok()) {
         RCLCPP_ERROR(
-          node->get_logger(), "Connection to joystick device lost unexpectedly. Will reopen.");
+          node_->get_logger(), "Connection to joystick device lost unexpectedly. Will reopen.");
       }
     }
 
 cleanup:
-    RCLCPP_INFO(node->get_logger(), "joy_node shut down.");
+    RCLCPP_INFO(node_->get_logger(), "joy_node shut down.");
 
     return 0;
   }
