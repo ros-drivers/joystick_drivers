@@ -11,6 +11,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
+find_package(diagnostic_updater REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
@@ -25,6 +27,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     include_directories(msg/cpp ${catkin_INCLUDE_DIRS})
     add_executable(joy_linux_node src/joy_linux_node.cpp)
     ament_target_dependencies(joy_linux_node
+      "diagnostic_msgs"
+      "diagnostic_updater"
       "rclcpp"
       "sensor_msgs")
     install(TARGETS joy_linux_node DESTINATION lib/${PROJECT_NAME})
