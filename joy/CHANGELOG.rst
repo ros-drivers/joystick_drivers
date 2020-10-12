@@ -2,6 +2,17 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added autodetection for force-feedback devices. (`#169 <https://github.com/ros-drivers/joystick_drivers/issues/169>`_)
+  * Added autodetection for force-feedback devices.
+  * RAII for closedir
+* joy: Little fixes for force feedback. (`#167 <https://github.com/ros-drivers/joystick_drivers/issues/167>`_)
+  This commit increases the maximum magnitude of the FF effects to double the previous maximum.
+* Print out joystick name on initialization. (`#168 <https://github.com/ros-drivers/joystick_drivers/issues/168>`_)
+  This helps figuring out what string to give to the `dev_name` parameter.
+* Contributors: Martin Pecka
+
 1.14.0 (2020-07-07)
 -------------------
 * frame_id in the header of the joystick msg (`#166 <https://github.com/ros-drivers/joystick_drivers/issues/166>`_)

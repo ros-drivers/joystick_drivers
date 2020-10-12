@@ -2,6 +2,9 @@
 Changelog for package joystick_drivers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.14.0 (2020-07-07)
 -------------------
 * Update master to target Noetic (`#173 <https://github.com/ros-drivers/joystick_drivers/issues/173>`_)
