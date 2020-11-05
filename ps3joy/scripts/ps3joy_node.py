@@ -68,6 +68,12 @@ class uinput:
 
 class uinputjoy:
     def open_uinput(self):
+        """
+        Open an input file.
+
+        Args:
+            self: (todo): write your description
+        """
         for name in ["/dev/input/uinput", "/dev/misc/uinput", "/dev/uinput"]:
             try:
                 return os.open(name, os.O_WRONLY)
@@ -77,6 +83,18 @@ class uinputjoy:
         return None
 
     def __init__(self, buttons, axes, axmin, axmax, axfuzz, axflat):
+        """
+        Initialize buttons
+
+        Args:
+            self: (todo): write your description
+            buttons: (todo): write your description
+            axes: (todo): write your description
+            axmin: (int): write your description
+            axmax: (int): write your description
+            axfuzz: (list): write your description
+            axflat: (todo): write your description
+        """
         self.file = self.open_uinput()
         if self.file is None:
             print("Trying to modprobe uinput.", file=sys.stderr)
@@ -127,6 +145,13 @@ class uinputjoy:
         self.code = buttons + axes
 
     def update(self, value):
+        """
+        Updates the list.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         input_event = "LLHHi"
         t = time.time()
         th = int(t)
@@ -142,11 +167,26 @@ class uinputjoy:
 
 class BadJoystickException(Exception):
     def __init__(self):
+        """
+        Initialize the class
+
+        Args:
+            self: (todo): write your description
+        """
         Exception.__init__(self, "Unsupported joystick.")
 
 
 class decoder:
     def __init__(self, deamon, inactivity_timeout=float(1e3000)):
+        """
+        Initialize the deamon.
+
+        Args:
+            self: (todo): write your description
+            deamon: (todo): write your description
+            inactivity_timeout: (int): write your description
+            float: (todo): write your description
+        """
         # buttons=[uinput.BTN_SELECT, uinput.BTN_THUMBL, uinput.BTN_THUMBR, uinput.BTN_START,
         #          uinput.BTN_FORWARD, uinput.BTN_RIGHT, uinput.BTN_BACK, uinput.BTN_LEFT,
         #          uinput.BTN_TL, uinput.BTN_TR, uinput.BTN_TL2, uinput.BTN_TR2,
@@ -181,6 +221,12 @@ class decoder:
     step_error = 3
 
     def init_ros(self):
+        """
+        Initialize the sensor
+
+        Args:
+            self: (todo): write your description
+        """
         rospy.init_node('ps3joy', anonymous=True, disable_signals=True)
         rospy.Subscriber("joy/set_feedback", sensor_msgs.msg.JoyFeedbackArray, self.set_feedback)
         self.diagnostics = Diagnostics()
@@ -224,6 +270,13 @@ class decoder:
     # unsigned int GyrometerX;          // Z axis Gyro Big Endian 0 - 1023
     # *********************************************************************************
     def step(self, rawdata):  # Returns true if the packet was legal
+        """
+        The step.
+
+        Args:
+            self: (todo): write your description
+            rawdata: (array): write your description
+        """
         if len(rawdata) == 50:
             joy_coding = "!1B2x3B1x4B4x12B3x1B1B1B9x4H"
             all_data = list(struct.unpack(joy_coding, rawdata))  # removing power data
@@ -259,9 +312,22 @@ class decoder:
             return self.step_error
 
     def fullstop(self):
+        """
+        Stops the full interval.
+
+        Args:
+            self: (todo): write your description
+        """
         self.joy.update([0] * 17 + self.axmid)
 
     def set_feedback(self, msg):
+        """
+        Set feedback on_ms.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         for feedback in msg.array:
             if feedback.type == sensor_msgs.msg.JoyFeedback.TYPE_LED and feedback.id < 4:
                 self.led_values[feedback.id] = int(round(feedback.intensity))
@@ -274,6 +340,13 @@ class decoder:
         self.new_msg = True
 
     def send_cmd(self, ctrl):
+        """
+        Send a control command.
+
+        Args:
+            self: (todo): write your description
+            ctrl: (str): write your description
+        """
         command = [0x52,
                    0x01,
                    0x00, 0xfe, self.rumble_cmd[1], 0xfe, self.rumble_cmd[0],        # rumble values
@@ -288,6 +361,14 @@ class decoder:
         self.new_msg = False
 
     def run(self, intr, ctrl):
+        """
+        Run a loop.
+
+        Args:
+            self: (todo): write your description
+            intr: (todo): write your description
+            ctrl: (str): write your description
+        """
         activated = False
         try:
             self.fullstop()
@@ -342,6 +423,12 @@ class decoder:
 
 class Diagnostics():
     def __init__(self):
+        """
+        Initialize diagram
+
+        Args:
+            self: (todo): write your description
+        """
         self.STATE_TEXTS_CHARGING = {
                                 0: "Charging",
                                 1: "Not Charging"}
@@ -361,6 +448,13 @@ class Diagnostics():
         self.last_diagnostics_time = rospy.get_rostime()
 
     def publish(self, state):
+        """
+        Publish a message.
+
+        Args:
+            self: (todo): write your description
+            state: (todo): write your description
+        """
         STATE_INDEX_CHARGING = 0
         STATE_INDEX_BATTERY = 1
         STATE_INDEX_CONNECTION = 2
@@ -413,11 +507,23 @@ class Diagnostics():
 
 class Quit(Exception):
     def __init__(self, errorcode):
+        """
+        Initialize the errorcode.
+
+        Args:
+            self: (todo): write your description
+            errorcode: (str): write your description
+        """
         Exception.__init__(self)
         self.errorcode = errorcode
 
 
 def check_hci_status():
+    """
+    Check if hcii is running.
+
+    Args:
+    """
     # Check if hci0 is up and pscanning, take action as necessary.
     proc = subprocess.Popen(['hciconfig'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
@@ -429,17 +535,46 @@ def check_hci_status():
 
 class connection_manager:
     def __init__(self, decoder):
+        """
+        Initialize the encoder.
+
+        Args:
+            self: (todo): write your description
+            decoder: (list): write your description
+        """
         self.decoder = decoder
 
     def prepare_bluetooth_socket(self, port):
+        """
+        Prepare socket socket.
+
+        Args:
+            self: (todo): write your description
+            port: (int): write your description
+        """
         sock = BluetoothSocket(L2CAP)
         return self.prepare_socket(sock, port)
 
     def prepare_net_socket(self, port):
+        """
+        Prepare a socket.
+
+        Args:
+            self: (todo): write your description
+            port: (int): write your description
+        """
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         return self.prepare_socket(sock, port)
 
     def prepare_socket(self, sock, port):
+        """
+        Prepare a socket.
+
+        Args:
+            self: (todo): write your description
+            sock: (todo): write your description
+            port: (int): write your description
+        """
         first_loop = True
         while True:
             try:
@@ -458,16 +593,38 @@ class connection_manager:
             return sock
 
     def listen_net(self, intr_port, ctrl_port):
+        """
+        Listen_net
+
+        Args:
+            self: (todo): write your description
+            intr_port: (todo): write your description
+            ctrl_port: (todo): write your description
+        """
         intr_sock = self.prepare_net_socket(intr_port)
         ctrl_sock = self.prepare_net_socket(ctrl_port)
         self.listen(intr_sock, ctrl_sock)
 
     def listen_bluetooth(self):
+        """
+        Listen_bluetooth
+
+        Args:
+            self: (todo): write your description
+        """
         intr_sock = self.prepare_bluetooth_socket(L2CAP_PSM_HIDP_INTR)
         ctrl_sock = self.prepare_bluetooth_socket(L2CAP_PSM_HIDP_CTRL)
         self.listen(intr_sock, ctrl_sock)
 
     def listen(self, intr_sock, ctrl_sock):
+        """
+        Listendown socket.
+
+        Args:
+            self: (todo): write your description
+            intr_sock: (todo): write your description
+            ctrl_sock: (todo): write your description
+        """
         self.n = 0
         while not rospy.is_shutdown():
             print("Waiting for connection. Disconnect your PS3 joystick from USB and press the pairing button.")
@@ -516,6 +673,12 @@ class connection_manager:
 
 
 def usage(errcode):
+    """
+    Print usage message
+
+    Args:
+        errcode: (str): write your description
+    """
     print("usage: ps3joy.py [" + inactivity_timout_string + "=<n>] [" + no_disable_bluetoothd_string + "] "
           "[" + redirect_output_string + "]=<f>")
     print("<n>: inactivity timeout in seconds (saves battery life).")
@@ -525,6 +688,13 @@ def usage(errcode):
 
 
 def is_arg_with_param(arg, prefix):
+    """
+    Return true if arg is a command with the given prefix.
+
+    Args:
+        arg: (str): write your description
+        prefix: (str): write your description
+    """
     if not arg.startswith(prefix):
         return False
     if not arg.startswith(prefix+"="):

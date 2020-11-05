@@ -31,6 +31,13 @@ def report(str, debuglevel=acConst._DEBUGLEVEL):
 
 
 def log(str, file=None):
+    """
+    Log a message to stderr.
+
+    Args:
+        str: (todo): write your description
+        file: (str): write your description
+    """
     if acConst._MONITOR_LEVEL > 0:
         print(str, file=sys.stderr)
 
