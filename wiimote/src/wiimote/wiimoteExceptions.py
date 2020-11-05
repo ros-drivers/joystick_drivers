@@ -19,9 +19,22 @@ class WiimoteError(Exception):
     errMsg = None
 
     def __init__(self, theErrMsg):
+        """
+        Initialize the error
+
+        Args:
+            self: (todo): write your description
+            theErrMsg: (todo): write your description
+        """
         self.errMsg = theErrMsg
 
     def __str__(self):
+        """
+        Return the string representation of the error.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.errMsg
 
 

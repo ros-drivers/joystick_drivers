@@ -289,6 +289,12 @@ class WIIState(object):
         return (cls._nunchukZeroReading.tuple(), cls._nunchukOneReading.tuple())
 
     def __str__(self):
+        """
+        Return a string representation of the object.
+
+        Args:
+            self: (todo): write your description
+        """
 
         # Timestamp:
         res = 'Time: ' + self.ascTime + '\n'
@@ -370,6 +376,12 @@ class WIIState(object):
         return res
 
     def __repr__(self):
+        """
+        Return the __repr__.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.__str__()
 
 
@@ -401,21 +413,46 @@ class WIIReading(object):
         self._measurement = np.array([xyz[X], xyz[Y], xyz[Z]], dtype=np.float64)
 
     def __getitem__(self, key):
+        """
+        Returns a measurement value.
+
+        Args:
+            self: (todo): write your description
+            key: (str): write your description
+        """
         if key not in (X, Y, Z):
             raise AttributeError("Attempt to index into a 3-D measurement array with index " + repr(key) + ".")
         return self._measurement[key]
 
         def __str__(self):
+            """
+            A string representation.
+
+            Args:
+                self: (todo): write your description
+            """
             return '[x=' + repr(self._measurement[X]) + \
                    ', y=' + repr(self._measurement[Y]) + \
                    ' z=' + repr(self._measurement[Z]) + \
                    ']'
 
     def __repr__(self):
+        """
+        Return a representation.
+
+        Args:
+            self: (todo): write your description
+        """
         return '[' + str(self._measurement[X]) + ', ' + \
                str(self._measurement[Y]) + ', ' + str(self._measurement[Z]) + ']'
 
     def tuple(self):
+        """
+        : class : a measurement.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._measurement
 
     def __add__(self, other):
@@ -466,22 +503,47 @@ class GyroReading():
         self._measurement = np.array([phiThetaPsi[PHI], phiThetaPsi[THETA], phiThetaPsi[PSI]], dtype=np.float64)
 
     def __getitem__(self, key):
+        """
+        Returns the value of the item.
+
+        Args:
+            self: (todo): write your description
+            key: (str): write your description
+        """
         if key not in (PHI, THETA, PSI):
             raise AttributeError("Attempt to index into a 3-D measurement array with index " + repr(key) + ".")
         return self._measurement[key]
 
     def __str__(self):
+        """
+        Return a human - readable string representation.
+
+        Args:
+            self: (todo): write your description
+        """
         return '[PHI (roll)=' + repr(self._measurement[PHI]) + \
                ', THETA (pitch)=' + repr(self._measurement[THETA]) + \
                ', PSI (yaw)=' + repr(self._measurement[PSI]) + \
                ']'
 
     def __repr__(self):
+        """
+        Print a summary of the measurement.
+
+        Args:
+            self: (todo): write your description
+        """
         '[' + str(self._measurement[PHI]) + ', ' + \
           str(self._measurement[THETA]) + ', ' + \
           str(self._measurement[PSI]) + ']'
 
     def tuple(self):
+        """
+        : class : a measurement.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._measurement
 
     def __add__(self, other):

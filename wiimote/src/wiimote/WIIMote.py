@@ -192,6 +192,14 @@ class WIIMote(object):
         rospy.loginfo("Wiimote activated.")
 
     def _steadyStateCallback(self, state, theTime):
+        """
+        Called when a new state is reached.
+
+        Args:
+            self: (todo): write your description
+            state: (todo): write your description
+            theTime: (todo): write your description
+        """
         now = getTimeStamp()
         if now - self._startTime >= self.sampleRate:
             # If this Wiimote driver is to synchronize write
@@ -449,6 +457,12 @@ class WIIMote(object):
         self._wm.rumble = switchPos
 
     def getRumble(self):
+        """
+        Get the rumble.
+
+        Args:
+            self: (todo): write your description
+        """
         # Protect against reading exception from reading
         # from an already closed device during shutdown:
         try:
@@ -559,9 +573,25 @@ class WIIMote(object):
         return (factoryCalNums[0], factoryCalNums[1])
 
     def setAccelerometerCalibration(self, zeroReadingList, oneReadingList):
+        """
+        Sets the calibration to the given zero.
+
+        Args:
+            self: (todo): write your description
+            zeroReadingList: (list): write your description
+            oneReadingList: (list): write your description
+        """
         wiistate.WIIState.setAccelerometerCalibration(np.array(zeroReadingList), np.array(oneReadingList))
 
     def setAccelerometerCalibration(self, zeroReadingNPArray, oneReadingNPArray):
+        """
+        Sets the calibration to the inputed array.
+
+        Args:
+            self: (todo): write your description
+            zeroReadingNPArray: (todo): write your description
+            oneReadingNPArray: (todo): write your description
+        """
         wiistate.WIIState.setAccelerometerCalibration(zeroReadingNPArray, oneReadingNPArray)
 
     def getGyroCalibration(self):
@@ -569,9 +599,24 @@ class WIIMote(object):
         return wiistate.WIIState.getGyroCalibration()
 
     def setGyroCalibration(self, gyroTriplet):
+        """
+        Sets the calibration for the inputed spin. wIIroroTri.
+
+        Args:
+            self: (todo): write your description
+            gyroTriplet: (todo): write your description
+        """
         wiistate.WIIState.setGyroCalibration(gyroTriplet)
 
     def setNunchukAccelerometerCalibration(self, zeroReadingList, oneReadingList):
+        """
+        Sets the calibration to the given zero.
+
+        Args:
+            self: (todo): write your description
+            zeroReadingList: (list): write your description
+            oneReadingList: (list): write your description
+        """
         wiistate.WIIState.setNunchukAccelerometerCalibration(np.array(zeroReadingList), np.array(oneReadingList))
 
     def motionPlusPresent(self):
@@ -644,9 +689,21 @@ class WIIMote(object):
             self.varGyroMetric = np.square(self.stdevGyroMetric)
 
     def printState(self):
+        """
+        Prints the state of the log likelihood.
+
+        Args:
+            self: (todo): write your description
+        """
         log(self.wiiMoteState)
 
     def shutdown(self):
+        """
+        Shutdown the socket.
+
+        Args:
+            self: (todo): write your description
+        """
         self._wm.close()
 
 
@@ -680,6 +737,14 @@ class _WiiCallbackStack(object):
     _wm = None  # The Wii remote driver instance
 
     def __init__(self, wiiDriver, sloppy=True):
+        """
+        Initialize the instance.
+
+        Args:
+            self: (todo): write your description
+            wiiDriver: (todo): write your description
+            sloppy: (todo): write your description
+        """
 
         if self._singletonInstance:
             if not sloppy:
@@ -742,6 +807,12 @@ class _WiiCallbackStack(object):
 class CalibrationMeasurements():
 
     def __init__(self):
+        """
+        Initialize the object
+
+        Args:
+            self: (todo): write your description
+        """
         # runNum, meanAcc, maxAcc, stdevAcc, meanGyro, maxGyro, stdevGyro,
         # accVal, devAccVal, stdevFractionAccVal, isOutlierAcc,
         # gyroVal, devGyroVal, stdevFractionGyroVal, isOutlierGyro):
@@ -749,28 +820,91 @@ class CalibrationMeasurements():
         pass
 
     def setAccData(self, accArray):
+        """
+        Sets the accuracy of the given accuracy.
+
+        Args:
+            self: (todo): write your description
+            accArray: (array): write your description
+        """
         self.accVal = accArray
 
     def setStdevAcc(self, stdevArray):
+        """
+        Sets the deviation.
+
+        Args:
+            self: (todo): write your description
+            stdevArray: (todo): write your description
+        """
         self.stdevAcc = stdevArray
 
     def setMeanAcc(self, meanArray):
+        """
+        Sets the mean value.
+
+        Args:
+            self: (todo): write your description
+            meanArray: (todo): write your description
+        """
         self.meanAcc = meanArray
 
     def setMaxAcc(self, maxArray):
+        """
+        Sets the maximum value of this group.
+
+        Args:
+            self: (todo): write your description
+            maxArray: (int): write your description
+        """
         self.maxAcc = maxArray
 
     def setGyroData(self, gyroArray):
+        """
+        Name :
+
+        Args:
+            self: (todo): write your description
+            gyroArray: (todo): write your description
+        """
         self.gyroVal = gyroArray
 
     def setStdevGyro(self, stdevArray):
+        """
+        R set the deviation of the device.
+
+        Args:
+            self: (todo): write your description
+            stdevArray: (todo): write your description
+        """
         self.stdevGyro = stdevArray
 
     def setMeanGyro(self, meanArray):
+        """
+        Sets the mean value.
+
+        Args:
+            self: (todo): write your description
+            meanArray: (todo): write your description
+        """
         self.meanGyro = meanArray
 
     def setMaxGyro(self, maxArray):
+        """
+        Sets the maximum value.
+
+        Args:
+            self: (todo): write your description
+            maxArray: (int): write your description
+        """
         self.maxGyro = maxArray
 
     def setGyroData(self, gyroVal):
+        """
+        Name :
+
+        Args:
+            self: (todo): write your description
+            gyroVal: (todo): write your description
+        """
         self.gyroVal = gyroVal

@@ -11,6 +11,11 @@ INTER_PATTERN_SLEEP_DURATION = 0.2
 
 
 def talker():
+    """
+    Publish a node
+
+    Args:
+    """
     pub = rospy.Publisher('/joy/set_feedback', JoyFeedbackArray, queue_size=1)
     rospy.init_node('ledControlTester', anonymous=True)
 

@@ -59,6 +59,12 @@ class uinput:
 
 class uinputjoy:
     def open_uinput(self):
+        """
+        Open an input file.
+
+        Args:
+            self: (todo): write your description
+        """
         for name in ["/dev/input/uinput", "/dev/misc/uinput", "/dev/uinput"]:
             try:
                 return os.open(name, os.O_WRONLY)
@@ -68,6 +74,18 @@ class uinputjoy:
         return None
 
     def __init__(self, buttons, axes, axmin, axmax, axfuzz, axflat):
+        """
+        Initialize buttons
+
+        Args:
+            self: (todo): write your description
+            buttons: (todo): write your description
+            axes: (todo): write your description
+            axmin: (int): write your description
+            axmax: (int): write your description
+            axfuzz: (list): write your description
+            axflat: (todo): write your description
+        """
         self.file = self.open_uinput()
         if self.file is None:
             print("Trying to modprobe uinput.", file=sys.stderr)
@@ -120,6 +138,13 @@ class uinputjoy:
         self.code = buttons + axes
 
     def update(self, value):
+        """
+        Updates the list.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         input_event = "LLHHi"
         t = time.time()
         th = int(t)
@@ -135,11 +160,26 @@ class uinputjoy:
 
 class BadJoystickException(Exception):
     def __init__(self):
+        """
+        Initialize the class
+
+        Args:
+            self: (todo): write your description
+        """
         Exception.__init__(self, "Unsupported joystick.")
 
 
 class decoder:
     def __init__(self, inactivity_timeout=float(1e3000), continuous_motion_output=False):
+        """
+        Initialize a new station.
+
+        Args:
+            self: (todo): write your description
+            inactivity_timeout: (int): write your description
+            float: (todo): write your description
+            continuous_motion_output: (todo): write your description
+        """
         # buttons=[uinput.BTN_SELECT, uinput.BTN_THUMBL, uinput.BTN_THUMBR, uinput.BTN_START,
         #         uinput.BTN_FORWARD, uinput.BTN_RIGHT, uinput.BTN_BACK, uinput.BTN_LEFT,
         #         uinput.BTN_TL, uinput.BTN_TR, uinput.BTN_TL2, uinput.BTN_TR2,
@@ -177,6 +217,13 @@ class decoder:
     step_error = 3
 
     def step(self, rawdata):  # Returns true if the packet was legal
+        """
+        Perform raw step.
+
+        Args:
+            self: (todo): write your description
+            rawdata: (array): write your description
+        """
         if len(rawdata) == 50:
             joy_coding = "!1B2x3B1x4B4x12B15x4H"
             data = list(struct.unpack(joy_coding, rawdata))
@@ -207,9 +254,23 @@ class decoder:
             return self.step_error
 
     def fullstop(self):
+        """
+        Stops the full interval.
+
+        Args:
+            self: (todo): write your description
+        """
         self.joy.update([0] * 17 + self.axmid)
 
     def run(self, intr, ctrl):
+        """
+        Run the next loop.
+
+        Args:
+            self: (todo): write your description
+            intr: (todo): write your description
+            ctrl: (str): write your description
+        """
         activated = False
         try:
             self.fullstop()
@@ -255,11 +316,23 @@ class decoder:
 
 class Quit(Exception):
     def __init__(self, errorcode):
+        """
+        Initialize the errorcode.
+
+        Args:
+            self: (todo): write your description
+            errorcode: (str): write your description
+        """
         Exception.__init__(self)
         self.errorcode = errorcode
 
 
 def check_hci_status():
+    """
+    Check if hcii is running.
+
+    Args:
+    """
     # Check if hci0 is up and pscanning, take action as necessary.
     proc = subprocess.Popen(['hciconfig'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
@@ -271,18 +344,47 @@ def check_hci_status():
 
 class connection_manager:
     def __init__(self, decoder):
+        """
+        Initialize the class.
+
+        Args:
+            self: (todo): write your description
+            decoder: (list): write your description
+        """
         self.decoder = decoder
         self.shutdown = False
 
     def prepare_bluetooth_socket(self, port):
+        """
+        Prepare socket socket.
+
+        Args:
+            self: (todo): write your description
+            port: (int): write your description
+        """
         sock = BluetoothSocket(L2CAP)
         return self.prepare_socket(sock, port)
 
     def prepare_net_socket(self, port):
+        """
+        Prepare a socket.
+
+        Args:
+            self: (todo): write your description
+            port: (int): write your description
+        """
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         return self.prepare_socket(sock, port)
 
     def prepare_socket(self, sock, port):
+        """
+        Prepare a socket.
+
+        Args:
+            self: (todo): write your description
+            sock: (todo): write your description
+            port: (int): write your description
+        """
         first_loop = True
         while True:
             try:
@@ -302,16 +404,38 @@ class connection_manager:
             return sock
 
     def listen_net(self, intr_port, ctrl_port):
+        """
+        Listen_net
+
+        Args:
+            self: (todo): write your description
+            intr_port: (todo): write your description
+            ctrl_port: (todo): write your description
+        """
         intr_sock = self.prepare_net_socket(intr_port)
         ctrl_sock = self.prepare_net_socket(ctrl_port)
         self.listen(intr_sock, ctrl_sock)
 
     def listen_bluetooth(self):
+        """
+        Listen_bluetooth
+
+        Args:
+            self: (todo): write your description
+        """
         intr_sock = self.prepare_bluetooth_socket(L2CAP_PSM_HIDP_INTR)
         ctrl_sock = self.prepare_bluetooth_socket(L2CAP_PSM_HIDP_CTRL)
         self.listen(intr_sock, ctrl_sock)
 
     def listen(self, intr_sock, ctrl_sock):
+        """
+        Wait for the socket.
+
+        Args:
+            self: (todo): write your description
+            intr_sock: (todo): write your description
+            ctrl_sock: (todo): write your description
+        """
         self.n = 0
         while not self.shutdown:
             print("Waiting for connection. Disconnect your PS3 joystick from USB and press the pairing button.")
@@ -357,6 +481,12 @@ class connection_manager:
 
 
 def usage(errcode):
+    """
+    Print usage message usage.
+
+    Args:
+        errcode: (str): write your description
+    """
     print("usage: ps3joy.py [" + inactivity_timout_string + "=<n>] [" + no_disable_bluetoothd_string + "] "
           "[" + redirect_output_string + "] [" + continuous_motion_output_string + "]=<f>")
     print("<n>: inactivity timeout in seconds (saves battery life).")
@@ -366,6 +496,13 @@ def usage(errcode):
 
 
 def is_arg_with_param(arg, prefix):
+    """
+    Return true if arg is a command with the given prefix.
+
+    Args:
+        arg: (str): write your description
+        prefix: (str): write your description
+    """
     if not arg.startswith(prefix):
         return False
     if not arg.startswith(prefix+"="):

@@ -706,6 +706,13 @@ class WiiSender(WiimoteDataSender):
 class WiimoteListeners(threading.Thread):
     """Listen for request to rumble and LED blinking."""
     def __init__(self, wiiMote):
+        """
+        Initialize wii
+
+        Args:
+            self: (todo): write your description
+            wiiMote: (todo): write your description
+        """
 
         threading.Thread.__init__(self)
         self.wiiMote = wiiMote
@@ -730,6 +737,12 @@ class WiimoteListeners(threading.Thread):
         self.is_calibratedPublisher.publish(self.is_CalibratedResponseMsg)
 
     def run(self):
+        """
+        Publish the notification.
+
+        Args:
+            self: (todo): write your description
+        """
         def feedbackCallback(msg):
             """The callback for handle the feedback array messages and sending that to the Wiimote"""
             for fb in msg.array:

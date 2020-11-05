@@ -11,6 +11,12 @@ from sensor_msgs.msg import Joy
 
 class RestrictedEvaluator(object):
     def __init__(self):
+        """
+        Initializes the operation.
+
+        Args:
+            self: (todo): write your description
+        """
         self.operators = {
             ast.Add: op.add,
             ast.Sub: op.sub,
@@ -26,6 +32,14 @@ class RestrictedEvaluator(object):
         }
 
     def _reval_impl(self, node, variables):
+        """
+        Evaluate an ast expression.
+
+        Args:
+            self: (todo): write your description
+            node: (todo): write your description
+            variables: (str): write your description
+        """
         if isinstance(node, ast.Num):
             return node.n
         elif isinstance(node, ast.BinOp):
@@ -52,6 +66,14 @@ class RestrictedEvaluator(object):
             raise TypeError("Unsupported operation: %s" % node)
 
     def reval(self, expr, variables):
+        """
+        Evaluate an expression.
+
+        Args:
+            self: (todo): write your description
+            expr: (todo): write your description
+            variables: (list): write your description
+        """
         expr = str(expr)
         if len(expr) > 1000:
             raise ValueError("The length of an expression must not be more than 1000 characters")
@@ -64,6 +86,12 @@ class RestrictedEvaluator(object):
 
 class JoyRemap(object):
     def __init__(self):
+        """
+        Initialize the mappings.
+
+        Args:
+            self: (todo): write your description
+        """
         self.evaluator = RestrictedEvaluator()
         self.mappings = self.load_mappings("~mappings")
         self.warn_remap("joy_out")
@@ -75,16 +103,37 @@ class JoyRemap(object):
             queue_size=rospy.get_param("~queue_size", None))
 
     def load_mappings(self, ns):
+        """
+        Load mappings
+
+        Args:
+            self: (todo): write your description
+            ns: (str): write your description
+        """
         btn_remap = rospy.get_param(ns + "/buttons", [])
         axes_remap = rospy.get_param(ns + "/axes", [])
         rospy.loginfo("loaded remapping: %d buttons, %d axes" % (len(btn_remap), len(axes_remap)))
         return {"buttons": btn_remap, "axes": axes_remap}
 
     def warn_remap(self, name):
+        """
+        Removes a warning if it. warning.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         if name == rospy.remap_name(name):
             rospy.logwarn("topic '%s' is not remapped" % name)
 
     def callback(self, in_msg):
+        """
+        Emit a callback.
+
+        Args:
+            self: (todo): write your description
+            in_msg: (int): write your description
+        """
         out_msg = Joy(header=in_msg.header)
         map_axes = self.mappings["axes"]
         map_btns = self.mappings["buttons"]

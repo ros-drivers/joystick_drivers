@@ -47,6 +47,11 @@ import signal
 
 
 def mk_in_socket():
+    """
+    Create a socket.
+
+    Args:
+    """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind(("127.0.0.1", 0))
     sock.listen(1)
@@ -56,22 +61,50 @@ def mk_in_socket():
 # Class to spawn the ps3joy.py infrastructure in its own thread
 class driversim(threading.Thread):
     def __init__(self, intr, ctrl):
+        """
+        Initialize the thread.
+
+        Args:
+            self: (todo): write your description
+            intr: (str): write your description
+            ctrl: (todo): write your description
+        """
         threading.Thread.__init__(self)
         self.intr = intr
         self.ctrl = ctrl
         self.start()
 
     def run(self):
+        """
+        Run the simulation.
+
+        Args:
+            self: (todo): write your description
+        """
         self.cm = ps3joy.connection_manager(ps3joy.decoder())
         self.cm.listen(self.intr, self.ctrl)
         print("driversim exiting")
 
     def shutdown(self):
+        """
+        Shutdown the socket.
+
+        Args:
+            self: (todo): write your description
+        """
         self.cm.shutdown = True
 
 
 class joysim(threading.Thread):
     def __init__(self, intr, ctrl):
+        """
+        Initialize the connection
+
+        Args:
+            self: (todo): write your description
+            intr: (str): write your description
+            ctrl: (todo): write your description
+        """
         threading.Thread.__init__(self)
         print("Starting joystick simulator on ports", intr, "and", ctrl)
         self.intr = socket.socket()
@@ -87,6 +120,12 @@ class joysim(threading.Thread):
         self.start()
 
     def run(self):
+        """
+        Runs loop.
+
+        Args:
+            self: (todo): write your description
+        """
         while not self.active and not self.shutdown:
             (rd, wr, err) = select.select([self.ctrl], [], [], 1)
             if len(rd) == 1:
@@ -103,6 +142,14 @@ class joysim(threading.Thread):
         print("joyactivate exiting")
 
     def publishstate(self, ax, butt):
+        """
+        Publish a state to the state.
+
+        Args:
+            self: (todo): write your description
+            ax: (todo): write your description
+            butt: (todo): write your description
+        """
         if self.active:
             ranges = [255] * 17 + [8191] * 20
             axval = [int((v + 1) * s / 2) for (v, s) in zip(ax, ranges)]
@@ -122,6 +169,13 @@ class joysim(threading.Thread):
 
 if __name__ == "__main__":
     def stop_all_threads(a, b):
+        """
+        Stop all threads
+
+        Args:
+            a: (todo): write your description
+            b: (todo): write your description
+        """
         exit(0)
 
     signal.signal(signal.SIGINT, stop_all_threads)

@@ -56,6 +56,12 @@ migrator = rosbagmigration.MessageMigrator()
 
 
 def repack(x):
+    """
+    Repack the given binary data.
+
+    Args:
+        x: (todo): write your description
+    """
     return struct.unpack('<f',struct.pack('<f',x))[0]
 
 class TestJoyMsgsMigration(unittest.TestCase):
@@ -66,26 +72,57 @@ class TestJoyMsgsMigration(unittest.TestCase):
 
 
     def get_old_joy(self):
+        """
+        Returns the old classes
+
+        Args:
+            self: (todo): write your description
+        """
         joy_classes = self.load_saved_classes('Joy.saved')
         joy  = joy_classes['joy/Joy']
         return joy([0.1,0.2,0.3,0.4,0.5],[0,1,0,1,0])
 
     def get_new_joy(self):
+        """
+        Return a new amq message.
+
+        Args:
+            self: (todo): write your description
+        """
         from sensor_msgs.msg import Joy
         from roslib.msg import Header
         return Joy(Header(),[0.1,0.2,0.3,0.4,0.5],[0,1,0,1,0])
 
 
     def test_joy(self):
+        """
+        Test if a new test for a new
+
+        Args:
+            self: (todo): write your description
+        """
         self.do_test('joy', self.get_old_joy, self.get_new_joy)
 
 ########### Helper functions ###########
 
     def setUp(self):
+        """
+        Set the currently installed packages.
+
+        Args:
+            self: (todo): write your description
+        """
         self.pkg_dir = roslib.packages.get_pkg_dir("joy")
 
 
     def load_saved_classes(self,saved_msg):
+        """
+        Loads all available ini_msg.
+
+        Args:
+            self: (todo): write your description
+            saved_msg: (str): write your description
+        """
         f = open("%s/test/saved/%s"%(self.pkg_dir,saved_msg), 'r')
 
         type_line = f.readline()
@@ -105,6 +142,15 @@ class TestJoyMsgsMigration(unittest.TestCase):
         return saved_classes
 
     def do_test(self, name, old_msg, new_msg):
+        """
+        Test if a bag of a topic
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            old_msg: (str): write your description
+            new_msg: (str): write your description
+        """
         # Name the bags
         oldbag = "%s/test/%s_old.bag"%(self.pkg_dir,name)
         newbag = "%s/test/%s_new.bag"%(self.pkg_dir,name)
