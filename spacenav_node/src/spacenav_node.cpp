@@ -206,7 +206,7 @@ int main(int argc, char **argv)
         break;
 
       case SPNAV_EVENT_BUTTON:
-		  if(sev.button.bnum >= 26)
+		  if(sev.button.bnum < 26)
 		  {
 			joystick_msg.buttons[sev.button.bnum] = sev.button.press;
 			joy_stale = true;
