@@ -139,7 +139,7 @@ int main(int argc, char **argv)
 
   sensor_msgs::Joy joystick_msg;
   joystick_msg.axes.resize(6);
-  //The SpaceNav PRO use up to 26 buttons id
+  // The SpaceNav PRO use up to 26 buttons id
   joystick_msg.buttons.resize(26);
 
   spnav_event sev;
@@ -206,15 +206,15 @@ int main(int argc, char **argv)
         break;
 
       case SPNAV_EVENT_BUTTON:
-		  if(sev.button.bnum < 26)
-		  {
-			joystick_msg.buttons[sev.button.bnum] = sev.button.press;
-			joy_stale = true;
-		  }
-		  else
-		  {  
-			ROS_WARN("There is more than 26 id,Button ID =  %d",sev.button.bnum);
-		  }
+        if (sev.button.bnum < 26)
+        {
+            joystick_msg.buttons[sev.button.bnum] = sev.button.press;
+            joy_stale = true;
+        }
+        else
+        {
+            ROS_WARN("There is more than 26 id, Button ID =  %d", sev.button.bnum);
+        }
         break;
 
       default:
