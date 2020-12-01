@@ -346,7 +346,7 @@ public:
         ie.value = 0xFFFFUL * gain / 100;
 
         if (write(ff_fd_, &ie, sizeof(ie)) == -1) {
-          RCLCPP_ERROR(
+          RCLCPP_WARN(
             node_->get_logger(), "Couldn't open joystick force feedback: %s", strerror(errno));
         }
 
