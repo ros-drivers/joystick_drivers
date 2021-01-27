@@ -1,6 +1,11 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package spacenav_node
+Changelog for package spacenav
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+2.4.1 (2021-02-24)
+-------------------
+* package ported to ROS2
+* Contributors: Nils Schulte
 
 1.13.0 (2019-06-24)
 -------------------
