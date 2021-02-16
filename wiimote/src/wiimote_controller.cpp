@@ -363,7 +363,7 @@ bool WiimoteNode::pair_wiimote(int flags = 0, int timeout = 5)
     status = false;
   } else {
     RCLCPP_INFO(logger_, "Paired to %s.", get_bluetooth_addr());
-    RCLCPP_INFO(logger_, "Calibrating device...", get_bluetooth_addr());
+    RCLCPP_INFO(logger_, "Calibrating device...");
     RCLCPP_INFO(logger_, "Allow all joy sticks to remain at center position until calibrated.");
     // Give the hardware time to zero the accelerometer and gyro after pairing
     // Ensure we are getting valid data before using
