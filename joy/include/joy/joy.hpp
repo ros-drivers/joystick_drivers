@@ -30,7 +30,7 @@
 #ifndef JOY__JOY_HPP_
 #define JOY__JOY_HPP_
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joy.hpp>
