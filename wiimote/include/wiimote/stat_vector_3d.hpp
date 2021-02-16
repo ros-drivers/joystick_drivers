@@ -29,7 +29,6 @@
 #ifndef WIIMOTE__STAT_VECTOR_3D_HPP_
 #define WIIMOTE__STAT_VECTOR_3D_HPP_
 
-
 #include <vector>
 
 // The vector of 3 values collected to generate:

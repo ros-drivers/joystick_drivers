@@ -32,6 +32,7 @@
 #include <cmath>
 #include <functional>
 #include <numeric>
+#include <stdexcept>
 
 StatVector3d::StatVector3d() {count_ = 0;}
 
