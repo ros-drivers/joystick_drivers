@@ -1,28 +1,25 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
   <name>spacenav_node</name>
-  <version>2.0.0</version>
+  <version>0.0.0</version>
+  <description>ROS interface to the 3Dconnexion SpaceNavigator 6DOF joystick.</description>
+  <maintainer email="hjkim@robotis.com">Hye-jong KIM</maintainer>
   <license>BSD</license>
-  <description>
-    ROS interface to the 3Dconnexion SpaceNavigator 6DOF joystick.
-  </description>
 
-  <url type="website">http://www.ros.org/wiki/spacenav_node</url>
-  <url type="development">https://github.com/ros-drivers/joystick_drivers</url>
-  <url type="bugtracker">https://github.com/ros-drivers/joystick_drivers/issues</url>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <maintainer email="jbo@jhu.edu">Jonathan Bohren</maintainer>
-  <author>Stuart Glaser</author>
-  <author>Blaise Gassend</author>
-
-  <buildtool_depend>catkin</buildtool_depend>
-
-  <build_depend>roslint</build_depend>
-  
-  <depend>geometry_msgs</depend> 
-  <depend>libspnav-dev</depend> 
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>libspnav-dev</depend>
   <depend>libx11-dev</depend>
-  <depend>roscpp</depend> 
-  <depend>sensor_msgs</depend> 
-  
-  <exec_depend>spacenavd</exec_depend> 
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>
