@@ -16,11 +16,11 @@ find_package(geometry_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(spnav REQUIRED)
+find_package(SPNAV REQUIRED)
 
 include_directories(include)
 add_library(spacenav
-  SHARED 
+  SHARED
     src/spacenav.cpp)
 target_include_directories(spacenav
   PUBLIC
@@ -33,17 +33,11 @@ ament_target_dependencies(spacenav
 
 target_link_libraries(spacenav spnav)
 
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  set(ament_cmake_copyright_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
-endif()
-
 # Install targets
 install(TARGETS spacenav
-    ARCHIVE DESTINATION lib/${PROJECT_NAME}
-    LIBRARY DESTINATION lib/${PROJECT_NAME}
-    RUNTIME DESTINATION lib/${PROJECT_NAME}
+  ARCHIVE DESTINATION lib/${PROJECT_NAME}
+  LIBRARY DESTINATION lib/${PROJECT_NAME}
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
 install(DIRECTORY
@@ -54,5 +48,12 @@ install(DIRECTORY
 rclcpp_components_register_node(spacenav
   PLUGIN "spacenav::Spacenav"
   EXECUTABLE spacenav_node)
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  set(ament_cmake_copyright_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+endif()
+
 
 ament_package()

@@ -17,7 +17,7 @@ if(UNIX)
 
 # Support the REQUIRED and QUIET arguments, and set spnav_FOUND if found.
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(spnav DEFAULT_MSG 
+find_package_handle_standard_args(SPNAV DEFAULT_MSG
   spnav_LIBRARY
   spnav_INCLUDE_DIR)
 
@@ -26,7 +26,7 @@ if(spnav_FOUND)
 endif()
 
 mark_as_advanced(
-  spnav_LIBRARY 
+  spnav_LIBRARY
   spnav_INCLUDE_DIR)
 
-endif(UNIX)
+endif()

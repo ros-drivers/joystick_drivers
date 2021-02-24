@@ -1,19 +1,19 @@
 #ifndef SPACENAV__SPACENAV_HPP_
 #define SPACENAV__SPACENAV_HPP_
 
-#include <string>
-#include <vector>
-
 #include <rclcpp/rclcpp.hpp>
 
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
 #include <sensor_msgs/msg/joy.hpp>
 
-namespace spacenav {
+#include "spnav.h" // NOLINT
 
-class Spacenav final : public rclcpp::Node {
+namespace spacenav
+{
 
+class Spacenav final : public rclcpp::Node
+{
 public:
   explicit Spacenav(const rclcpp::NodeOptions & options);
 
@@ -28,8 +28,7 @@ private:
 
   rclcpp::Publisher<geometry_msgs::msg::Vector3>::SharedPtr publisher_offset;
 
-  rclcpp::Publisher<geometry_msgs::msg::Vector3>::SharedPtr
-      publisher_rot_offset;
+  rclcpp::Publisher<geometry_msgs::msg::Vector3>::SharedPtr publisher_rot_offset;
 
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_twist;
 
@@ -58,6 +57,6 @@ private:
   double normed_wz = 0;
 };
 
-} // namespace spacenav
+}  // namespace spacenav
 
-#endif // SPACENAV__SPACENAV_HPP_
+#endif  // SPACENAV__SPACENAV_HPP_

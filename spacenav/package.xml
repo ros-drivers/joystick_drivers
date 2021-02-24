@@ -16,14 +16,14 @@
   <author>Nils Schulte</author>
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
-  
-  <depend>geometry_msgs</depend> 
-  <depend>libspnav-dev</depend> 
-  <depend>rclcpp</depend> 
+
+  <depend>geometry_msgs</depend>
+  <depend>libspnav-dev</depend>
+  <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-  <depend>sensor_msgs</depend> 
-  
-  <exec_depend>spacenavd</exec_depend> 
+  <depend>sensor_msgs</depend>
+
+  <exec_depend>spacenavd</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

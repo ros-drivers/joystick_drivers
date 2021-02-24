@@ -31,16 +31,18 @@
  * Author: Stuart Glaser
  */
 
-#include <chrono>
-#include <cstdio>
+#include "spacenav/spacenav.hpp"
 
-#include "spnav.h" // NOLINT
-
-#include "rcutils/logging_macros.h"
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 
-#include "spacenav/spacenav.hpp"
+#include <chrono>
+#include <functional>
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "spnav.h" // NOLINT
 
 #define SPACENAV_FULL_SCALE_PARAM_S "full_scale"
 
@@ -57,26 +59,27 @@
 
 using namespace std::chrono_literals;
 
-namespace spacenav {
+namespace spacenav
+{
 
-Spacenav::Spacenav(const rclcpp::NodeOptions & options) 
-: Node("spacenav", options) 
+Spacenav::Spacenav(const rclcpp::NodeOptions & options)
+: Node("spacenav", options)
 {
   this->declare_parameter<double>(SPACENAV_FULL_SCALE_PARAM_S, 512.0);
 
   this->declare_parameter<double>(
-      SPACENAV_ANGULAR_SCALE_PARAM_S SPACENAV_X_PARAM_S, 1);
+    SPACENAV_ANGULAR_SCALE_PARAM_S SPACENAV_X_PARAM_S, 1);
   this->declare_parameter<double>(
-      SPACENAV_ANGULAR_SCALE_PARAM_S SPACENAV_Y_PARAM_S, 1);
+    SPACENAV_ANGULAR_SCALE_PARAM_S SPACENAV_Y_PARAM_S, 1);
   this->declare_parameter<double>(
-      SPACENAV_ANGULAR_SCALE_PARAM_S SPACENAV_Z_PARAM_S, 1);
+    SPACENAV_ANGULAR_SCALE_PARAM_S SPACENAV_Z_PARAM_S, 1);
 
   this->declare_parameter<double>(
-      SPACENAV_LINEAR_SCALE_PARAM_S SPACENAV_X_PARAM_S, 1);
+    SPACENAV_LINEAR_SCALE_PARAM_S SPACENAV_X_PARAM_S, 1);
   this->declare_parameter<double>(
-      SPACENAV_LINEAR_SCALE_PARAM_S SPACENAV_Y_PARAM_S, 1);
+    SPACENAV_LINEAR_SCALE_PARAM_S SPACENAV_Y_PARAM_S, 1);
   this->declare_parameter<double>(
-      SPACENAV_LINEAR_SCALE_PARAM_S SPACENAV_Z_PARAM_S, 1);
+    SPACENAV_LINEAR_SCALE_PARAM_S SPACENAV_Z_PARAM_S, 1);
 
   // The number of polls needed to be done before the device is considered
   // "static"
@@ -90,146 +93,171 @@ Spacenav::Spacenav(const rclcpp::NodeOptions & options)
   this->declare_parameter<double>(SPACENAV_STATIC_ROT_DEADBAND_PARAM_S, 0.1);
 
   auto param_change_callback = [this](
-                                   std::vector<rclcpp::Parameter> parameters) {
-    auto result = rcl_interfaces::msg::SetParametersResult();
-    result.successful = true;
-    // Parameters
-    for (const auto &parameter : parameters) {
-      if (parameter.get_name() == SPACENAV_FULL_SCALE_PARAM_S) {
-        if (parameter.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE &&
-            parameter.as_double() < 1e-10) {
-          result.successful = false;
-          result.reason = "full_scale < 1e-10";
+    std::vector<rclcpp::Parameter> parameters) {
+      auto result = rcl_interfaces::msg::SetParametersResult();
+      result.successful = true;
+      // Parameters
+      for (const auto & parameter : parameters) {
+        if (parameter.get_name() == SPACENAV_FULL_SCALE_PARAM_S) {
+          if (parameter.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE &&
+            parameter.as_double() < 1e-10)
+          {
+            result.successful = false;
+            result.reason = "full_scale < 1e-10";
+          }
         }
       }
-    }
-    return result;
-  };
+      return result;
+    };
   callback_handler =
-      this->add_on_set_parameters_callback(param_change_callback);
+    this->add_on_set_parameters_callback(param_change_callback);
 
   // Setup publishers and Timer
   publisher_offset = this->create_publisher<geometry_msgs::msg::Vector3>(
-      "spacenav/offset", 10);
+    "spacenav/offset", 10);
   publisher_rot_offset = this->create_publisher<geometry_msgs::msg::Vector3>(
-      "spacenav/rot_offset", 10);
+    "spacenav/rot_offset", 10);
   publisher_twist =
-      this->create_publisher<geometry_msgs::msg::Twist>("spacenav/twist", 10);
+    this->create_publisher<geometry_msgs::msg::Twist>("spacenav/twist", 10);
   publisher_joy =
-      this->create_publisher<sensor_msgs::msg::Joy>("spacenav/joy", 10);
+    this->create_publisher<sensor_msgs::msg::Joy>("spacenav/joy", 10);
 
   timer_ =
-      this->create_wall_timer(1ms, std::bind(&Spacenav::poll_spacenav, this));
+    this->create_wall_timer(1ms, std::bind(&Spacenav::poll_spacenav, this));
 
-  RCLCPP_DEBUG(get_logger(), "full scale: %.1f", full_scale);
-  RCLCPP_DEBUG(get_logger(), "linear_scale: %.3f %.3f %.3f", linear_scale[0],
-               linear_scale[1], linear_scale[2]);
-  RCLCPP_DEBUG(get_logger(), "angular_scale: %.3f %.3f %.3f", angular_scale[0],
-               angular_scale[1], angular_scale[2]);
-  RCLCPP_DEBUG(get_logger(), "static_count_threshold: %df",
-               static_count_threshold);
-  RCLCPP_DEBUG(get_logger(), "zero_when_static : %d", zero_when_static);
-  RCLCPP_DEBUG(get_logger(), "static_trans_deadband: %.3f",
-               static_trans_deadband);
-  RCLCPP_DEBUG(get_logger(), "static_rot_deadband: %.3f", static_rot_deadband);
+  RCLCPP_DEBUG(
+    get_logger(), "full scale: %.1f", full_scale);
+  RCLCPP_DEBUG(
+    get_logger(), "linear_scale: %.3f %.3f %.3f", linear_scale[0],
+    linear_scale[1], linear_scale[2]);
+  RCLCPP_DEBUG(
+    get_logger(), "angular_scale: %.3f %.3f %.3f", angular_scale[0],
+    angular_scale[1], angular_scale[2]);
+  RCLCPP_DEBUG(
+    get_logger(), "static_count_threshold: %df",
+    static_count_threshold);
+  RCLCPP_DEBUG(
+    get_logger(), "zero_when_static : %d", zero_when_static);
+  RCLCPP_DEBUG(
+    get_logger(), "static_trans_deadband: %.3f",
+    static_trans_deadband);
+  RCLCPP_DEBUG(
+    get_logger(), "static_rot_deadband: %.3f", static_rot_deadband);
 }
 
-Spacenav::~Spacenav() {
+Spacenav::~Spacenav()
+{
   if (spacenav_is_open) {
     spnav_close();
   }
 }
 
-void Spacenav::poll_spacenav() {
+void Spacenav::poll_spacenav()
+{
   if (!spacenav_is_open) {
     if (spnav_open() == -1) {
-      RCLCPP_ERROR(get_logger(),
-                   "Could not open the space navigator device. "
-                   "Did you remember to run spacenavd (as root)?");
+      RCLCPP_ERROR(
+        get_logger(),
+        "Could not open the space navigator device. "
+        "Did you remember to run spacenavd (as root)?");
       return;
     } else {
       spacenav_is_open = true;
     }
   }
 
-  this->get_parameter<double>(SPACENAV_FULL_SCALE_PARAM_S, full_scale);
-  this->get_parameter<double>(SPACENAV_LINEAR_SCALE_PARAM_S SPACENAV_X_PARAM_S,
-                              linear_scale[0]);
-  this->get_parameter<double>(SPACENAV_LINEAR_SCALE_PARAM_S SPACENAV_Y_PARAM_S,
-                              linear_scale[1]);
-  this->get_parameter<double>(SPACENAV_LINEAR_SCALE_PARAM_S SPACENAV_Z_PARAM_S,
-                              linear_scale[2]);
+  this->get_parameter<double>(
+    SPACENAV_FULL_SCALE_PARAM_S, full_scale);
+  this->get_parameter<double>(
+    SPACENAV_LINEAR_SCALE_PARAM_S SPACENAV_X_PARAM_S,
+    linear_scale[0]);
+  this->get_parameter<double>(
+    SPACENAV_LINEAR_SCALE_PARAM_S SPACENAV_Y_PARAM_S,
+    linear_scale[1]);
+  this->get_parameter<double>(
+    SPACENAV_LINEAR_SCALE_PARAM_S SPACENAV_Z_PARAM_S,
+    linear_scale[2]);
 
-  this->get_parameter<double>(SPACENAV_ANGULAR_SCALE_PARAM_S SPACENAV_X_PARAM_S,
-                              angular_scale[0]);
-  this->get_parameter<double>(SPACENAV_ANGULAR_SCALE_PARAM_S SPACENAV_Y_PARAM_S,
-                              angular_scale[1]);
-  this->get_parameter<double>(SPACENAV_ANGULAR_SCALE_PARAM_S SPACENAV_Z_PARAM_S,
-                              angular_scale[2]);
+  this->get_parameter<double>(
+    SPACENAV_ANGULAR_SCALE_PARAM_S SPACENAV_X_PARAM_S,
+    angular_scale[0]);
+  this->get_parameter<double>(
+    SPACENAV_ANGULAR_SCALE_PARAM_S SPACENAV_Y_PARAM_S,
+    angular_scale[1]);
+  this->get_parameter<double>(
+    SPACENAV_ANGULAR_SCALE_PARAM_S SPACENAV_Z_PARAM_S,
+    angular_scale[2]);
 
-  this->get_parameter<int>(SPACENAV_STATIC_COUNT_TRESHOLD_PARAM_S,
-                           static_count_threshold);
-  this->get_parameter<bool>(SPACENAV_ZERO_WHEN_STATIC_PARAM_S,
-                            zero_when_static);
-  this->get_parameter<double>(SPACENAV_STATIC_TRANS_DEADBAND_PARAM_S,
-                              static_trans_deadband);
-  this->get_parameter<double>(SPACENAV_STATIC_ROT_DEADBAND_PARAM_S,
-                              static_rot_deadband);
+  this->get_parameter<int>(
+    SPACENAV_STATIC_COUNT_TRESHOLD_PARAM_S,
+    static_count_threshold);
+  this->get_parameter<bool>(
+    SPACENAV_ZERO_WHEN_STATIC_PARAM_S,
+    zero_when_static);
+  this->get_parameter<double>(
+    SPACENAV_STATIC_TRANS_DEADBAND_PARAM_S,
+    static_trans_deadband);
+  this->get_parameter<double>(
+    SPACENAV_STATIC_ROT_DEADBAND_PARAM_S,
+    static_rot_deadband);
 
   bool queue_empty = false;
   while (!queue_empty) {
-
     auto msg_joystick = std::make_unique<sensor_msgs::msg::Joy>();
     msg_joystick->header.stamp = get_clock()->now();
     // Output changes each time a button event happens, or when a motion
     // event happens and the queue is empty.
 
     switch (spnav_poll_event(&sev)) {
-    case 0:
-      queue_empty = true;
+      case 0:
+        queue_empty = true;
 
-      if (++no_motion_count > static_count_threshold) {
-        if (zero_when_static || (fabs(normed_vx) < static_trans_deadband &&
-                                 fabs(normed_vy) < static_trans_deadband &&
-                                 fabs(normed_vz) < static_trans_deadband)) {
-          normed_vx = normed_vy = normed_vz = 0;
-        }
+        if (++no_motion_count > static_count_threshold) {
+          if (zero_when_static ||
+            (fabs(normed_vx) < static_trans_deadband &&
+            fabs(normed_vy) < static_trans_deadband &&
+            fabs(normed_vz) < static_trans_deadband))
+          {
+            normed_vx = normed_vy = normed_vz = 0;
+          }
 
-        if (zero_when_static || (fabs(normed_wx) < static_rot_deadband &&
-                                 fabs(normed_wy) < static_rot_deadband &&
-                                 fabs(normed_wz) < static_rot_deadband)) {
-          normed_wx = normed_wy = normed_wz = 0;
+          if (zero_when_static ||
+            (fabs(normed_wx) < static_rot_deadband &&
+            fabs(normed_wy) < static_rot_deadband &&
+            fabs(normed_wz) < static_rot_deadband))
+          {
+            normed_wx = normed_wy = normed_wz = 0;
+          }
+          no_motion_count = 0;
+          motion_stale = true;
         }
-        no_motion_count = 0;
+        break;
+
+      case SPNAV_EVENT_MOTION:
+        normed_vx = sev.motion.z / full_scale;
+        normed_vy = -sev.motion.x / full_scale;
+        normed_vz = sev.motion.y / full_scale;
+
+        normed_wx = sev.motion.rz / full_scale;
+        normed_wy = -sev.motion.rx / full_scale;
+        normed_wz = sev.motion.ry / full_scale;
+
         motion_stale = true;
-      }
-      break;
+        break;
 
-    case SPNAV_EVENT_MOTION:
-      normed_vx = sev.motion.z / full_scale;
-      normed_vy = -sev.motion.x / full_scale;
-      normed_vz = sev.motion.y / full_scale;
+      case SPNAV_EVENT_BUTTON:
+        if (sev.button.bnum >= static_cast<int>(msg_joystick->buttons.size())) {
+          msg_joystick->buttons.resize(sev.button.bnum + 1);
+        }
+        msg_joystick->buttons[sev.button.bnum] = sev.button.press;
+        joy_stale = true;
+        break;
 
-      normed_wx = sev.motion.rz / full_scale;
-      normed_wy = -sev.motion.rx / full_scale;
-      normed_wz = sev.motion.ry / full_scale;
-
-      motion_stale = true;
-      break;
-
-    case SPNAV_EVENT_BUTTON:
-      if (sev.button.bnum >= int(msg_joystick->buttons.size())) {
-        msg_joystick->buttons.resize(sev.button.bnum + 1);
-      }
-      msg_joystick->buttons[sev.button.bnum] = sev.button.press;
-      joy_stale = true;
-      break;
-
-    default:
-      RCLCPP_WARN(
+      default:
+        RCLCPP_WARN(
           get_logger(),
           "Unknown message type in spacenav. This should never happen.");
-      break;
+        break;
     }
 
     if (motion_stale && (queue_empty || joy_stale)) {
@@ -270,7 +298,6 @@ void Spacenav::poll_spacenav() {
   }
 }
 
-} // namespace spacenav
+}  // namespace spacenav
 
 RCLCPP_COMPONENTS_REGISTER_NODE(spacenav::Spacenav)
-
