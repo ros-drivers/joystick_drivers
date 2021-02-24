@@ -184,10 +184,15 @@ SpacenavNode::SpacenavNode(const rclcpp::NodeOptions & options)
 
         if (joy_stale_) {
           joy_pub_->publish(joystick_msg_);
+          RCLCPP_INFO(
+            get_logger(), "Joystick Pub : (%.2f, %.2f, %.2f) , (%.2f, %.2f, %.2f) , ((%d, %d)",
+            joystick_msg_.axes[0], joystick_msg_.axes[1], joystick_msg_.axes[2],
+            joystick_msg_.axes[3], joystick_msg_.axes[4], joystick_msg_.axes[5],
+            joystick_msg_.buttons[0], joystick_msg_.buttons[1]);
         }
 
         if (queue_empty_) {
-          usleep(1000);
+          break;
         }
       }
 
