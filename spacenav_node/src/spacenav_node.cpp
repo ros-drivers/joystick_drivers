@@ -96,10 +96,10 @@ SpacenavNode::SpacenavNode(const rclcpp::NodeOptions & options)
         queue_empty_ = false;
 
         // Sleep when the queue is empty.
-        // If the queue is empty 30 times in a row output zeros.
+        // If the queue is empty during static_count_threshold (30 times) in a row output zeros.
         // Output changes each time a button event happens, or when a motion
         // event happens and the queue is empty.
-        joystick_msg_.header.stamp = rclcpp::Clock().now();
+        joystick_msg_.header.stamp = this->now();
 
         switch (spnav_poll_event(&sev_)) {
           case 0:
@@ -189,8 +189,8 @@ SpacenavNode::SpacenavNode(const rclcpp::NodeOptions & options)
         if (queue_empty_) {
           usleep(1000);
         }
-
       }
+
     });
 }
 
