@@ -78,9 +78,9 @@ SpacenavNode::SpacenavNode(const rclcpp::NodeOptions & options)
   // If the device is considered "static" and each trans, rot normed component
   // is below the deadband, it will output zeros in either rotation,
   // translation, or both.
-  this->declare_parameter<double>("static_trans_deadband", true);
+  this->declare_parameter<double>("static_trans_deadband", 0.1);
   static_trans_deadband_ = this->get_parameter("static_trans_deadband").as_double();
-  this->declare_parameter<double>("static_rot_deadband", true);
+  this->declare_parameter<double>("static_rot_deadband", 0.1);
   static_rot_deadband_ = this->get_parameter("static_rot_deadband").as_double();
 
   joystick_msg_.axes.resize(6);
