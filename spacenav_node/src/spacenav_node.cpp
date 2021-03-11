@@ -31,6 +31,7 @@ SpacenavNode::SpacenavNode(const rclcpp::NodeOptions & options)
   if (full_scale_ < 1e-10) {
     full_scale_ = 512;
   }
+  RCLCPP_INFO(get_logger(), "full scale: %.3f ", full_scale_);
 
   // Scale factors for the different axes. End output will be within [-scale, +scale], provided
   // full_scale normalizes to within [-1, 1].
@@ -52,10 +53,11 @@ SpacenavNode::SpacenavNode(const rclcpp::NodeOptions & options)
         "/angular_scale must have either one or three components.");
     exit(EXIT_FAILURE);
   }
-  RCLCPP_DEBUG(
+
+  RCLCPP_INFO(
     get_logger(), "linear_scale: %.3f %.3f %.3f",
     linear_scale_[0], linear_scale_[1], linear_scale_[2]);
-  RCLCPP_DEBUG(
+  RCLCPP_INFO(
     get_logger(), "angular_scale: %.3f %.3f %.3f",
     angular_scale_[0], angular_scale_[1], angular_scale_[2]);
 
@@ -184,11 +186,11 @@ SpacenavNode::SpacenavNode(const rclcpp::NodeOptions & options)
 
         if (joy_stale_) {
           joy_pub_->publish(joystick_msg_);
-          RCLCPP_INFO(
-            get_logger(), "Joystick Pub : (%.2f, %.2f, %.2f) , (%.2f, %.2f, %.2f) , ((%d, %d)",
-            joystick_msg_.axes[0], joystick_msg_.axes[1], joystick_msg_.axes[2],
-            joystick_msg_.axes[3], joystick_msg_.axes[4], joystick_msg_.axes[5],
-            joystick_msg_.buttons[0], joystick_msg_.buttons[1]);
+//          RCLCPP_INFO(
+//            get_logger(), "Joystick Pub : (%.2f, %.2f, %.2f) , (%.2f, %.2f, %.2f) , ((%d, %d)",
+//            joystick_msg_.axes[0], joystick_msg_.axes[1], joystick_msg_.axes[2],
+//            joystick_msg_.axes[3], joystick_msg_.axes[4], joystick_msg_.axes[5],
+//            joystick_msg_.buttons[0], joystick_msg_.buttons[1]);
         }
 
         if (queue_empty_) {
