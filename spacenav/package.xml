@@ -17,12 +17,19 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <build_depend>libspnav-dev</build_depend>
+  <!-- FIXME: this package doesn't have a direct dependency on
+       libx11-dev, but libspnav-dev is missing a dependency.
+       Until that is fixed, add it here.
+  -->
+  <build_depend>libx11-dev</build_depend>
+
   <depend>geometry_msgs</depend>
-  <depend>libspnav-dev</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
 
+  <exec_depend>libspnav</exec_depend>
   <exec_depend>spacenavd</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
