@@ -2,8 +2,8 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.0 (2021-03-12)
+------------------
 * Update joy_linux_node.cpp (`#189 <https://github.com/ros-drivers/joystick_drivers/issues/189>`_)
 * Reenable diagnostics (`#181 <https://github.com/ros-drivers/joystick_drivers/issues/181>`_)
 * Contributors: Vitaliy Bondar, aaronaaronson98

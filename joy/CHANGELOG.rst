@@ -2,8 +2,8 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.0 (2021-03-12)
+------------------
 * Fix SDL2 include path (`#196 <https://github.com/ros-drivers/joystick_drivers/issues/196>`_)
 * Contributors: Scott K Logan
 

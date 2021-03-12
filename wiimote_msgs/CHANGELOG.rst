@@ -2,8 +2,8 @@
 Changelog for package wiimote_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.0 (2021-03-12)
+------------------
 * Port over Wiimote to ROS2 Foxy (`#175 <https://github.com/ros-drivers/joystick_drivers/issues/175>`_)
 * Contributors: Kuni Natsuki
 

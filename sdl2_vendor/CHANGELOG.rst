@@ -2,8 +2,8 @@
 Changelog for package sdl2_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.0 (2021-03-12)
+------------------
 * Use INTERFACE_LINK_OPTIONS in sdl2_vendor (`#195 <https://github.com/ros-drivers/joystick_drivers/issues/195>`_)
 * Contributors: Scott K Logan
 

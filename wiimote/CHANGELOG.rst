@@ -2,8 +2,8 @@
 Changelog for package wiimote
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.0 (2021-03-12)
+------------------
 * Fix a warning while building wiimote_controller.cpp (`#201 <https://github.com/ros-drivers/joystick_drivers/issues/201>`_)
 * fix compile error caused by missing include (`#197 <https://github.com/ros-drivers/joystick_drivers/issues/197>`_)
 * Port over Wiimote to ROS2 Foxy (`#175 <https://github.com/ros-drivers/joystick_drivers/issues/175>`_)
