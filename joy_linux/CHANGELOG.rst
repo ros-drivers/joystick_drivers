@@ -2,6 +2,12 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update joy_linux_node.cpp (`#189 <https://github.com/ros-drivers/joystick_drivers/issues/189>`_)
+* Reenable diagnostics (`#181 <https://github.com/ros-drivers/joystick_drivers/issues/181>`_)
+* Contributors: Vitaliy Bondar, aaronaaronson98
+
 2.4.1 (2020-05-13)
 ------------------
 * Small fixes for uncrustify on Foxy. (`#171 <https://github.com/ros-drivers/joystick_drivers/issues/171>`_)

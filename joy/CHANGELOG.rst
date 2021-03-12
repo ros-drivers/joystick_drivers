@@ -2,6 +2,11 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix SDL2 include path (`#196 <https://github.com/ros-drivers/joystick_drivers/issues/196>`_)
+* Contributors: Scott K Logan
+
 2.4.1 (2020-05-13)
 ------------------
 * Small fixes for uncrustify on Foxy. (`#171 <https://github.com/ros-drivers/joystick_drivers/issues/171>`_)

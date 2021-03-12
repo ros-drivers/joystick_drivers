@@ -2,6 +2,11 @@
 Changelog for package spacenav
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* spacenav node changed for ros2 (`#194 <https://github.com/ros-drivers/joystick_drivers/issues/194>`_)
+* Contributors: Nils Schulte
+
 1.13.0 (2019-06-24)
 -------------------
 
