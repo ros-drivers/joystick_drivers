@@ -18,7 +18,6 @@ find_package(rclcpp_components REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(SPNAV REQUIRED)
 
-include_directories(include)
 add_library(spacenav
   SHARED
     src/spacenav.cpp)
@@ -29,6 +28,7 @@ target_include_directories(spacenav
 ament_target_dependencies(spacenav
   "geometry_msgs"
   "rclcpp"
+  "rclcpp_components"
   "sensor_msgs")
 
 target_link_libraries(spacenav spnav)
@@ -54,6 +54,5 @@ if(BUILD_TESTING)
   set(ament_cmake_copyright_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
-
 
 ament_package()
