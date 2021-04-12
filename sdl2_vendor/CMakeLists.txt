@@ -14,10 +14,10 @@ endif()
 
 if(NOT SDL2_FOUND)
   include(ExternalProject)
-  ExternalProject_Add(SDL2-2.0.12
+  ExternalProject_Add(SDL2-2.0.14
     PREFIX SDL2-2.0.12
-    URL https://www.libsdl.org/release/SDL2-2.0.12.tar.gz
-    URL_MD5 783b6f2df8ff02b19bb5ce492b99c8ff
+    URL https://www.libsdl.org/release/SDL2-2.0.14.tar.gz
+    URL_MD5 76ed4e6da9c07bd168b2acd9bfefab1b
     CMAKE_ARGS
       -DBUILD_SHARED_LIBS=ON
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -43,7 +43,7 @@ if(NOT SDL2_FOUND)
       -DSDL_SENSOR=ON   # On, dependency of joystick
     INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/SDL2"
     PATCH_COMMAND
-    ${CMAKE_COMMAND} -E chdir <SOURCE_DIR> git apply -p1 --ignore-space-change --whitespace=nowarn ${CMAKE_CURRENT_SOURCE_DIR}/sdl2-windows-add-vcruntime.patch
+      ${CMAKE_COMMAND} -E chdir <SOURCE_DIR> git apply -p1 --ignore-space-change --whitespace=nowarn ${CMAKE_CURRENT_SOURCE_DIR}/sdl2-windows-add-vcruntime.patch
     )
 
   # The external project will install to the build folder, but we'll install that on make install.
