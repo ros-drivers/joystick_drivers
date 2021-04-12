@@ -13,7 +13,7 @@ jobs:
       image: rostooling/setup-ros-docker:ubuntu-focal-ros-foxy-ros-base-testing-latest
     steps:
     - name: Fix Bugs in ros-tooling/action-ros-ci
-      run: sudo chown -R rosbuild:rosbuild "$HOME" .
+      run: sudo apt update
     - name: Run Tests
       uses: ros-tooling/action-ros-ci@0.2.0
       with:
@@ -21,6 +21,7 @@ jobs:
           joy
           joy_linux
           sdl2_vendor
+          spacenav
           wiimote
           wiimote_msgs
         target-ros2-distro: foxy
