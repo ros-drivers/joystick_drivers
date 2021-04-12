@@ -15,7 +15,7 @@ jobs:
     - name: Fix Bugs in ros-tooling/action-ros-ci
       run: sudo chown -R rosbuild:rosbuild "$HOME" .
     - name: Run Tests
-      uses: ros-tooling/action-ros-ci@0.0.17
+      uses: ros-tooling/action-ros-ci@0.2.0
       with:
         package-name: |
           joy
