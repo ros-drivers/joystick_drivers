@@ -83,7 +83,10 @@ install(DIRECTORY launch/
 )
 
 # Install targets
-install(PROGRAMS nodes/feedbackTester.py  nodes/wiimote_node.py
+catkin_install_python(
+  PROGRAMS
+  nodes/feedbackTester.py
+  nodes/wiimote_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   )
 ## Mark executables and/or libraries for installation
