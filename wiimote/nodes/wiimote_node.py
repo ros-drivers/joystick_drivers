@@ -332,15 +332,9 @@ class JoySender(WiimoteDataSender):
                 if self.wiistate.motionPlusPresent:
                     msg.axes.extend([canonicalAngleRate[PHI], canonicalAngleRate[THETA], canonicalAngleRate[PSI]])
 
-                # Fill in the ROS message's buttons field (there *must* be
-                #     a better way in python to declare an array of 11 zeroes...]
-
-                theButtons = [
-                  False, False, False,
-                  False, False, False,
-                  False, False, False,
-                  False, False
-                ]
+                # Fill in the ROS message's buttons field
+                theButtons = [False] * 11
+               
                 theButtons[State.MSG_BTN_1] = self.wiistate.buttons[BTN_1]
                 theButtons[State.MSG_BTN_2] = self.wiistate.buttons[BTN_2]
                 theButtons[State.MSG_BTN_A] = self.wiistate.buttons[BTN_A]
