@@ -2,6 +2,9 @@
 Changelog for package joystick_drivers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.15.0 (2020-10-12)
 -------------------
 
