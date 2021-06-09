@@ -68,6 +68,7 @@ private:
   std::string joy_dev_name_;
   std::string joy_dev_ff_;
   double deadzone_;
+  std::vector<double> axes_init_value_; // initial value for axes, default 0
   double autorepeat_rate_;    // in Hz.  0 for no repeat.
   double coalesce_interval_;  // Defaults to 100 Hz rate limit.
   int event_count_;
@@ -310,6 +311,7 @@ public:
     nh_param.param<std::string>("dev_ff", joy_dev_ff_, "/dev/input/event0");
     nh_param.param<std::string>("dev_name", joy_dev_name_, "");
     nh_param.param<double>("deadzone", deadzone_, 0.05);
+    nh_param.param<std::vector<double>>("axes_init_value", axes_init_value_, std::vector<double>());
     nh_param.param<double>("autorepeat_rate", autorepeat_rate_, 0);
     nh_param.param<double>("coalesce_interval", coalesce_interval_, 0.001);
     nh_param.param<bool>("default_trig_val", default_trig_val_, false);
@@ -559,9 +561,13 @@ public:
             {
               size_t old_size = joy_msg.axes.size();
               joy_msg.axes.resize(event.number+1);
+              if (old_size > axes_init_value_.size())
+              {
+                axes_init_value_.resize(event.number+1, 0.);
+              }
               for (size_t i = old_size; i < joy_msg.axes.size(); i++)
               {
-                joy_msg.axes[i] = 0.0;
+                joy_msg.axes[i] = axes_init_value_[i];
               }
             }
             if (default_trig_val_)
