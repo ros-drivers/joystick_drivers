@@ -17,7 +17,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <exec_depend>joy</exec_depend>
-  <exec_depend>ps3joy</exec_depend>  
+  <!-- <exec_depend>ps3joy</exec_depend> -->  
   <exec_depend>spacenav_node</exec_depend>  
   <exec_depend>wiimote</exec_depend>  
 
