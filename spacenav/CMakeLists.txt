@@ -21,17 +21,16 @@ find_package(SPNAV REQUIRED)
 add_library(spacenav
   SHARED
     src/spacenav.cpp)
-target_include_directories(spacenav
-  PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>)
-ament_target_dependencies(spacenav
-  "geometry_msgs"
-  "rclcpp"
-  "rclcpp_components"
-  "sensor_msgs")
-
-target_link_libraries(spacenav spnav)
+target_include_directories(spacenav PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  ${spnav_INCLUDE_DIR})
+target_link_libraries(spacenav PUBLIC
+  rclcpp::rclcpp
+  ${geometry_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
+  spnav)
+target_link_libraries(spacenav PRIVATE
+  rclcpp_components::component)
 
 # Install targets
 install(TARGETS spacenav
