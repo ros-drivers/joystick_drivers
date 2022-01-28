@@ -2,6 +2,11 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Override device_id when device_name is provided. (`#199 <https://github.com/ros-drivers/joystick_drivers/issues/199>`_) (`#211 <https://github.com/ros-drivers/joystick_drivers/issues/211>`_)
+* Contributors: Tiger Sachse
+
 3.0.0 (2021-03-12)
 ------------------
 * Fix SDL2 include path (`#196 <https://github.com/ros-drivers/joystick_drivers/issues/196>`_)

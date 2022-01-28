@@ -2,6 +2,9 @@
 Changelog for package wiimote
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 3.0.0 (2021-03-12)
 ------------------
 * Fix a warning while building wiimote_controller.cpp (`#201 <https://github.com/ros-drivers/joystick_drivers/issues/201>`_)
