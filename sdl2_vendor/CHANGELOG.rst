@@ -2,6 +2,9 @@
 Changelog for package sdl2_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 3.0.1 (2022-01-28)
 ------------------
 * Update SDL2 vendored library to 2.0.14. (`#202 <https://github.com/ros-drivers/joystick_drivers/issues/202>`_)

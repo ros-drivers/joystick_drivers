@@ -2,6 +2,12 @@
 Changelog for package spacenav
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Install includes to include/ and misc CMake fixes (`#225 <https://github.com/ros-drivers/joystick_drivers/issues/225>`_)
+* Style fixes for newer cpplint.
+* Contributors: Chris Lalancette, Shane Loretz
+
 3.0.1 (2022-01-28)
 ------------------
 * Make sure to ament_target_dependencies on rclcpp_components (`#209 <https://github.com/ros-drivers/joystick_drivers/issues/209>`_)

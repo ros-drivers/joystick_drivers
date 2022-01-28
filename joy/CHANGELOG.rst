@@ -2,6 +2,12 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Install includes to include/ and misc CMake fixes (`#225 <https://github.com/ros-drivers/joystick_drivers/issues/225>`_)
+* Style fixes for newer cpplint.
+* Contributors: Chris Lalancette, Shane Loretz
+
 3.0.1 (2022-01-28)
 ------------------
 * Override device_id when device_name is provided. (`#199 <https://github.com/ros-drivers/joystick_drivers/issues/199>`_) (`#211 <https://github.com/ros-drivers/joystick_drivers/issues/211>`_)

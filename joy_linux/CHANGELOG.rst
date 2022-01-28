@@ -2,6 +2,11 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Style fixes for newer cpplint.
+* Contributors: Chris Lalancette
+
 3.0.1 (2022-01-28)
 ------------------
 
