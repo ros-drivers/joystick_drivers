@@ -38,16 +38,16 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <diagnostic_updater/diagnostic_updater.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/joy.hpp>
-#include <sensor_msgs/msg/joy_feedback_array.hpp>
-
 #include <chrono>
 #include <functional>
 #include <future>
 #include <memory>
 #include <string>
+
+#include <diagnostic_updater/diagnostic_updater.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/joy.hpp>
+#include <sensor_msgs/msg/joy_feedback_array.hpp>
 
 /// \brief Opens, reads from and publishes joystick events
 class Joystick
