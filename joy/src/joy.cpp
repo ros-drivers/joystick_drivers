@@ -27,13 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <SDL.h>
-
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp_components/register_node_macro.hpp>
-#include <sensor_msgs/msg/joy.hpp>
-#include <sensor_msgs/msg/joy_feedback.hpp>
-
 #include <algorithm>
 #include <chrono>
 #include <functional>
@@ -42,6 +35,13 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+
+#include <SDL.h>
+
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_components/register_node_macro.hpp>
+#include <sensor_msgs/msg/joy.hpp>
+#include <sensor_msgs/msg/joy_feedback.hpp>
 
 #include "joy/joy.hpp"
 

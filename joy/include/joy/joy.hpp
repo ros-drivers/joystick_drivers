@@ -32,14 +32,14 @@
 
 #include <SDL.h>
 
-#include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/joy.hpp>
-#include <sensor_msgs/msg/joy_feedback.hpp>
-
 #include <future>
 #include <memory>
 #include <string>
 #include <thread>
+
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/joy.hpp>
+#include <sensor_msgs/msg/joy_feedback.hpp>
 
 namespace joy
 {

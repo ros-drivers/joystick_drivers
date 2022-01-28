@@ -51,11 +51,10 @@
 #include <std_srvs/srv/empty.hpp>
 #include <wiimote_msgs/msg/state.hpp>
 
-// We need to link against these
-#include <bluetooth/bluetooth.h>  // libbluetooth.so
+#include "bluetooth/bluetooth.h"
 namespace wiimote_c
 {
-#include <cwiid.h>  // libcwiid.so
+#include "cwiid.h"  // NOLINT, cpplint wants us to have a directory
 }
 
 #include "wiimote/stat_vector_3d.hpp"

@@ -33,14 +33,14 @@
 
 #include "spacenav/spacenav.hpp"
 
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp_components/register_node_macro.hpp>
-
 #include <chrono>
 #include <functional>
 #include <memory>
 #include <utility>
 #include <vector>
+
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_components/register_node_macro.hpp>
 
 #include "spnav.h" // NOLINT
 
