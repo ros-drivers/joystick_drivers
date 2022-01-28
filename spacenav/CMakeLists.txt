@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
+
 project(spacenav)
 
 # Default to C++14
@@ -23,6 +24,7 @@ add_library(spacenav
     src/spacenav.cpp)
 target_include_directories(spacenav PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
   ${spnav_INCLUDE_DIR})
 target_link_libraries(spacenav PUBLIC
   rclcpp::rclcpp
@@ -32,21 +34,29 @@ target_link_libraries(spacenav PUBLIC
 target_link_libraries(spacenav PRIVATE
   rclcpp_components::component)
 
-# Install targets
-install(TARGETS spacenav
-  ARCHIVE DESTINATION lib/${PROJECT_NAME}
-  LIBRARY DESTINATION lib/${PROJECT_NAME}
-  RUNTIME DESTINATION lib/${PROJECT_NAME}
+install(TARGETS spacenav EXPORT export_spacenav
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
 )
+
+rclcpp_components_register_node(spacenav
+  PLUGIN "spacenav::Spacenav"
+  EXECUTABLE spacenav_node)
+
+install(DIRECTORY include/ DESTINATION include/${PROJECT_NAME})
 
 install(DIRECTORY
   launch
   DESTINATION share/${PROJECT_NAME}/
 )
 
-rclcpp_components_register_node(spacenav
-  PLUGIN "spacenav::Spacenav"
-  EXECUTABLE spacenav_node)
+ament_export_targets(export_spacenav)
+ament_export_dependencies(
+  "rclcpp"
+  "geometry_msgs"
+  "sensor_msgs"
+  "spnav")
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

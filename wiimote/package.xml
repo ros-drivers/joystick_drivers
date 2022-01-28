@@ -35,10 +35,12 @@
   <build_depend>cwiid-dev</build_depend>
   <exec_depend>cwiid</exec_depend>
 
+  <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   <depend>wiimote_msgs</depend>
 

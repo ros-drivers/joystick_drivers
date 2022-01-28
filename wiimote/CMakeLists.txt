@@ -18,6 +18,7 @@ endif()
 include(wiimote-extras.cmake)
 
 find_package(ament_cmake REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
@@ -39,7 +40,6 @@ target_link_libraries(wiimote_lib PUBLIC
   ${sensor_msgs_TARGETS}
   ${std_msgs_TARGETS}
   ${std_srvs_TARGETS}
-  ${geometry_msgs_TARGETS}
   ${wiimote_msgs_TARGETS}
   wiimote::bluetooth
   wiimote::cwiid)
@@ -62,8 +62,8 @@ target_include_directories(teleop_wiimote PUBLIC
 target_link_libraries(teleop_wiimote PUBLIC
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
-  ${sensor_msgs_TARGETS}
   ${geometry_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
   ${wiimote_msgs_TARGETS})
 target_link_libraries(teleop_wiimote PRIVATE
   rclcpp_components::component)
@@ -100,6 +100,13 @@ install(PROGRAMS nodes/feedback_tester.py
 )
 
 ament_export_targets(export_wiimote)
+ament_export_dependencies(
+  "rclcpp"
+  "sensor_msgs"
+  "std_msgs"
+  "std_srvs"
+  "wiimote"
+)
 
 ament_package(
   CONFIG_EXTRAS "wiimote-extras.cmake"
