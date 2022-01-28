@@ -5,17 +5,18 @@ on:
   - push
 
 jobs:
-  build-foxy:
+  build-rolling:
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
     container:
-      image: rostooling/setup-ros-docker:ubuntu-focal-ros-foxy-ros-base-testing-latest
+      image: ubuntu:focal
     steps:
-    - name: Fix Bugs in ros-tooling/action-ros-ci
-      run: sudo apt update
+    - uses: ros-tooling/setup-ros@v0.2
+      with:
+        required-ros-distributions: rolling
     - name: Run Tests
-      uses: ros-tooling/action-ros-ci@0.2.0
+      uses: ros-tooling/action-ros-ci@v0.2
       with:
         package-name: |
           joy
@@ -24,7 +25,7 @@ jobs:
           spacenav
           wiimote
           wiimote_msgs
-        target-ros2-distro: foxy
+        target-ros2-distro: rolling
     - name: Upload logs
       uses: actions/upload-artifact@v1
       with:
