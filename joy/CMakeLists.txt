@@ -17,18 +17,18 @@ find_package(sdl2_vendor REQUIRED)
 find_package(sdl2_custom REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
-include_directories(include)
 add_library(joy SHARED src/joy.cpp)
-ament_target_dependencies(joy
-  "rclcpp_components"
-  "rclcpp"
-  "sensor_msgs")
-# Need this since sdl2 doesn't properly export its
-# libraries so ament_target_dependencies can find them
-target_link_libraries(joy
+target_include_directories(joy PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
+target_link_libraries(joy PUBLIC
+  rclcpp::rclcpp
+  ${sensor_msgs_TARGETS}
   SDL2::SDL2)
+target_link_libraries(joy PRIVATE
+  rclcpp_components::component)
 
-install(TARGETS joy
+install(TARGETS joy EXPORT export_joy
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
@@ -46,12 +46,17 @@ target_link_libraries(joy_enumerate_devices
 install(TARGETS joy_enumerate_devices
   DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION include/${PROJECT_NAME}
-)
+install(DIRECTORY include/ DESTINATION include/${PROJECT_NAME})
 
 install(DIRECTORY config launch
   DESTINATION share/${PROJECT_NAME})
+
+ament_export_targets(export_joy)
+ament_export_dependencies(
+  "rclcpp"
+  "sensor_msgs"
+  "sdl2_vendor"
+  "sdl2_custom")
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
