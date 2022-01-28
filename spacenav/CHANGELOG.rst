@@ -2,8 +2,8 @@
 Changelog for package spacenav
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.1 (2022-01-28)
+------------------
 * Make sure to ament_target_dependencies on rclcpp_components (`#209 <https://github.com/ros-drivers/joystick_drivers/issues/209>`_)
 * Contributors: Chris Lalancette
 
