@@ -39,6 +39,6 @@
 
 Running the node is straightforward
 ```
-$ ros2 run spacenav spacenav
+$ ros2 run spacenav spacenav_node
 ```
 The node is now publishing to the topics listed above.
