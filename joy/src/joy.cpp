@@ -422,13 +422,11 @@ void Joy::eventThread()
   std::future_status status;
   rclcpp::Time last_publish = this->now();
 
-  do {
-    if (joystick_ == nullptr) {
-      if (SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC) < 0) {
-        throw std::runtime_error("SDL could not be initialized: " + std::string(SDL_GetError()));
-      }
-    }
+  if (SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC) < 0) {
+    throw std::runtime_error("SDL could not be initialized: " + std::string(SDL_GetError()));
+  }
 
+  do {
     bool should_publish = false;
     SDL_Event e;
     int wait_time_ms = autorepeat_interval_ms_;
@@ -475,12 +473,11 @@ void Joy::eventThread()
       pub_->publish(joy_msg_);
     }
 
-    if (joystick_ == nullptr) {
-      SDL_Quit();
-    }
-
     status = future_.wait_for(std::chrono::seconds(0));
   } while (status == std::future_status::timeout);
+
+
+  SDL_Quit();
 }
 
 }  // namespace joy
