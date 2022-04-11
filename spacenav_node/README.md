@@ -13,6 +13,12 @@
 * `spacenav/joy` (sensor_msgs/Joy)
    
    Outputs the spacenav's six degrees of freedom and its buttons as a joystick message. 
+* `spacenav/button_up` (std_msgs/Int32MultiArray)
+
+   Button-up events.
+* `spacenav/button_down` (std_msgs/Int32MultiArray)
+
+   Button-down events.
 ##### Parameters
 * `zero_when_static`
 
