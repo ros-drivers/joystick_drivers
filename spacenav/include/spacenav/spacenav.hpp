@@ -84,6 +84,8 @@ private:
   double normed_wx = 0;
   double normed_wy = 0;
   double normed_wz = 0;
+
+  sensor_msgs::msg::Joy msg_joystick;
 };
 
 }  // namespace spacenav
