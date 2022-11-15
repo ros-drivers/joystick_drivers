@@ -251,18 +251,15 @@ void Spacenav::poll_spacenav()
 
       case SPNAV_EVENT_BUTTON:
 
-        if (sev.button.bnum < 0)
-        {
-          RCLCPP_WARN(get_logger(), "Negative spacenav buttons not supported. Got %i", sev.button.bnum);
+        if (sev.button.bnum < 0) {
+          RCLCPP_WARN(
+            get_logger(), "Negative spacenav buttons not supported. Got %i", sev.button.bnum);
           break;
         }
-        if (sev.button.bnum < static_cast<int>(msg_joystick.buttons.size()))
-        {
+        if (sev.button.bnum < static_cast<int>(msg_joystick.buttons.size())) {
           // Update known buttons
           msg_joystick.buttons[sev.button.bnum] = sev.button.press;
-        }
-        else
-        {
+        } else {
           // Enlarge, fill up with zeros, and support the new button
           msg_joystick.buttons.resize(sev.button.bnum + 1, 0);
           msg_joystick.buttons[sev.button.bnum] = sev.button.press;
