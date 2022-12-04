@@ -19,20 +19,30 @@ find_package(rclcpp_components REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(SPNAV REQUIRED)
 
+# Convenience variable for dependencies
+set(THIS_PACKAGE_INCLUDE_DEPENDS
+  geometry_msgs
+  rclcpp
+  rclcpp_components
+  sensor_msgs
+)
+
 add_library(spacenav
   SHARED
     src/spacenav.cpp)
+
 target_include_directories(spacenav PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
   ${spnav_INCLUDE_DIR})
-target_link_libraries(spacenav PUBLIC
-  rclcpp::rclcpp
-  ${geometry_msgs_TARGETS}
-  ${sensor_msgs_TARGETS}
-  spnav)
-target_link_libraries(spacenav PRIVATE
-  rclcpp_components::component)
+
+ament_target_dependencies(spacenav
+  ${THIS_PACKAGE_INCLUDE_DEPENDS}
+)
+
+target_link_libraries(spacenav
+  spnav
+)
 
 install(TARGETS spacenav EXPORT export_spacenav
   ARCHIVE DESTINATION lib
@@ -53,10 +63,8 @@ install(DIRECTORY
 
 ament_export_targets(export_spacenav)
 ament_export_dependencies(
-  "rclcpp"
-  "geometry_msgs"
-  "sensor_msgs"
-  "spnav")
+  ${THIS_PACKAGE_INCLUDE_DEPENDS}
+)
 
 install(TARGETS spacenav
   DESTINATION lib
