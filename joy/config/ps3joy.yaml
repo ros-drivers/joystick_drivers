@@ -1,0 +1,47 @@
+mappings:
+  axes:
+    - axes[0]
+    - axes[1]
+    - axes[3]
+    - axes[4]
+    - 0
+    - 0
+    - 0
+    - 0
+    - -1.0 * buttons[13]
+    - -1.0 * buttons[16]
+    - -1.0 * buttons[14]
+    - -1.0 * buttons[15]
+    - 0.5 * ( axes[2] - 1 )
+    - 0.5 * ( axes[5] - 1 )
+    - -1.0 * buttons[4]
+    - -1.0 * buttons[5]
+    - -1.0 * buttons[2]
+    - -1.0 * buttons[1]
+    - -1.0 * buttons[0]
+    - -1.0 * buttons[3]
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+  buttons:
+    - buttons[8]
+    - buttons[11]
+    - buttons[12]
+    - buttons[9]
+    - buttons[13]
+    - buttons[16]
+    - buttons[14]
+    - buttons[15]
+    - buttons[6]
+    - buttons[7]
+    - buttons[4]
+    - buttons[5]
+    - buttons[2]
+    - buttons[1]
+    - buttons[0]
+    - buttons[3]
+    - buttons[10]
