@@ -112,11 +112,6 @@ Spacenav::Spacenav(const rclcpp::NodeOptions & options)
   callback_handler =
     this->add_on_set_parameters_callback(param_change_callback);
 
-  // Prepare the default joystick message.
-  // We'll resize dynamically to support spacenav devices with more buttons.
-  constexpr int min_buttons = 2;
-  msg_joystick.buttons.resize(min_buttons);
-
   // Setup publishers and Timer
   publisher_offset = this->create_publisher<geometry_msgs::msg::Vector3>(
     "spacenav/offset", 10);
@@ -208,7 +203,8 @@ void Spacenav::poll_spacenav()
 
   bool queue_empty = false;
   while (!queue_empty) {
-    msg_joystick.header.stamp = get_clock()->now();
+    auto msg_joystick = std::make_unique<sensor_msgs::msg::Joy>();
+    msg_joystick->header.stamp = get_clock()->now();
     // Output changes each time a button event happens, or when a motion
     // event happens and the queue is empty.
 
@@ -256,13 +252,13 @@ void Spacenav::poll_spacenav()
             get_logger(), "Negative spacenav buttons not supported. Got %i", sev.button.bnum);
           break;
         }
-        if (sev.button.bnum < static_cast<int>(msg_joystick.buttons.size())) {
+        if (sev.button.bnum < static_cast<int>(joystick_buttons.size())) {
           // Update known buttons
-          msg_joystick.buttons[sev.button.bnum] = sev.button.press;
+          joystick_buttons[sev.button.bnum] = sev.button.press;
         } else {
           // Enlarge, fill up with zeros, and support the new button
-          msg_joystick.buttons.resize(sev.button.bnum + 1, 0);
-          msg_joystick.buttons[sev.button.bnum] = sev.button.press;
+          joystick_buttons.resize(sev.button.bnum + 1, 0);
+          joystick_buttons[sev.button.bnum] = sev.button.press;
         }
         joy_stale = true;
         break;
@@ -299,15 +295,16 @@ void Spacenav::poll_spacenav()
       joy_stale = true;
     }
     if (joy_stale) {
-      msg_joystick.axes.resize(6);
+      msg_joystick->axes.resize(6);
       // The joystick.axes are normalized within [-1, 1].
-      msg_joystick.axes[0] = normed_vx;
-      msg_joystick.axes[1] = normed_vy;
-      msg_joystick.axes[2] = normed_vz;
-      msg_joystick.axes[3] = normed_wx;
-      msg_joystick.axes[4] = normed_wy;
-      msg_joystick.axes[5] = normed_wz;
-      publisher_joy->publish(msg_joystick);
+      msg_joystick->axes[0] = normed_vx;
+      msg_joystick->axes[1] = normed_vy;
+      msg_joystick->axes[2] = normed_vz;
+      msg_joystick->axes[3] = normed_wx;
+      msg_joystick->axes[4] = normed_wy;
+      msg_joystick->axes[5] = normed_wz;
+      msg_joystick->buttons = joystick_buttons;
+      publisher_joy->publish(std::move(msg_joystick));
     }
   }
 }
