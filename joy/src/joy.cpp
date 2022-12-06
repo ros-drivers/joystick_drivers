@@ -105,6 +105,9 @@ Joy::Joy(const rclcpp::NodeOptions & options)
 
   future_ = exit_signal_.get_future();
 
+  if (SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC) < 0) {
+    throw std::runtime_error("SDL could not be initialized: " + std::string(SDL_GetError()));
+  }
   // In theory we could do this with just a timer, which would simplify the code
   // a bit.  But then we couldn't react to "immediate" events, so we stick with
   // the thread.
@@ -423,11 +426,6 @@ void Joy::eventThread()
   rclcpp::Time last_publish = this->now();
 
   do {
-    if (joystick_ == nullptr) {
-      if (SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC) < 0) {
-        throw std::runtime_error("SDL could not be initialized: " + std::string(SDL_GetError()));
-      }
-    }
 
     bool should_publish = false;
     SDL_Event e;
@@ -473,10 +471,6 @@ void Joy::eventThread()
       joy_msg_.header.stamp = this->now();
 
       pub_->publish(joy_msg_);
-    }
-
-    if (joystick_ == nullptr) {
-      SDL_Quit();
     }
 
     status = future_.wait_for(std::chrono::seconds(0));
