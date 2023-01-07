@@ -30,6 +30,7 @@
 #ifndef SPACENAV__SPACENAV_HPP_
 #define SPACENAV__SPACENAV_HPP_
 
+#include <vector>
 #include <rclcpp/rclcpp.hpp>
 
 #include <geometry_msgs/msg/twist.hpp>
@@ -84,6 +85,9 @@ private:
   double normed_wx = 0;
   double normed_wy = 0;
   double normed_wz = 0;
+
+  // We'll resize dynamically to support spacenav devices with more buttons.
+  std::vector<int> joystick_buttons = {0, 0};
 };
 
 }  // namespace spacenav

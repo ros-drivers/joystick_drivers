@@ -246,10 +246,20 @@ void Spacenav::poll_spacenav()
         break;
 
       case SPNAV_EVENT_BUTTON:
-        if (sev.button.bnum >= static_cast<int>(msg_joystick->buttons.size())) {
-          msg_joystick->buttons.resize(sev.button.bnum + 1);
+
+        if (sev.button.bnum < 0) {
+          RCLCPP_WARN(
+            get_logger(), "Negative spacenav buttons not supported. Got %i", sev.button.bnum);
+          break;
         }
-        msg_joystick->buttons[sev.button.bnum] = sev.button.press;
+        if (sev.button.bnum < static_cast<int>(joystick_buttons.size())) {
+          // Update known buttons
+          joystick_buttons[sev.button.bnum] = sev.button.press;
+        } else {
+          // Enlarge, fill up with zeros, and support the new button
+          joystick_buttons.resize(sev.button.bnum + 1, 0);
+          joystick_buttons[sev.button.bnum] = sev.button.press;
+        }
         joy_stale = true;
         break;
 
@@ -293,6 +303,7 @@ void Spacenav::poll_spacenav()
       msg_joystick->axes[3] = normed_wx;
       msg_joystick->axes[4] = normed_wy;
       msg_joystick->axes[5] = normed_wz;
+      msg_joystick->buttons = joystick_buttons;
       publisher_joy->publish(std::move(msg_joystick));
     }
   }
