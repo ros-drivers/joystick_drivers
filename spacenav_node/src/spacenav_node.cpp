@@ -42,6 +42,7 @@
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Twist.h"
 #include "sensor_msgs/Joy.h"
+#include "std_msgs/Int32MultiArray.h"
 
 /** Ensure that the vector parameter has three components.
  *
@@ -81,6 +82,8 @@ int main(int argc, char **argv)
   ros::Publisher rot_offset_pub = node_handle.advertise<geometry_msgs::Vector3>("spacenav/rot_offset", 2);
   ros::Publisher twist_pub = node_handle.advertise<geometry_msgs::Twist>("spacenav/twist", 2);
   ros::Publisher joy_pub = node_handle.advertise<sensor_msgs::Joy>("spacenav/joy", 2);
+  ros::Publisher joy_button_up_pub = node_handle.advertise<std_msgs::Int32MultiArray>("spacenav/button_up", 2);
+  ros::Publisher joy_button_down_pub = node_handle.advertise<std_msgs::Int32MultiArray>("spacenav/button_down", 2);
 
   // Used to scale joystick output to be in [-1, 1]. Estimated from data, and not necessarily correct.
   ros::NodeHandle private_nh("~");
@@ -205,9 +208,24 @@ int main(int argc, char **argv)
         break;
 
       case SPNAV_EVENT_BUTTON:
-        joystick_msg.buttons[sev.button.bnum] = sev.button.press;
-        joy_stale = true;
-        break;
+	{
+
+	  std_msgs::Int32MultiArray button_event_msg;
+	  button_event_msg.data.resize(2);
+	  button_event_msg.data[sev.button.bnum] = 1;
+	  if (sev.button.press == 0)
+	  {
+	    joy_button_up_pub.publish(button_event_msg);
+	  }
+	  else if (sev.button.press == 1)
+	  {
+	    joy_button_down_pub.publish(button_event_msg);
+	  }
+
+	  joystick_msg.buttons[sev.button.bnum] = sev.button.press;
+	  joy_stale = true;
+	  break;
+	}
 
       default:
         ROS_WARN("Unknown message type in spacenav. This should never happen.");
