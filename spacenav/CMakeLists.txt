@@ -19,14 +19,6 @@ find_package(rclcpp_components REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(SPNAV REQUIRED)
 
-# Convenience variable for dependencies
-set(THIS_PACKAGE_INCLUDE_DEPENDS
-  geometry_msgs
-  rclcpp
-  rclcpp_components
-  sensor_msgs
-)
-
 add_library(spacenav
   SHARED
     src/spacenav.cpp)
@@ -36,12 +28,15 @@ target_include_directories(spacenav PUBLIC
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
   ${spnav_INCLUDE_DIR})
 
-ament_target_dependencies(spacenav
-  ${THIS_PACKAGE_INCLUDE_DEPENDS}
+target_link_libraries(spacenav PUBLIC
+  ${geometry_msgs_TARGETS}
+  rclcpp::rclcpp
+  ${sensor_msgs_TARGETS}
+  spnav
 )
 
-target_link_libraries(spacenav
-  spnav
+target_link_libraries(spacenav PRIVATE
+  rclcpp_components::component
 )
 
 install(TARGETS spacenav EXPORT export_spacenav
