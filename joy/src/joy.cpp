@@ -451,7 +451,7 @@ void Joy::eventThread()
       } else if (e.type == SDL_JOYDEVICEREMOVED) {
         handleJoyDeviceRemoved(e);
       } else {
-        RCLCPP_INFO(get_logger(), "Unknown event type %d", e.type);
+        RCLCPP_WARN(get_logger(), "Unknown event type %d", e.type);
       }
     } else {
       // We didn't succeed, either because of a failure or because of a timeout.
