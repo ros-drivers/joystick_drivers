@@ -2,8 +2,8 @@
 Changelog for package wiimote
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.2.0 (2023-06-21)
+------------------
 * Fix dependency issues.
 * Contributors: Joshua Whitley
 

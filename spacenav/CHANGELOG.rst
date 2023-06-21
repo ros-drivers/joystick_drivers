@@ -2,8 +2,8 @@
 Changelog for package spacenav
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.2.0 (2023-06-21)
+------------------
 * Fix publishing of spacenav button values (`#243 <https://github.com/ros-drivers/joystick_drivers/issues/243>`_)
   * Fix publishing of spacenav button values
   We now always publish the two default button states, in which

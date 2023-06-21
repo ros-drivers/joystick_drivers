@@ -2,8 +2,8 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.2.0 (2023-06-21)
+------------------
 * Linter fix.
 * Fix dependency issues.
 * fix high CPU usage (`#247 <https://github.com/ros-drivers/joystick_drivers/issues/247>`_)
