@@ -2,6 +2,14 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Linter fix.
+* Fix dependency issues.
+* fix high CPU usage (`#247 <https://github.com/ros-drivers/joystick_drivers/issues/247>`_)
+  Co-authored-by: Testing <testing@pixel-robotics.eu>
+* Contributors: Joshua Whitley, Tony Najjar
+
 3.1.0 (2022-01-28)
 ------------------
 * Install includes to include/ and misc CMake fixes (`#225 <https://github.com/ros-drivers/joystick_drivers/issues/225>`_)

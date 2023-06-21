@@ -2,6 +2,9 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 3.1.0 (2022-01-28)
 ------------------
 * Style fixes for newer cpplint.

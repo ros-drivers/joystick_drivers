@@ -2,6 +2,11 @@
 Changelog for package wiimote
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix dependency issues.
+* Contributors: Joshua Whitley
+
 3.1.0 (2022-01-28)
 ------------------
 * Install includes to include/ and misc CMake fixes (`#225 <https://github.com/ros-drivers/joystick_drivers/issues/225>`_)
