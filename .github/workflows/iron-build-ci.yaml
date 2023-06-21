@@ -1,0 +1,36 @@
+name: Basic Build Workflow
+
+on:
+  - pull_request
+  - push
+
+jobs:
+  build-iron:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-jammy-ros-iron-desktop-latest
+    steps:
+    - name: Build Environment
+      uses: ros-tooling/setup-ros@v0.5
+      with:
+        required-ros-distributions: iron
+    - name: Run Tests
+      uses: ros-tooling/action-ros-ci@v0.3
+      id: iron_action_ros_ci_step
+      with:
+        package-name: |
+          joy
+          joy_linux
+          sdl2_vendor
+          spacenav
+          wiimote
+          wiimote_msgs
+        target-ros2-distro: iron
+    - name: Upload logs
+      uses: actions/upload-artifact@v1
+      with:
+        name: colcon-logs
+        path: ${{ steps.iron_action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
+      if: always()
