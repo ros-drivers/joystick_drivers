@@ -426,7 +426,6 @@ void Joy::eventThread()
   rclcpp::Time last_publish = this->now();
 
   do {
-
     bool should_publish = false;
     SDL_Event e;
     int wait_time_ms = autorepeat_interval_ms_;
