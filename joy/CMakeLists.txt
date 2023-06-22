@@ -42,12 +42,12 @@ add_library(game_controller SHARED src/game_controller.cpp)
 target_include_directories(game_controller PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
-target_link_libraries(game_controller PUBLIC
-  rclcpp::rclcpp
-  ${sensor_msgs_TARGETS}
+ament_target_dependencies(game_controller
+  rclcpp
+  rclcpp_components
+  sensor_msgs)
+target_link_libraries(game_controller
   SDL2::SDL2)
-target_link_libraries(game_controller PRIVATE
-  rclcpp_components::component)
 
 install(TARGETS game_controller EXPORT export_game_controller
   LIBRARY DESTINATION lib
