@@ -34,17 +34,17 @@ add_library(wiimote_lib SHARED
 target_include_directories(wiimote_lib PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
-ament_target_dependencies(wiimote_lib
-  rclcpp
-  rclcpp_components
-  rclcpp_lifecycle
-  sensor_msgs
-  std_msgs
-  std_srvs
-  wiimote_msgs)
-target_link_libraries(wiimote_lib
+target_link_libraries(wiimote_lib PUBLIC
+  rclcpp::rclcpp
+  rclcpp_lifecycle::rclcpp_lifecycle
+  ${sensor_msgs_TARGETS}
+  ${std_msgs_TARGETS}
+  ${std_srvs_TARGETS}
+  ${wiimote_msgs_TARGETS}
   wiimote::bluetooth
   wiimote::cwiid)
+target_link_libraries(wiimote_lib PRIVATE
+  rclcpp_components::component)
 
 rclcpp_components_register_node(
   wiimote_lib
@@ -59,13 +59,14 @@ add_library(teleop_wiimote SHARED
 target_include_directories(teleop_wiimote PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
-ament_target_dependencies(teleop_wiimote
-  rclcpp
-  rclcpp_components
-  rclcpp_lifecycle
-  geometry_msgs
-  sensor_msgs
-  wiimote_msgs)
+target_link_libraries(teleop_wiimote PUBLIC
+  rclcpp::rclcpp
+  rclcpp_lifecycle::rclcpp_lifecycle
+  ${geometry_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
+  ${wiimote_msgs_TARGETS})
+target_link_libraries(teleop_wiimote PRIVATE
+  rclcpp_components::component)
 
 rclcpp_components_register_node(
   teleop_wiimote
