@@ -450,8 +450,16 @@ void Joy::eventThread()
       } else {
         RCLCPP_INFO(get_logger(), "Unknown event type %d", e.type);
       }
-    } else {
-      // We didn't succeed, either because of a failure or because of a timeout.
+    }
+
+    if (!should_publish) {
+      // So far, nothing has indicated that we should publish.  However we need to
+      // do additional checking since there are several possible reasons:
+      // 1.  SDL_WaitEventTimeout failed
+      // 2.  SDL_WaitEventTimeout timed out
+      // 3.  SDL_WaitEventTimeout succeeded, but the event that happened didn't cause
+      //     a publish to happen.
+      //
       // If we are autorepeating and enough time has passed, set should_publish.
       rclcpp::Time now = this->now();
       rclcpp::Duration diff_since_last_publish = now - last_publish;
