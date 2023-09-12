@@ -381,9 +381,17 @@ void Joy::handleJoyDeviceAdded(const SDL_Event & e)
   // Get the initial state for each of the axes
   for (int i = 0; i < num_axes; ++i) {
     int16_t state;
-    if (SDL_JoystickGetAxisInitialState(joystick_, i, &state)) {
-      joy_msg_.axes.at(i) = convertRawAxisValueToROS(state);
+    if (init_) {
+      joy_msg_.axes.at(i) = 0;
+    } else {
+        if (SDL_JoystickGetAxisInitialState(joystick_, i, &state)) {
+        joy_msg_.axes.at(i) = convertRawAxisValueToROS(state);
+      }  
     }
+  }
+
+  if (init_) {
+    init_ = false;
   }
 
   haptic_ = SDL_HapticOpenFromJoystick(joystick_);
