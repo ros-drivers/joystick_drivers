@@ -78,6 +78,7 @@ private:
   int autorepeat_interval_ms_{0};
   bool sticky_buttons_{false};
   bool publish_soon_{false};
+  bool init_{true};
   rclcpp::Time publish_soon_time_;
   int coalesce_interval_ms_{0};
   std::string dev_name_;
