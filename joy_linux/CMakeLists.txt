@@ -26,11 +26,12 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   if(HAVE_LINUX_JOYSTICK_H)
     include_directories(msg/cpp ${catkin_INCLUDE_DIRS})
     add_executable(joy_linux_node src/joy_linux_node.cpp)
-    ament_target_dependencies(joy_linux_node
-      "diagnostic_msgs"
-      "diagnostic_updater"
-      "rclcpp"
-      "sensor_msgs")
+    target_link_libraries(joy_linux_node PRIVATE
+      ${diagnostic_msgs_TARGETS}
+      diagnostic_updater::diagnostic_updater
+      rclcpp::rclcpp
+      ${sensor_msgs_TARGETS}
+    )
     install(TARGETS joy_linux_node DESTINATION lib/${PROJECT_NAME})
 
     if(BUILD_TESTING)
