@@ -56,6 +56,7 @@
 #define SPACENAV_ZERO_WHEN_STATIC_PARAM_S "zero_when_static"
 #define SPACENAV_STATIC_TRANS_DEADBAND_PARAM_S "static_trans_deadband"
 #define SPACENAV_STATIC_ROT_DEADBAND_PARAM_S "static_rot_deadband"
+#define SPACENAV_USE_TWIST_STAMPED_PARAM_S "use_twist_stamped"
 
 using namespace std::chrono_literals;
 
@@ -91,6 +92,7 @@ Spacenav::Spacenav(const rclcpp::NodeOptions & options)
   // translation, or both.
   this->declare_parameter<double>(SPACENAV_STATIC_TRANS_DEADBAND_PARAM_S, 0.1);
   this->declare_parameter<double>(SPACENAV_STATIC_ROT_DEADBAND_PARAM_S, 0.1);
+  use_twist_stamped = this->declare_parameter<bool>(SPACENAV_USE_TWIST_STAMPED_PARAM_S, false);
 
   auto param_change_callback = [this](
     std::vector<rclcpp::Parameter> parameters) {
@@ -117,8 +119,13 @@ Spacenav::Spacenav(const rclcpp::NodeOptions & options)
     "spacenav/offset", 10);
   publisher_rot_offset = this->create_publisher<geometry_msgs::msg::Vector3>(
     "spacenav/rot_offset", 10);
-  publisher_twist =
-    this->create_publisher<geometry_msgs::msg::Twist>("spacenav/twist", 10);
+  if (use_twist_stamped) {
+    publisher_twist_stamped =
+      this->create_publisher<geometry_msgs::msg::TwistStamped>("spacenav/twist_stamped", 10);
+  } else {
+    publisher_twist =
+      this->create_publisher<geometry_msgs::msg::Twist>("spacenav/twist", 10);
+  }
   publisher_joy =
     this->create_publisher<sensor_msgs::msg::Joy>("spacenav/joy", 10);
 
@@ -288,7 +295,14 @@ void Spacenav::poll_spacenav()
 
       publisher_offset->publish(std::move(msg_offset));
       publisher_rot_offset->publish(std::move(msg_rot_offset));
-      publisher_twist->publish(std::move(msg_twist));
+      if (use_twist_stamped) {
+        auto msg_twist_stamped = std::make_unique<geometry_msgs::msg::TwistStamped>();
+        msg_twist_stamped->header.stamp = msg_joystick->header.stamp;
+        msg_twist_stamped->twist = *msg_twist;
+        publisher_twist_stamped->publish(std::move(msg_twist_stamped));
+      } else {
+        publisher_twist->publish(std::move(msg_twist));
+      }
 
       no_motion_count = 0;
       motion_stale = false;
