@@ -12,8 +12,8 @@ jobs:
     container:
       image: rostooling/setup-ros-docker:ubuntu-jammy-ros-rolling-desktop-latest
     steps:
-    - name: Build Envrollingment
-      uses: ros-tooling/setup-ros@v0.5
+    - name: Build Environment
+      uses: ros-tooling/setup-ros@v0.7
       with:
         required-ros-distributions: rolling
     - name: Run Tests
