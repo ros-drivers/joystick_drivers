@@ -384,14 +384,16 @@ void Joy::handleJoyDeviceAdded(const SDL_Event & e)
     if (init_) {
       joy_msg_.axes.at(i) = 0;
     } else {
-        if (SDL_JoystickGetAxisInitialState(joystick_, i, &state)) {
+      if (SDL_JoystickGetAxisInitialState(joystick_, i, &state)) {
         joy_msg_.axes.at(i) = convertRawAxisValueToROS(state);
-      }  
+      }
     }
   }
 
   if (init_) {
     init_ = false;
+  } else {
+    init_ = true;
   }
 
   haptic_ = SDL_HapticOpenFromJoystick(joystick_);
@@ -416,6 +418,7 @@ void Joy::handleJoyDeviceRemoved(const SDL_Event & e)
     return;
   }
 
+  init_ = true;  // resetting init to true, in case JS is reconnected in the same instance
   joy_msg_.buttons.resize(0);
   joy_msg_.axes.resize(0);
   if (haptic_ != nullptr) {
