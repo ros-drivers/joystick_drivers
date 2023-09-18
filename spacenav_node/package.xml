@@ -24,4 +24,5 @@
   <depend>roscpp</depend>
   <depend>sensor_msgs</depend>
 
+  <exec_depend>spacenavd</exec_depend>
 </package>
