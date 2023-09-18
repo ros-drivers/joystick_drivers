@@ -38,6 +38,27 @@ rclcpp_components_register_node(joy
   PLUGIN "joy::Joy"
   EXECUTABLE joy_node)
 
+add_library(game_controller SHARED src/game_controller.cpp)
+target_include_directories(game_controller PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
+ament_target_dependencies(game_controller
+  rclcpp
+  rclcpp_components
+  sensor_msgs)
+target_link_libraries(game_controller
+  SDL2::SDL2)
+
+install(TARGETS game_controller EXPORT export_game_controller
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+rclcpp_components_register_node(game_controller
+  PLUGIN "joy::GameController"
+  EXECUTABLE game_controller_node)
+
 add_executable(joy_enumerate_devices
   src/joy_enumerate_devices.cpp)
 target_link_libraries(joy_enumerate_devices
@@ -52,6 +73,7 @@ install(DIRECTORY config launch
   DESTINATION share/${PROJECT_NAME})
 
 ament_export_targets(export_joy)
+ament_export_targets(export_game_controller)
 ament_export_dependencies(
   "rclcpp"
   "sensor_msgs"

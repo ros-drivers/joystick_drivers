@@ -1,0 +1,1 @@
+KERNEL=="event[0-9]*", SUBSYSTEM=="input", ATTRS{name}=="Xbox Wireless Controller", ACTION=="add", SYMLINK+="xbox_wireless_controller", MODE="666"

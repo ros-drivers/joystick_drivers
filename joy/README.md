@@ -1,10 +1,49 @@
-# ROS 2 Driver for Generic Joysticks
+# ROS 2 Driver for Generic Joysticks and Game Controllers
 
-The joy package contains joy_node, a node that interfaces a generic joystick to ROS 2. This node publishes a "sensor_msgs/msg/Joy" message, which contains the current state of each one of the joystick's buttons and axes.
+The joy package contains joy_node, and game_controller node which interface generic joysticks and game controllers to ROS 2. These nodes publish "sensor_msgs/msg/Joy" messages, which contain the state of the devices button and axes. Examples of game controllers are ones that come with recently released game consoles and their after market clones.
+
+The game_controller_node uses SDL2's built device mapping database to give buttons and axes a consistent order in the "sensor_msgs/msg/Joy". Custom mappings can also be supplied using SDL's SDL_GAMECONTROLLERCONFIG environment variable.  A third party tool can be used to create the mapping string. The joy_node supports both joysticks and game controllers but the order that buttons and axes appear with the message will dependend on the manufacturer of the device.
+
+For game_controller_node the following tables detail the indexes of buttons and axes.
+
+| Index | Button |
+| -  | - |
+| 0  | A (CROSS) |
+| 1  | B (CIRCLE) |
+| 2  | X (SQUARE) |
+| 3  | Y (TRIANGLE) |
+| 4  | BACK (SELECT) |
+| 5  | GUIDE (Middle/Manufacturer Button) |
+| 6  | START |
+| 7  | LEFTSTICK |
+| 8  | RIGHTSTICK |
+| 9  | LEFTSHOULDER |
+| 10 | RIGHTSHOULDER |
+| 11 | DPAD_UP |
+| 12 | DPAD_DOWN |
+| 13 | DPAD_LEFT |
+| 14 | DPAD_RIGHT |
+| 15 | MISC1 (Depends on the controller manufacturer, but is usually at a similar location on the controller as back/start) |
+| 16 | PADDLE1 (Upper left, facing the back of the controller if present) |
+| 17 | PADDLE2 (Upper right, facing the back of the controller if present) |
+| 18 | PADDLE3 (Lower left, facing the back of the controller if present) |
+| 19 | PADDLE4 (Lower right, facing the back of the controller if present) |
+| 20 | TOUCHPAD (If present. Button status only) |
+
+| Index | Axis |
+| - | - |
+| 0 | LEFTX |
+| 1 | LEFTY |
+| 2 | RIGHTX |
+| 3 | RIGHTY |
+| 4 | TRIGGERLEFT |
+| 5 | TRIGGERRIGHT |
+
+For joy_node run `ros2 run joy joy_node` in one terminal and `ros2 topic echo /joy` in another. Pressing buttons and moving sticks can be used to determine at which location they appear in "sensor_msgs/msg/Joy".
 
 ## Supported Hardware
 
-This node should work with any joystick that is supported by SDL.
+This nodes should work with any joystick or game controller that is supported by SDL.
 
 ## Published Topics
 
@@ -16,7 +55,7 @@ This node should work with any joystick that is supported by SDL.
 ## Parameters
 
 * device_id (int, default: 0)
-  * The joystick device to use.
+  * The joystick device to use. `ros2 run joy joy_enumerate_devices` wil list the attached devices.
 
 * device_name (string, default: "")
   * The joystick name to use.  This can be useful when multiple different joysticks are attached.  If both device_name and device_id are specified, device_name takes precedence.
@@ -33,6 +72,6 @@ This node should work with any joystick that is supported by SDL.
 * coalesce_interval_ms (int, default: 1)
   * The number of milliseconds to wait after an axis event before publishing a message.  Since the kernel sends an event for every change, this can significantly reduce the number of messages published.  Setting it to 0 disables this behavior.  The default of 1 ms is a good compromise between message delays and number of messages published.
 
-## Technical note about interfacing with the joystick on Linux
+## Technical note about interfacing with joysticks and game controllers on Linux
 
 On Linux there are two different ways to interface with a joystick.  The distinction only makes a difference when attempting to pass through the device into a container or virtual machine.  The first interface is via the joystick driver subsystem, which generally shows up as a device in /dev/input/js0 (or other numbers at the end).  This is the way that the "joy_linux" package accesses the joystick.  The second way to interface is through the generic event subsystem, which generally shows up as /dev/input/event7 (or other numbers at the end).  This is the way that SDL (and hence this "joy" package) accesses the joysticks.
