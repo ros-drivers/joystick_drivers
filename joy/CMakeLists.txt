@@ -27,13 +27,11 @@ target_link_libraries(joy PUBLIC
   SDL2::SDL2)
 target_link_libraries(joy PRIVATE
   rclcpp_components::component)
-
 install(TARGETS joy EXPORT export_joy
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
 )
-
 rclcpp_components_register_node(joy
   PLUGIN "joy::Joy"
   EXECUTABLE joy_node)
@@ -42,28 +40,25 @@ add_library(game_controller SHARED src/game_controller.cpp)
 target_include_directories(game_controller PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
-ament_target_dependencies(game_controller
-  rclcpp
-  rclcpp_components
-  sensor_msgs)
-target_link_libraries(game_controller
+target_link_libraries(game_controller PUBLIC
+  rclcpp::rclcpp
+  ${sensor_msgs_TARGETS}
   SDL2::SDL2)
-
+target_link_libraries(game_controller PRIVATE
+  rclcpp_components::component)
 install(TARGETS game_controller EXPORT export_game_controller
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
 )
-
 rclcpp_components_register_node(game_controller
   PLUGIN "joy::GameController"
   EXECUTABLE game_controller_node)
 
 add_executable(joy_enumerate_devices
   src/joy_enumerate_devices.cpp)
-target_link_libraries(joy_enumerate_devices
+target_link_libraries(joy_enumerate_devices PRIVATE
   SDL2::SDL2)
-
 install(TARGETS joy_enumerate_devices
   DESTINATION lib/${PROJECT_NAME})
 
