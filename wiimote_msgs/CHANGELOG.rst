@@ -2,8 +2,8 @@
 Changelog for package wiimote_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.2.0 (2023-10-10)
+------------------
 * Remove trailing whitespace from .msg files. (`#237 <https://github.com/ros-drivers/joystick_drivers/issues/237>`_)
 * Contributors: Chris Lalancette
 

@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
   <name>joy</name>
-  <version>3.1.0</version>
+  <version>3.2.0</version>
 
   <description> The joy package contains joy_node, a node that interfaces a generic joystick to ROS
     2. This node publishes a "Joy" message, which contains the current state of each one of the

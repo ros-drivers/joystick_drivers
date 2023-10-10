@@ -2,8 +2,8 @@
 Changelog for package spacenav
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.2.0 (2023-10-10)
+------------------
 * add option to use TwistStamped (`#251 <https://github.com/ros-drivers/joystick_drivers/issues/251>`_)
 * Changed name of executable in launch files to match installed node (`#230 <https://github.com/ros-drivers/joystick_drivers/issues/230>`_)
 * Fix publishing of spacenav button values (`#243 <https://github.com/ros-drivers/joystick_drivers/issues/243>`_)

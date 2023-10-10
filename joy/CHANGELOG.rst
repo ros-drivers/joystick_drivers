@@ -2,8 +2,8 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.2.0 (2023-10-10)
+------------------
 * Remove ament target deps for the new game_controller node. (`#272 <https://github.com/ros-drivers/joystick_drivers/issues/272>`_)
 * Use the SDL2 Game Controller API (`#258 <https://github.com/ros-drivers/joystick_drivers/issues/258>`_)
 * fix autorepeat not being triggered when inside deadzone (`#261 <https://github.com/ros-drivers/joystick_drivers/issues/261>`_)
