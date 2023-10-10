@@ -2,6 +2,15 @@
 Changelog for package spacenav
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add option to use TwistStamped (`#251 <https://github.com/ros-drivers/joystick_drivers/issues/251>`_)
+* Changed name of executable in launch files to match installed node (`#230 <https://github.com/ros-drivers/joystick_drivers/issues/230>`_)
+* Fix publishing of spacenav button values (`#243 <https://github.com/ros-drivers/joystick_drivers/issues/243>`_)
+* Fix from-source build with missing dependencies (`#242 <https://github.com/ros-drivers/joystick_drivers/issues/242>`_)
+* Installing libspacenav.so to lib/ for spacenav_node execution via ros2 run (`#229 <https://github.com/ros-drivers/joystick_drivers/issues/229>`_)
+* Contributors: Borong Yuan, Stefan Scherzinger, chriseichmann
+
 3.1.0 (2022-01-28)
 ------------------
 * Install includes to include/ and misc CMake fixes (`#225 <https://github.com/ros-drivers/joystick_drivers/issues/225>`_)

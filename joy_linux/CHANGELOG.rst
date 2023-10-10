@@ -2,6 +2,11 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove the last use of ament_target_dependencies. (`#264 <https://github.com/ros-drivers/joystick_drivers/issues/264>`_)
+* Contributors: Chris Lalancette
+
 3.1.0 (2022-01-28)
 ------------------
 * Style fixes for newer cpplint.

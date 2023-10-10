@@ -2,6 +2,15 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove ament target deps for the new game_controller node. (`#272 <https://github.com/ros-drivers/joystick_drivers/issues/272>`_)
+* Use the SDL2 Game Controller API (`#258 <https://github.com/ros-drivers/joystick_drivers/issues/258>`_)
+* fix autorepeat not being triggered when inside deadzone (`#261 <https://github.com/ros-drivers/joystick_drivers/issues/261>`_)
+* Linter fix.
+* fix high CPU usage (`#247 <https://github.com/ros-drivers/joystick_drivers/issues/247>`_)
+* Contributors: Chris Lalancette, Joshua Whitley, Marco Boneberger, Roderick Taylor, Tony Najjar
+
 3.1.0 (2022-01-28)
 ------------------
 * Install includes to include/ and misc CMake fixes (`#225 <https://github.com/ros-drivers/joystick_drivers/issues/225>`_)
