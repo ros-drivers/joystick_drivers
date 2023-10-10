@@ -14,10 +14,10 @@ endif()
 
 if(NOT SDL2_FOUND)
   include(ExternalProject)
-  ExternalProject_Add(SDL2-2.0.18
-    PREFIX SDL2-2.0.18
-    URL https://www.libsdl.org/release/SDL2-2.0.18.tar.gz
-    URL_MD5 c1dd33299db5b7091f37d989c68d5212
+  ExternalProject_Add(SDL2-2.0.20
+    PREFIX SDL2-2.0.20
+    URL https://www.libsdl.org/release/SDL2-2.0.20.tar.gz
+    URL_MD5 a53acc02e1cca98c4123229069b67c9e
     CMAKE_ARGS
       -DBUILD_SHARED_LIBS=ON
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
