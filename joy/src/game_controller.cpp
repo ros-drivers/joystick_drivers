@@ -315,10 +315,14 @@ void GameController::handleControllerDeviceAdded(const SDL_ControllerDeviceEvent
     joy_msg_.axes.at(i) = convertRawAxisValueToROS(state);
   }
 
+#if SDL_VERSION_ATLEAST(2, 0, 18)
   const char * has_rumble_string = "No";
   if (SDL_GameControllerHasRumble(game_controller_)) {
     has_rumble_string = "Yes";
   }
+#else
+  const char * has_rumble_string = "Unknown";
+#endif
 
   RCLCPP_INFO(
     get_logger(), "Opened game controller: %s,  deadzone: %f, rumble: %s",
