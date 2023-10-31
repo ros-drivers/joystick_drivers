@@ -2,6 +2,11 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix compatibility with SDL versions below 2.0.18 (`#273 <https://github.com/ros-drivers/joystick_drivers/issues/273>`_)
+* Contributors: Johannes Meyer
+
 3.2.0 (2023-10-10)
 ------------------
 * Remove ament target deps for the new game_controller node. (`#272 <https://github.com/ros-drivers/joystick_drivers/issues/272>`_)

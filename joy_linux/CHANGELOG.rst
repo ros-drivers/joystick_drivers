@@ -2,6 +2,9 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 3.2.0 (2023-10-10)
 ------------------
 * Remove the last use of ament_target_dependencies. (`#264 <https://github.com/ros-drivers/joystick_drivers/issues/264>`_)
