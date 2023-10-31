@@ -2,8 +2,8 @@
 Changelog for package joy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.3.0 (2023-10-31)
+------------------
 * Fix compatibility with SDL versions below 2.0.18 (`#273 <https://github.com/ros-drivers/joystick_drivers/issues/273>`_)
 * Contributors: Johannes Meyer
 

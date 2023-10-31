@@ -2,8 +2,8 @@
 Changelog for package sdl2_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.3.0 (2023-10-31)
+------------------
 * Upgrade to SDL2.0.20 (`#270 <https://github.com/ros-drivers/joystick_drivers/issues/270>`_)
 * Contributors: Patrick Roncagliolo
 
