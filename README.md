@@ -3,3 +3,9 @@
 [![CircleCI](https://circleci.com/gh/ros-drivers/joystick_drivers.svg?style=svg)](https://circleci.com/gh/ros-drivers/joystick_drivers)
 
 A simple set of nodes for supporting various types of joystick inputs and producing ROS messages from the underlying OS messages.
+
+## Install Dependencies
+
+```shell
+rosdep install --from-paths <path/to/joystick_drivers>
+```
