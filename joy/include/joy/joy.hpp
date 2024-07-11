@@ -41,6 +41,17 @@
 #include <sensor_msgs/msg/joy.hpp>
 #include <sensor_msgs/msg/joy_feedback.hpp>
 
+
+#define IINO_HB		1
+
+#if IINO_HB
+#define IINO_TOPIC	"slow_delay"
+#define IINO_OFF	"joy_pwr/-2"  // stop_T
+#define IINO_ON		"joy_pwr/-1"
+
+#include <std_msgs/msg/string.hpp>
+#endif
+
 namespace joy
 {
 
@@ -86,6 +97,12 @@ private:
   std::promise<void> exit_signal_;
   rclcpp::Publisher<sensor_msgs::msg::Joy>::SharedPtr pub_;
   rclcpp::Subscription<sensor_msgs::msg::JoyFeedback>::SharedPtr feedback_sub_;
+
+#if IINO_HB
+  bool use_joy_pwr_{false};
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_pwr_;
+  std::string pwr_stat_{""};
+#endif
 
   sensor_msgs::msg::Joy joy_msg_;
 };
