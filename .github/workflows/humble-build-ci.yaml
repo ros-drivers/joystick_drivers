@@ -1,4 +1,4 @@
-name: Basic Build Workflow
+name: Humble Build
 
 on:
   - pull_request
@@ -29,7 +29,7 @@ jobs:
           wiimote_msgs
         target-ros2-distro: humble
     - name: Upload logs
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: colcon-logs
         path: ${{ steps.humble_action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
