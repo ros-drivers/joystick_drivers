@@ -1,6 +1,6 @@
 # ROS Joystick Drivers Stack #
 
-[![CircleCI](https://circleci.com/gh/ros-drivers/joystick_drivers.svg?style=svg)](https://circleci.com/gh/ros-drivers/joystick_drivers)
+[![](https://github.com/ros-drivers/joystick_drivers/workflows/Basic%20Build%20Workflow/badge.svg?branch=ros2)](https://github.com/ros-drivers/joystick_drivers/actions)
 
 A simple set of nodes for supporting various types of joystick inputs and producing ROS messages from the underlying OS messages.
 
