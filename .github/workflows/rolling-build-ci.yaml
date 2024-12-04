@@ -1,4 +1,4 @@
-name: Basic Build Workflow
+name: Rolling Build
 
 on:
   - pull_request
@@ -6,11 +6,11 @@ on:
 
 jobs:
   build-rolling:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
     container:
-      image: rostooling/setup-ros-docker:ubuntu-jammy-ros-rolling-desktop-latest
+      image: rostooling/setup-ros-docker:ubuntu-noble-ros-rolling-desktop-latest
     steps:
     - name: Build Environment
       uses: ros-tooling/setup-ros@v0.7
@@ -29,7 +29,7 @@ jobs:
           wiimote_msgs
         target-ros2-distro: rolling
     - name: Upload logs
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: colcon-logs
         path: ${{ steps.rolling_action_ros_ci_step.outputs.ros-workspace-directory-name }}/log

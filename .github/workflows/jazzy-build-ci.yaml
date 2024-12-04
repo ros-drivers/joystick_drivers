@@ -1,24 +1,24 @@
-name: Basic Build Workflow
+name: Jazzy Build
 
 on:
   - pull_request
   - push
 
 jobs:
-  build-iron:
-    runs-on: ubuntu-22.04
+  build-rolling:
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
     container:
-      image: rostooling/setup-ros-docker:ubuntu-jammy-ros-iron-desktop-latest
+      image: rostooling/setup-ros-docker:ubuntu-noble-ros-jazzy-desktop-latest
     steps:
     - name: Build Environment
       uses: ros-tooling/setup-ros@v0.7
       with:
-        required-ros-distributions: iron
+        required-ros-distributions: jazzy
     - name: Run Tests
       uses: ros-tooling/action-ros-ci@v0.3
-      id: iron_action_ros_ci_step
+      id: jazzy_action_ros_ci_step
       with:
         package-name: |
           joy
@@ -27,10 +27,10 @@ jobs:
           spacenav
           wiimote
           wiimote_msgs
-        target-ros2-distro: iron
+        target-ros2-distro: jazzy
     - name: Upload logs
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: colcon-logs
-        path: ${{ steps.iron_action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
+        path: ${{ steps.jazzy_action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
       if: always()
