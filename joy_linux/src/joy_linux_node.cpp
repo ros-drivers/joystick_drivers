@@ -532,8 +532,9 @@ public:
 
       close(ff_fd_);
       close(joy_fd);
-      rclcpp::spin_some(node_);
+
       if (rclcpp::ok()) {
+        rclcpp::spin_some(node_);
         RCLCPP_ERROR(
           node_->get_logger(), "Connection to joystick device lost unexpectedly. Will reopen.");
       }
