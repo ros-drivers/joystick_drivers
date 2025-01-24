@@ -421,7 +421,22 @@ public:
 
         if (FD_ISSET(joy_fd, &set)) {
           if (read(joy_fd, &event, sizeof(js_event)) == -1 && errno != EAGAIN) {
-            break;  // Joystick is probably closed. Definitely occurs.
+            // Joystick is probably closed. Definitely occurs.
+            // Publish zeros and break out of the read loop to find the device again.
+            
+            RCLCPP_ERROR(
+              node_->get_logger(), "Joystick device read error. Will reopen. %s", strerror(errno));
+            
+            joy_msg->header.stamp = node_->now();
+            for (size_t i = 0; i < joy_msg->buttons.size(); i++) {
+              joy_msg->buttons[i] = 0.0;
+            }
+            for (size_t i = 0; i < joy_msg->axes.size(); i++) {
+              joy_msg->axes[i] = 0.0;
+            }
+            pub_->publish(*joy_msg);
+            
+            break;
           }
 
           joy_msg->header.stamp = node_->now();
