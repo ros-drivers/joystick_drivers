@@ -142,9 +142,9 @@ private:
 
       close(joy_fd);
 
-      RCLCPP_INFO(logger, "Found joystick: %s (%s).", current_joy_name, current_path.c_str());
-
-      if (strcmp(current_joy_name, joy_name.c_str()) == 0) {
+      // Check if the joystick device name contains joy_name, if so return the path.
+      std::string current_joy_name_str(current_joy_name);
+      if (current_joy_name_str.find(joy_name) != std::string::npos) {
         closedir(dev_dir);
         return current_path;
       }
@@ -217,20 +217,6 @@ public:
     default_trig_val_ = node_->declare_parameter("default_trig_val", false);
     sticky_buttons_ = node_->declare_parameter("sticky_buttons", false);
 
-    // Checks on parameters
-    if (!joy_dev_name_.empty()) {
-      std::string joy_dev_path = get_dev_by_joy_name(joy_dev_name_, node_->get_logger());
-      if (joy_dev_path.empty()) {
-        RCLCPP_ERROR(
-          node_->get_logger(), "Couldn't find a joystick with name %s. "
-          "Falling back to default device.",
-          joy_dev_name_.c_str());
-      } else {
-        RCLCPP_INFO(node_->get_logger(), "Using %s as joystick device.", joy_dev_path.c_str());
-        joy_dev_ = joy_dev_path;
-      }
-    }
-
     if (autorepeat_rate_ > 1 / coalesce_interval_) {
       RCLCPP_WARN(
         node_->get_logger(), "joy_linux_node: autorepeat_rate (%f Hz) > "
@@ -282,7 +268,7 @@ public:
     js_event event;
     struct timeval tv;
     fd_set set;
-    int joy_fd;
+    int joy_fd = -1;
 
     event_count_ = 0;
     pub_count_ = 0;
@@ -312,24 +298,46 @@ public:
         if (!rclcpp::ok()) {
           goto cleanup;
         }
-        joy_fd = open(joy_dev_.c_str(), O_RDONLY);
-        if (joy_fd != -1) {
-          // There seems to be a bug in the driver or something where the
-          // initial events that are to define the initial state of the
-          // joystick are not the values of the joystick when it was opened
-          // but rather the values of the joystick when it was last closed.
-          // Opening then closing and opening again is a hack to get more
-          // accurate initial state data.
-          close(joy_fd);
-          joy_fd = open(joy_dev_.c_str(), O_RDONLY);
+
+        if (!joy_dev_name_.empty())
+        {
+          joy_dev_ = get_dev_by_joy_name(joy_dev_name_, node_->get_logger());
         }
+        
+        if (!joy_dev_.empty())
+        {
+          joy_fd = open(joy_dev_.c_str(), O_RDONLY);
+          if (joy_fd != -1) {
+            // There seems to be a bug in the driver or something where the
+            // initial events that are to define the initial state of the
+            // joystick are not the values of the joystick when it was opened
+            // but rather the values of the joystick when it was last closed.
+            // Opening then closing and opening again is a hack to get more
+            // accurate initial state data.
+            close(joy_fd);
+            joy_fd = open(joy_dev_.c_str(), O_RDONLY);
+          }
+        } else {
+          joy_fd = -1;
+        }
+
         if (joy_fd != -1) {
+          // Reset first_fault so that in case connection is lost,
+          // the first retry will run immediately.
+          first_fault = true;
           break;
         }
         if (first_fault) {
-          RCLCPP_ERROR(
-            node_->get_logger(), "Couldn't open joystick %s. Will retry every second.",
-            joy_dev_.c_str());
+          // Send a differently worded log message if dev_name was specified.
+          if (!joy_dev_name_.empty()) {
+              RCLCPP_ERROR(
+                    node_->get_logger(), "Couldn't find a joystick with name containing %s. Will retry every second.",
+                    joy_dev_name_.c_str());
+          } else {
+              RCLCPP_ERROR(
+                    node_->get_logger(), "Couldn't open joystick %s. Will retry every second.",
+                    joy_dev_.c_str());
+          }
           first_fault = false;
         }
       }
