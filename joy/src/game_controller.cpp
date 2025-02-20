@@ -131,14 +131,10 @@ GameController::~GameController()
 
 void GameController::feedbackCb(const std::shared_ptr<sensor_msgs::msg::JoyFeedback> msg)
 {
+  uint32_t duration_ms = 1000;
+
   if (msg->type != sensor_msgs::msg::JoyFeedback::TYPE_RUMBLE) {
     // We only support rumble
-    return;
-  }
-
-  if (msg->id != 0) {
-    // There can be only one (rumble)
-    // TODO(Rod Taylor): Support high and low frequency rumble channels.
     return;
   }
 
@@ -147,10 +143,38 @@ void GameController::feedbackCb(const std::shared_ptr<sensor_msgs::msg::JoyFeedb
     return;
   }
 
+  uint16_t intensity = static_cast<uint16_t>(msg->intensity * 0xFFFF);
+  rclcpp::Time now = this->now();
+
+  // 0: Both left motor (low frequency) and right motor (high frequency) rumble
+  // 1: Left rumble
+  // 2: Right rumble
+  if (msg->id == 0) {
+    rumble_intensity_left_stamped_ = {now, intensity};
+    rumble_intensity_right_stamped_ = {now, intensity};
+  } else if (msg->id == 1) {
+    rumble_intensity_left_stamped_ = {now, intensity};
+    if ((now - rumble_intensity_right_stamped_.first) >=
+      rclcpp::Duration::from_seconds(duration_ms / 1000.0))
+    {
+      rumble_intensity_right_stamped_ = {now, 0};
+    }
+  } else if (msg->id == 2) {
+    rumble_intensity_right_stamped_ = {now, intensity};
+    if ((now - rumble_intensity_left_stamped_.first) >=
+      rclcpp::Duration::from_seconds(duration_ms / 1000.0))
+    {
+      rumble_intensity_left_stamped_ = {now, 0};
+    }
+  } else {
+    return;
+  }
+
   if (game_controller_ != nullptr) {
     // We purposely ignore the return value; if it fails, what can we do?
-    uint16_t intensity = static_cast<uint16_t>(msg->intensity * 0xFFFF);
-    SDL_GameControllerRumble(game_controller_, intensity, intensity, 1000);
+    SDL_GameControllerRumble(
+      game_controller_, rumble_intensity_left_stamped_.second,
+      rumble_intensity_right_stamped_.second, duration_ms);
   }
 }
 

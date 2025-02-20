@@ -37,6 +37,7 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <utility>
 
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joy.hpp>
@@ -75,6 +76,10 @@ private:
   double scale_{0.0};
   double autorepeat_rate_{0.0};
   int autorepeat_interval_ms_{0};
+  std::pair<builtin_interfaces::msg::Time, uint16_t> rumble_intensity_left_stamped_{
+    builtin_interfaces::msg::Time(), 0};
+  std::pair<builtin_interfaces::msg::Time, uint16_t> rumble_intensity_right_stamped_{
+    builtin_interfaces::msg::Time(), 0};
   bool sticky_buttons_{false};
   bool publish_soon_{false};
   rclcpp::Time publish_soon_time_;
