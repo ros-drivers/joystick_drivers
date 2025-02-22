@@ -299,13 +299,11 @@ public:
           goto cleanup;
         }
 
-        if (!joy_dev_name_.empty())
-        {
+        if (!joy_dev_name_.empty()) {
           joy_dev_ = get_dev_by_joy_name(joy_dev_name_, node_->get_logger());
         }
-        
-        if (!joy_dev_.empty())
-        {
+
+        if (!joy_dev_.empty()) {
           joy_fd = open(joy_dev_.c_str(), O_RDONLY);
           if (joy_fd != -1) {
             // There seems to be a bug in the driver or something where the
@@ -330,13 +328,14 @@ public:
         if (first_fault) {
           // Send a differently worded log message if dev_name was specified.
           if (!joy_dev_name_.empty()) {
-              RCLCPP_ERROR(
-                    node_->get_logger(), "Couldn't find a joystick with name containing %s. Will retry every second.",
-                    joy_dev_name_.c_str());
+            RCLCPP_ERROR(
+              node_->get_logger(), "Couldn't find a joystick with name containing %s. "
+              "Will retry every second.",
+              joy_dev_name_.c_str());
           } else {
-              RCLCPP_ERROR(
-                    node_->get_logger(), "Couldn't open joystick %s. Will retry every second.",
-                    joy_dev_.c_str());
+            RCLCPP_ERROR(
+              node_->get_logger(), "Couldn't open joystick %s. Will retry every second.",
+              joy_dev_.c_str());
           }
           first_fault = false;
         }
@@ -423,10 +422,10 @@ public:
           if (read(joy_fd, &event, sizeof(js_event)) == -1 && errno != EAGAIN) {
             // Joystick is probably closed. Definitely occurs.
             // Publish zeros and break out of the read loop to find the device again.
-            
+
             RCLCPP_ERROR(
               node_->get_logger(), "Joystick device read error. Will reopen. %s", strerror(errno));
-            
+
             joy_msg->header.stamp = node_->now();
             for (size_t i = 0; i < joy_msg->buttons.size(); i++) {
               joy_msg->buttons[i] = 0.0;
@@ -435,7 +434,7 @@ public:
               joy_msg->axes[i] = 0.0;
             }
             pub_->publish(*joy_msg);
-            
+
             break;
           }
 
