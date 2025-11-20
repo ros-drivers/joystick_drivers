@@ -50,8 +50,7 @@ namespace joy
 static const std::unordered_set<Uint32> ignored_sdl_events = {
   SDL_CONTROLLERTOUCHPADDOWN,
   SDL_CONTROLLERTOUCHPADMOTION,
-  SDL_CONTROLLERTOUCHPADUP,
-  SDL_JOYBATTERYUPDATED
+  SDL_CONTROLLERTOUCHPADUP
 };
 
 Joy::Joy(const rclcpp::NodeOptions & options)
