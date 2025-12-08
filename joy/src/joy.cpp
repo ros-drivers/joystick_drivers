@@ -88,6 +88,14 @@ Joy::Joy(const rclcpp::NodeOptions & options)
 
   sticky_buttons_ = this->declare_parameter("sticky_buttons", false);
 
+  autocenter_ = this->declare_parameter("autocenter", 0);
+
+  if (autocenter_ < 0) {
+    autocenter_ = 0;
+  } else if (autocenter_ > 100) {
+    autocenter_ = 100;
+  }
+
   coalesce_interval_ms_ = static_cast<int>(this->declare_parameter("coalesce_interval_ms", 1));
   if (coalesce_interval_ms_ < 0) {
     throw std::runtime_error("coalesce_interval_ms must be positive");
@@ -481,6 +489,10 @@ void Joy::eventThread()
     }
 
     status = future_.wait_for(std::chrono::seconds(0));
+
+    if (haptic_ != nullptr) {
+        SDL_HapticSetAutocenter(haptic_, autocenter_);
+    }
   } while (status == std::future_status::timeout);
 }
 

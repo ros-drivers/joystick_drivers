@@ -77,6 +77,7 @@ private:
   double autorepeat_rate_{0.0};
   int autorepeat_interval_ms_{0};
   bool sticky_buttons_{false};
+  int autocenter_{0};
   bool publish_soon_{false};
   rclcpp::Time publish_soon_time_;
   int coalesce_interval_ms_{0};
