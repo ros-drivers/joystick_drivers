@@ -490,7 +490,7 @@ void Joy::eventThread()
 
     status = future_.wait_for(std::chrono::seconds(0));
 
-    if (haptic_ != nullptr) {
+    if (haptic_ != nullptr && autocenter_) {
         SDL_HapticSetAutocenter(haptic_, autocenter_);
     }
   } while (status == std::future_status::timeout);
