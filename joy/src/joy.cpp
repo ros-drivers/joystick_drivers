@@ -88,13 +88,7 @@ Joy::Joy(const rclcpp::NodeOptions & options)
 
   sticky_buttons_ = this->declare_parameter("sticky_buttons", false);
 
-  autocenter_ = this->declare_parameter("autocenter", 0);
-
-  if (autocenter_ < 0) {
-    autocenter_ = 0;
-  } else if (autocenter_ > 100) {
-    autocenter_ = 100;
-  }
+  autocenter_ = std::clamp(this->declare_parameter("autocenter", 0), 0, 100);
 
   coalesce_interval_ms_ = static_cast<int>(this->declare_parameter("coalesce_interval_ms", 1));
   if (coalesce_interval_ms_ < 0) {
