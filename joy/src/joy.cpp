@@ -88,7 +88,7 @@ Joy::Joy(const rclcpp::NodeOptions & options)
 
   sticky_buttons_ = this->declare_parameter("sticky_buttons", false);
 
-  autocenter_ = std::clamp(this->declare_parameter("autocenter", 0), 0, 100);
+  autocenter_ = std::clamp(static_cast<int>(this->declare_parameter("autocenter", 0)), 0, 100);
 
   coalesce_interval_ms_ = static_cast<int>(this->declare_parameter("coalesce_interval_ms", 1));
   if (coalesce_interval_ms_ < 0) {
@@ -484,7 +484,7 @@ void Joy::eventThread()
 
     status = future_.wait_for(std::chrono::seconds(0));
 
-    if (haptic_ != nullptr && autocenter_) {
+    if (haptic_ != nullptr) {
       int result = SDL_HapticSetAutocenter(haptic_, autocenter_);
       if (result) {
         RCLCPP_WARN(get_logger(), "Failed to set autocenter: %s", SDL_GetError());
