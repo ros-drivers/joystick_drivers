@@ -399,6 +399,19 @@ void Joy::handleJoyDeviceAdded(const SDL_Event & e)
     RCLCPP_INFO(get_logger(), "No haptic (rumble) available, skipping initialization");
   }
 
+  if (haptic_ != nullptr) {
+    const auto supportsAutocenter = (SDL_HapticQuery(haptic_) & SDL_HAPTIC_AUTOCENTER) > 0;
+    if (supportsAutocenter) {
+      if (SDL_HapticSetAutocenter(haptic_, autocenter_) != 0) {
+        RCLCPP_WARN(get_logger(), "Failed to set autocenter: %s", SDL_GetError());
+      }
+    } else if (autocenter_ > 0) {
+      RCLCPP_WARN(get_logger(), "Autocenter requested but the joystick does not support it.");
+    }
+  } else if (autocenter_ > 0) {
+    RCLCPP_WARN(get_logger(), "Autocenter requested but the joystick does not support haptics.");
+  }
+
   RCLCPP_INFO(
     get_logger(), "Opened joystick: %s.  deadzone: %f",
     SDL_JoystickName(joystick_), scaled_deadzone_);
@@ -483,13 +496,6 @@ void Joy::eventThread()
     }
 
     status = future_.wait_for(std::chrono::seconds(0));
-
-    if (haptic_ != nullptr) {
-      int result = SDL_HapticSetAutocenter(haptic_, autocenter_);
-      if (result) {
-        RCLCPP_WARN(get_logger(), "Failed to set autocenter: %s", SDL_GetError());
-      }
-    }
   } while (status == std::future_status::timeout);
 }
 
