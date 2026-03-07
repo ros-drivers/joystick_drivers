@@ -12,12 +12,8 @@ jobs:
     container:
       image: rostooling/setup-ros-docker:ubuntu-jammy-ros-humble-desktop-latest
     steps:
-    - name: Build Environment
-      uses: ros-tooling/setup-ros@v0.7
-      with:
-        required-ros-distributions: humble
     - name: Run Tests
-      uses: ros-tooling/action-ros-ci@v0.3
+      uses: ros-tooling/action-ros-ci@main
       id: humble_action_ros_ci_step
       with:
         package-name: |

@@ -5,19 +5,15 @@ on:
   - push
 
 jobs:
-  build-rolling:
+  build-jazzy:
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
     container:
       image: rostooling/setup-ros-docker:ubuntu-noble-ros-jazzy-desktop-latest
     steps:
-    - name: Build Environment
-      uses: ros-tooling/setup-ros@v0.7
-      with:
-        required-ros-distributions: jazzy
     - name: Run Tests
-      uses: ros-tooling/action-ros-ci@v0.3
+      uses: ros-tooling/action-ros-ci@main
       id: jazzy_action_ros_ci_step
       with:
         package-name: |
