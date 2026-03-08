@@ -47,15 +47,15 @@ def generate_launch_description():
         params = yaml.safe_load(f)['joy_node']['ros__parameters']
 
     container = ComposableNodeContainer(
-            node_name='joy_container',
-            node_namespace='',
+            name='joy_container',
+            namespace='',
             package='rclcpp_components',
-            node_executable='component_container',
+            executable='component_container',
             composable_node_descriptions=[
                 ComposableNode(
                     package='joy',
-                    node_plugin='joy::Joy',
-                    node_name='joy_node',
+                    plugin='joy::Joy',
+                    name='joy_node',
                     parameters=[params])
             ],
             output='both',

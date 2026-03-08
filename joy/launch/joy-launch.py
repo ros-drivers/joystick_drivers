@@ -40,7 +40,7 @@ def generate_launch_description():
         'config')
     params = os.path.join(config_directory, 'joy-params.yaml')
     joy_node = launch_ros.actions.Node(package='joy',
-                                       node_executable='joy_node',
+                                       executable='joy_node',
                                        output='both',
                                        parameters=[params])
 
