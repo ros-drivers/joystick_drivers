@@ -13,7 +13,7 @@ jobs:
       image: rostooling/setup-ros-docker:ubuntu-noble-ros-jazzy-desktop-latest
     steps:
     - name: Run Tests
-      uses: ros-tooling/action-ros-ci@main
+      uses: ros-tooling/action-ros-ci@0.4.5
       id: jazzy_action_ros_ci_step
       with:
         package-name: |
