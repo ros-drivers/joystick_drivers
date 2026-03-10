@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <arg name="config_file" default="joy-params.yaml"
+    description="The name of the yaml file in the joy package config directory" />
+
+  <let name="params_path"
+    value="$(find-pkg-share joy)/config/$(var config_file)" />
+
+  <node_container pkg="rclcpp_components" exec="component_container" name="joy_container"
+    namespace="" output="both">
+    <composable_node pkg="joy" plugin="joy::Joy" name="joy_node">
+      <param from="$(var params_path)" />
+    </composable_node>
+  </node_container>
+</launch>
