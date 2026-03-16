@@ -1,20 +1,20 @@
-name: Rolling Build
+name: Kilted Build
 
 on:
   - pull_request
   - push
 
 jobs:
-  build-rolling:
+  build-kilted:
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
     container:
-      image: rostooling/setup-ros-docker:ubuntu-noble-ros-rolling-desktop-latest
+      image: rostooling/setup-ros-docker:ubuntu-noble-ros-kilted-desktop-latest
     steps:
     - name: Run Tests
       uses: ros-tooling/action-ros-ci@0.4.5
-      id: rolling_action_ros_ci_step
+      id: kilted_action_ros_ci_step
       with:
         package-name: |
           joy
@@ -23,10 +23,10 @@ jobs:
           spacenav
           wiimote
           wiimote_msgs
-        target-ros2-distro: rolling
+        target-ros2-distro: kilted
     - name: Upload logs
       uses: actions/upload-artifact@v4
       with:
         name: colcon-logs
-        path: ${{ steps.rolling_action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
+        path: ${{ steps.kilted_action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
       if: always()
