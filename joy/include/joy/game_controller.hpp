@@ -63,7 +63,7 @@ private:
   bool handleControllerButtonUp(const SDL_ControllerButtonEvent & e);
   void handleControllerDeviceAdded(const SDL_ControllerDeviceEvent & e);
   void handleControllerDeviceRemoved(const SDL_ControllerDeviceEvent & e);
-  float convertRawAxisValueToROS(int16_t val);
+  float convertRawAxisValueToROS(int16_t val, const uint8_t & axis);
   void feedbackCb(const std::shared_ptr<sensor_msgs::msg::JoyFeedback> msg);
 
   int dev_id_{0};

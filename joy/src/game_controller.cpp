@@ -66,12 +66,10 @@ GameController::GameController(const rclcpp::NodeOptions & options)
   unscaled_deadzone_ = 32767.0 * scaled_deadzone_;
   // According to the SDL documentation, this always returns a value between
   // -32768 and 32767.  However, we want to report a value between -1.0 and 1.0,
-  // hence the "scale" dividing by 32767.  Also note that SDL returns the axes
-  // with "forward" and "left" as negative.  This is opposite to the ROS
-  // conventionof "forward" and "left" as positive, so we invert the axes here
-  // as well.  Finally, we take into account the amount of deadzone so we truly
-  // do get value between -1.0 and 1.0 (and not -deadzone to +deadzone).
-  scale_ = static_cast<float>(-1.0 / (1.0 - scaled_deadzone_) / 32767.0);
+  // hence the "scale" dividing by 32767. Finally, we take into account the
+  // amount of deadzone so we truly do get value between -1.0 and 1.0 (and
+  // not -deadzone to +deadzone).
+  scale_ = static_cast<float>(1.0 / (1.0 - scaled_deadzone_) / 32767.0);
 
   autorepeat_rate_ = this->declare_parameter("autorepeat_rate", 20.0);
   if (autorepeat_rate_ < 0.0) {
@@ -154,7 +152,7 @@ void GameController::feedbackCb(const std::shared_ptr<sensor_msgs::msg::JoyFeedb
   }
 }
 
-float GameController::convertRawAxisValueToROS(int16_t val)
+float GameController::convertRawAxisValueToROS(int16_t val, const uint8_t & axis)
 {
   // SDL reports axis values between -32768 and 32767.  To make sure
   // we report out scaled value between -1.0 and 1.0, we add one to
@@ -177,7 +175,17 @@ float GameController::convertRawAxisValueToROS(int16_t val)
     double_val = 0.0;
   }
 
-  return static_cast<float>(double_val * scale_);
+  double ret = double_val * scale_;
+  switch (axis) {
+    case SDL_CONTROLLER_AXIS_LEFTX:
+    case SDL_CONTROLLER_AXIS_LEFTY:
+    case SDL_CONTROLLER_AXIS_RIGHTX:
+    case SDL_CONTROLLER_AXIS_RIGHTY:
+      ret *= -1;
+      break;
+  }
+
+  return static_cast<float>(ret);
 }
 
 bool GameController::handleControllerAxis(const SDL_ControllerAxisEvent & e)
@@ -194,7 +202,7 @@ bool GameController::handleControllerAxis(const SDL_ControllerAxisEvent & e)
   }
 
   float last_axis_value = joy_msg_.axes.at(e.axis);
-  joy_msg_.axes.at(e.axis) = convertRawAxisValueToROS(e.value);
+  joy_msg_.axes.at(e.axis) = convertRawAxisValueToROS(e.value, static_cast<uint8_t>(e.axis));
   if (last_axis_value != joy_msg_.axes.at(e.axis)) {
     if (coalesce_interval_ms_ > 0 && !publish_soon_) {
       publish_soon_ = true;
@@ -309,10 +317,10 @@ void GameController::handleControllerDeviceAdded(const SDL_ControllerDeviceEvent
   }
 
   // Get the initial state for each of the axes
-  for (int i = 0; i < SDL_CONTROLLER_AXIS_MAX; ++i) {
+  for (uint8_t i = 0; i < SDL_CONTROLLER_AXIS_MAX; ++i) {
     int16_t state =
       SDL_GameControllerGetAxis(game_controller_, static_cast<SDL_GameControllerAxis>(i));
-    joy_msg_.axes.at(i) = convertRawAxisValueToROS(state);
+    joy_msg_.axes.at(i) = convertRawAxisValueToROS(state, i);
   }
 
 #if SDL_VERSION_ATLEAST(2, 0, 18)
