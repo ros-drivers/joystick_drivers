@@ -47,6 +47,11 @@
 
 namespace joy
 {
+static const std::unordered_set<Uint32> ignored_sdl_events = {
+  SDL_CONTROLLERTOUCHPADDOWN,
+  SDL_CONTROLLERTOUCHPADMOTION,
+  SDL_CONTROLLERTOUCHPADUP
+};
 
 Joy::Joy(const rclcpp::NodeOptions & options)
 : rclcpp::Node("joy_node", options)
@@ -435,7 +440,9 @@ void Joy::eventThread()
     int success = SDL_WaitEventTimeout(&e, wait_time_ms);
     if (success == 1) {
       // Succeeded getting an event
-      if (e.type == SDL_JOYAXISMOTION) {
+      if (ignored_sdl_events.count(e.type) == 1) {
+        // ignore events which explicitly have no purpose to reduce log verbosity
+      } else if (e.type == SDL_JOYAXISMOTION) {
         should_publish = handleJoyAxis(e);
       } else if (e.type == SDL_JOYBUTTONDOWN) {
         should_publish = handleJoyButtonDown(e);
