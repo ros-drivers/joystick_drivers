@@ -25,10 +25,38 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import os
+
 from launch import LaunchDescription
+from launch.actions import LogInfo
 from launch_ros.actions import Node
 
+_DEPRECATION_WARN_DISTROS = {'lyrical', 'rolling'}
 
+
+def _should_warn_for_distro() -> bool:
+    distro = str(os.environ.get('ROS_DISTRO', '')).lower()
+    return distro in _DEPRECATION_WARN_DISTROS
+
+
+def deprecated(func):
+    def wrapper(*args, **kwargs):
+        ld = func(*args, **kwargs)
+        if _should_warn_for_distro():
+            ld.add_action(
+              LogInfo(
+                msg="[DEPRECATION] This python launch file is "
+                  "deprecated for the ROS2 distributions "
+                  f"{', '.join(_DEPRECATION_WARN_DISTROS)} onwards. "
+                  "Migrate to XML."
+              )
+            )
+        return ld
+
+    return wrapper
+
+
+@deprecated
 def generate_launch_description():
     return LaunchDescription(
         [
