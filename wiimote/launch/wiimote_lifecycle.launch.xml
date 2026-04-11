@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <arg name="emulate_tty" default="true" />
+
+  <let name="params_path" value="$(find-pkg-share wiimote)/config/wiimote_params.yaml" />
+
+  <lifecycle_node pkg="wiimote" exec="wiimote_node" name="wiimote"
+    namespace="" output="screen" autostart="true">
+    <param from="$(var params_path)" />
+  </lifecycle_node>
+
+</launch>

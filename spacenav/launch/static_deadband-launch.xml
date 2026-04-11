@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="zero_when_static" default="false"
+    description="If true, the node forces output to zero when no motion is detected to prevent drift."/>
+  
+  <arg name="static_count_threshold" default="30"
+    description="Number of empty polls required to determine the device is static."/>
+
+  <arg name="static_trans_deadband" default="40.0"
+    description="Threshold up to which input translational motion is being interpreted as static."/>
+
+  <arg name="static_rot_deadband" default="40.0"
+    description="Threshold up to which input rotational motion is being interpreted as static."/>
+
+  <include file="$(find-pkg-share spacenav)/launch/spacenav-launch.xml">
+    <arg name="zero_when_static" value="$(var zero_when_static)"/>
+    <arg name="static_count_threshold" value="$(var static_count_threshold)"/>
+    <arg name="static_trans_deadband" value="$(var static_trans_deadband)"/>
+    <arg name="static_rot_deadband" value="$(var static_rot_deadband)"/>
+  </include>
+</launch>

@@ -31,9 +31,39 @@ import os
 
 import ament_index_python.packages
 import launch
+from launch import LaunchDescription
+from launch.actions import LogInfo
 import launch_ros.actions
 
 
+_DEPRECATION_WARN_DISTROS = ['lyrical', 'rolling']
+
+
+def _should_warn_for_distro() -> bool:
+    distro = str(os.environ.get('ROS_DISTRO', '')).lower()
+    return distro in _DEPRECATION_WARN_DISTROS
+
+
+def deprecated(func):
+    def wrapper(*args, **kwargs):
+        ld = func(*args, **kwargs)
+        if _should_warn_for_distro():
+            distros_str = ', '.join(_DEPRECATION_WARN_DISTROS)
+            return LaunchDescription([
+                LogInfo(
+                    msg='[DEPRECATION] This python launch file is '
+                        'deprecated for the ROS2 distributions '
+                        f'{distros_str} onwards. '
+                        'Migrate to XML.'
+                ),
+                *ld.entities
+            ])
+        return ld
+
+    return wrapper
+
+
+@deprecated
 def generate_launch_description():
     config_directory = os.path.join(
         ament_index_python.packages.get_package_share_directory('joy'),

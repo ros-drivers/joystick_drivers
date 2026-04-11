@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <arg name="config_file" default="joy-params.yaml"
+    description="The name of the yaml file in the joy package config directory" />
+
+  <let name="params_path"
+    value="$(find-pkg-share joy)/config/$(var config_file)" />
+
+  <node pkg="joy" exec="joy_node" name="joy_node" namespace="" output="both">
+    <param from="$(var params_path)" />
+  </node>
+
+</launch>

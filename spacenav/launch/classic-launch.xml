@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <arg name="zero_when_static" default="true"
+    description="If true, the node forces output to zero when no motion is detected to prevent drift."/>
+  
+  <arg name="static_count_threshold" default="30"
+    description="Number of empty polls required to determine the device is static."/>
+
+  <include file="$(find-pkg-share spacenav)/launch/spacenav-launch.xml">
+    <arg name="zero_when_static" value="$(var zero_when_static)"/>
+    <arg name="static_count_threshold" value="$(var static_count_threshold)"/>
+  </include>
+</launch>
