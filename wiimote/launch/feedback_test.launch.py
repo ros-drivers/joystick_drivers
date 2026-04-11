@@ -20,7 +20,7 @@ import launch_ros
 from launch_ros.substitutions import FindPackageShare
 import lifecycle_msgs.msg
 
-_DEPRECATION_WARN_DISTROS = {'lyrical', 'rolling'}
+_DEPRECATION_WARN_DISTROS = ['lyrical', 'rolling']
 
 
 def _should_warn_for_distro() -> bool:
@@ -32,14 +32,15 @@ def deprecated(func):
     def wrapper(*args, **kwargs):
         ld = func(*args, **kwargs)
         if _should_warn_for_distro():
-            ld.add_action(
-              LogInfo(
-                msg="[DEPRECATION] This python launch file is "
-                  "deprecated for the ROS2 distributions "
-                  f"{', '.join(_DEPRECATION_WARN_DISTROS)} onwards. "
-                  "Migrate to XML."
-              )
-            )
+            return launch.LaunchDescription([
+                LogInfo(
+                    msg="[DEPRECATION] This python launch file is "
+                        "deprecated for the ROS2 distributions "
+                        f"{', '.join(_DEPRECATION_WARN_DISTROS)} onwards. "
+                        "Migrate to XML."
+                ),
+                *ld.entities
+            ])
         return ld
 
     return wrapper
