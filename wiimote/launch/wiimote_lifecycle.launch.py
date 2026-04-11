@@ -37,12 +37,13 @@ def deprecated(func):
     def wrapper(*args, **kwargs):
         ld = func(*args, **kwargs)
         if _should_warn_for_distro():
+            distros_str = ', '.join(_DEPRECATION_WARN_DISTROS)
             return launch.LaunchDescription([
                 LogInfo(
-                    msg="[DEPRECATION] This python launch file is "
-                        "deprecated for the ROS2 distributions "
-                        f"{', '.join(_DEPRECATION_WARN_DISTROS)} onwards. "
-                        "Migrate to XML."
+                    msg='[DEPRECATION] This python launch file is '
+                        'deprecated for the ROS2 distributions '
+                        f'{distros_str} onwards. '
+                        'Migrate to XML.'
                 ),
                 *ld.entities
             ])
