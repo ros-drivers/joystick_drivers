@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <node pkg="joy_linux" exec="joy_linux_node" name="joy_linux_node"
+    namespace="" output="both" />
+
+</launch>
