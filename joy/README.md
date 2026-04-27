@@ -69,6 +69,9 @@ This nodes should work with any joystick or game controller that is supported by
 * sticky_buttons (bool, default: false)
   * Whether buttons are "sticky".  If this is false (the default), then a button press will result in a 1 being output, and a button release will result in a 0 being output.  If this is true, then a button press will toggle the current state of the button, and a button release will do nothing.  Thus, hitting the button while it is currently 0 will switch it to 1, and keep it at 1 until the button is pressed again.
 
+* autocenter (int, default: 0)
+  * Sets the force (between 0 and 100) with which a supported force-feedback steering wheel will be autocentered. 0 disables autocentering; 100 is maximum autocenter force. Non-zero values have no effect and issue a warning for devices that do not have a steering wheel.
+
 * coalesce_interval_ms (int, default: 1)
   * The number of milliseconds to wait after an axis event before publishing a message.  Since the kernel sends an event for every change, this can significantly reduce the number of messages published.  Setting it to 0 disables this behavior.  The default of 1 ms is a good compromise between message delays and number of messages published.
 

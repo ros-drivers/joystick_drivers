@@ -88,6 +88,8 @@ Joy::Joy(const rclcpp::NodeOptions & options)
 
   sticky_buttons_ = this->declare_parameter("sticky_buttons", false);
 
+  autocenter_ = std::clamp(static_cast<int>(this->declare_parameter("autocenter", 0)), 0, 100);
+
   coalesce_interval_ms_ = static_cast<int>(this->declare_parameter("coalesce_interval_ms", 1));
   if (coalesce_interval_ms_ < 0) {
     throw std::runtime_error("coalesce_interval_ms must be positive");
@@ -395,6 +397,19 @@ void Joy::handleJoyDeviceAdded(const SDL_Event & e)
     }
   } else {
     RCLCPP_INFO(get_logger(), "No haptic (rumble) available, skipping initialization");
+  }
+
+  if (haptic_ != nullptr) {
+    const auto supportsAutocenter = (SDL_HapticQuery(haptic_) & SDL_HAPTIC_AUTOCENTER) > 0;
+    if (supportsAutocenter) {
+      if (SDL_HapticSetAutocenter(haptic_, autocenter_) != 0) {
+        RCLCPP_WARN(get_logger(), "Failed to set autocenter: %s", SDL_GetError());
+      }
+    } else if (autocenter_ > 0) {
+      RCLCPP_WARN(get_logger(), "Autocenter requested but the joystick does not support it.");
+    }
+  } else if (autocenter_ > 0) {
+    RCLCPP_WARN(get_logger(), "Autocenter requested but the joystick does not support haptics.");
   }
 
   RCLCPP_INFO(
