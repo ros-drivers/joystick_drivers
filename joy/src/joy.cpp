@@ -117,7 +117,6 @@ Joy::Joy(const rclcpp::NodeOptions & options)
 Joy::~Joy()
 {
   exit_signal_.set_value();
-  event_thread_.join();
   if (haptic_ != nullptr) {
     SDL_HapticClose(haptic_);
   }

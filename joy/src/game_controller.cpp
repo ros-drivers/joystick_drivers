@@ -105,24 +105,23 @@ GameController::GameController(const rclcpp::NodeOptions & options)
 
   future_ = exit_signal_.get_future();
 
-  // In theory we could do this with just a timer, which would simplify the code
-  // a bit.  But then we couldn't react to "immediate" events, so we stick with
-  // the thread.
-  event_thread_ = std::thread(&GameController::eventThread, this);
-
   joy_msg_.buttons.resize(SDL_CONTROLLER_BUTTON_MAX);
 
   joy_msg_.axes.resize(SDL_CONTROLLER_AXIS_MAX);
 
-  if (SDL_Init(SDL_INIT_GAMECONTROLLER) < 0) {
+  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0) {
     throw std::runtime_error("SDL could not be initialized: " + std::string(SDL_GetError()));
   }
+
+  // In theory we could do this with just a timer, which would simplify the code
+  // a bit.  But then we couldn't react to "immediate" events, so we stick with
+  // the thread.
+  this->eventThread();
 }
 
 GameController::~GameController()
 {
   exit_signal_.set_value();
-  event_thread_.join();
   if (game_controller_ != nullptr) {
     SDL_GameControllerClose(game_controller_);
   }
