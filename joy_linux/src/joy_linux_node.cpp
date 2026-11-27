@@ -37,12 +37,14 @@
 #include <math.h>
 #include <pthread.h>
 #include <sys/stat.h>
+#include <sys/sysmacros.h>
 #include <unistd.h>
 
 #include <atomic>
 #include <chrono>
 #include <csignal>
 #include <ctime>
+#include <filesystem>
 #include <functional>
 #include <future>
 #include <memory>
@@ -111,6 +113,34 @@ private:
   std::atomic<bool> done_{false};
   std::thread watcher_;
 };
+
+/// \brief Tells whether the kernel has a device behind a joystick path, without opening it.
+///
+/// A jsN node can exist with no device behind it, e.g. one bound into a container. Opening it
+/// makes the kernel request the char-major-13 module, i.e. run modprobe, on every attempt.
+/// /sys/dev/char lists a device number only while a device is registered. Anything that can not
+/// be checked (no such path, not a character device, no sysfs) is reported present and left to
+/// open().
+static bool joystick_present(const std::string & dev)
+{
+  struct stat st;
+  if (stat(dev.c_str(), &st) != 0 || !S_ISCHR(st.st_mode)) {
+    return true;
+  }
+  const std::filesystem::path sysfs_char_dir("/sys/dev/char");
+  std::error_code ec;
+  if (!std::filesystem::is_directory(sysfs_char_dir, ec)) {
+    return true;
+  }
+  const auto device_number = std::to_string(major(st.st_rdev)) + ":" +
+    std::to_string(minor(st.st_rdev));
+  // The entry itself, not its target: a sandbox may hide /sys/devices behind the link.
+  const auto entry = std::filesystem::symlink_status(sysfs_char_dir / device_number, ec);
+  if (ec && ec != std::errc::no_such_file_or_directory) {
+    return true;
+  }
+  return std::filesystem::exists(entry);
+}
 
 /// \brief Opens, reads from and publishes joystick events
 class Joystick
@@ -375,7 +405,12 @@ public:
         if (!rclcpp::ok() || g_shutdown_requested.load()) {
           goto cleanup;
         }
-        joy_fd = open(joy_dev_.c_str(), O_RDONLY);
+        const bool present = joystick_present(joy_dev_);
+        if (present) {
+          joy_fd = open(joy_dev_.c_str(), O_RDONLY);
+        } else {
+          joy_fd = -1;
+        }
         if (joy_fd != -1) {
           // There seems to be a bug in the driver or something where the
           // initial events that are to define the initial state of the
@@ -391,8 +426,8 @@ public:
         }
         if (first_fault) {
           RCLCPP_ERROR(
-            node_->get_logger(), "Couldn't open joystick %s. Will retry every second.",
-            joy_dev_.c_str());
+            node_->get_logger(), "Couldn't open joystick %s%s. Will retry every second.",
+            joy_dev_.c_str(), present ? "" : " (no device registered in /sys/dev/char)");
           first_fault = false;
         }
       }
