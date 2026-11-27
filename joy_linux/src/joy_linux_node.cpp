@@ -35,19 +35,82 @@
 #include <linux/input.h>
 #include <linux/joystick.h>
 #include <math.h>
+#include <pthread.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <atomic>
 #include <chrono>
+#include <csignal>
+#include <ctime>
 #include <functional>
 #include <future>
 #include <memory>
 #include <string>
+#include <system_error>
+#include <thread>
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joy.hpp>
 #include <sensor_msgs/msg/joy_feedback_array.hpp>
+
+static std::atomic<bool> g_shutdown_requested{false};
+
+/// \brief Takes SIGINT and SIGTERM away from rclcpp's signal handler.
+///
+/// rclcpp's handler shuts the context down from another thread. If that happens while
+/// spin_some() or spin_until_future_complete() rebuilds its wait set, an exception escapes
+/// and the node ends in std::terminate instead of exiting. This class blocks both signals
+/// before rclcpp::init(), so every thread created later inherits the mask, and waits for them
+/// on its own thread. On the first one it only sets g_shutdown_requested; the loops in
+/// Joystick::main() check it and main() calls rclcpp::shutdown() itself.
+class ShutdownSignalWatcher
+{
+public:
+  ShutdownSignalWatcher()
+  {
+    sigemptyset(&signals_);
+    sigaddset(&signals_, SIGINT);
+    sigaddset(&signals_, SIGTERM);
+    const int ret = pthread_sigmask(SIG_BLOCK, &signals_, &old_mask_);
+    if (ret != 0) {
+      throw std::system_error(ret, std::generic_category(), "pthread_sigmask");
+    }
+    watcher_ = std::thread(
+      [this]() {
+        // A timeout instead of sigwait(), so the destructor can end the thread.
+        const timespec poll_interval{0, 100 * 1000 * 1000};
+        while (!done_.load()) {
+          const int sig = sigtimedwait(&signals_, nullptr, &poll_interval);
+          if (sig == SIGINT || sig == SIGTERM) {
+            g_shutdown_requested.store(true);
+            return;
+          }
+        }
+      });
+  }
+
+  ~ShutdownSignalWatcher()
+  {
+    done_.store(true);
+    watcher_.join();
+    // A second signal still pending would take its default action once unblocked.
+    const timespec no_wait{0, 0};
+    while (sigtimedwait(&signals_, nullptr, &no_wait) > 0) {
+    }
+    pthread_sigmask(SIG_SETMASK, &old_mask_, nullptr);
+  }
+
+  ShutdownSignalWatcher(const ShutdownSignalWatcher &) = delete;
+  ShutdownSignalWatcher & operator=(const ShutdownSignalWatcher &) = delete;
+
+private:
+  sigset_t signals_;
+  sigset_t old_mask_;
+  std::atomic<bool> done_{false};
+  std::thread watcher_;
+};
 
 /// \brief Opens, reads from and publishes joystick events
 class Joystick
@@ -65,6 +128,7 @@ private:
   int event_count_;
   int pub_count_;
   rclcpp::Publisher<sensor_msgs::msg::Joy>::SharedPtr pub_;
+  rclcpp::Subscription<sensor_msgs::msg::JoyFeedbackArray>::SharedPtr sub_;
   rclcpp::Node::SharedPtr node_;
   double lastDiagTime_;
 
@@ -202,8 +266,7 @@ public:
 
     // Parameters
     pub_ = node_->create_publisher<sensor_msgs::msg::Joy>("joy", 10);
-    rclcpp::Subscription<sensor_msgs::msg::JoyFeedbackArray>::SharedPtr sub_ =
-      node_->create_subscription<sensor_msgs::msg::JoyFeedbackArray>(
+    sub_ = node_->create_subscription<sensor_msgs::msg::JoyFeedbackArray>(
       "joy/set_feedback",
       rclcpp::QoS(10),
       std::bind(&Joystick::set_feedback, this, std::placeholders::_1));
@@ -289,7 +352,7 @@ public:
     lastDiagTime_ = node_->now().seconds();
 
     // Big while loop opens, publishes
-    while (rclcpp::ok()) {
+    while (rclcpp::ok() && !g_shutdown_requested.load()) {
       open_ = false;
       diagnostic_->force_update();
       bool first_fault = true;
@@ -309,7 +372,7 @@ public:
           timeout = std::chrono::milliseconds(1000);
         }
         rclcpp::spin_until_future_complete(node_, dummy_future, timeout);
-        if (!rclcpp::ok()) {
+        if (!rclcpp::ok() || g_shutdown_requested.load()) {
           goto cleanup;
         }
         joy_fd = open(joy_dev_.c_str(), O_RDONLY);
@@ -378,7 +441,7 @@ public:
       double val;  // Temporary variable to hold event values
       joy_msg->header.frame_id = "joy";
 
-      while (rclcpp::ok()) {
+      while (rclcpp::ok() && !g_shutdown_requested.load()) {
         rclcpp::spin_some(node_);
 
         bool publish_now = false;
@@ -533,7 +596,7 @@ public:
       close(ff_fd_);
       close(joy_fd);
       rclcpp::spin_some(node_);
-      if (rclcpp::ok()) {
+      if (rclcpp::ok() && !g_shutdown_requested.load()) {
         RCLCPP_ERROR(
           node_->get_logger(), "Connection to joystick device lost unexpectedly. Will reopen.");
       }
@@ -542,13 +605,23 @@ public:
 cleanup:
     RCLCPP_INFO(node_->get_logger(), "joy_node shut down.");
 
+    // Destroy everything created on the node while the context is still valid.
+    diagnostic_.reset();
+    sub_.reset();
+    pub_.reset();
+    node_.reset();
+
     return 0;
   }
 };
 
 int main(int argc, char ** argv)
 {
-  rclcpp::init(argc, argv);
+  // Must exist before rclcpp::init() so the middleware threads inherit the signal mask.
+  ShutdownSignalWatcher signal_watcher;
+  rclcpp::init(argc, argv, rclcpp::InitOptions(), rclcpp::SignalHandlerOptions::None);
   Joystick j;
-  return j.main(argc, argv);
+  const int ret = j.main(argc, argv);
+  rclcpp::shutdown();
+  return ret;
 }
